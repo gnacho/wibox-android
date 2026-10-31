@@ -1,0 +1,14 @@
+{
+  "status": "implemented",
+  "service": true,
+  "sdk": true,
+  "secret_scan_passed": true,
+  "unauthorized_denied": true,
+  "two_signature_tests": {
+    "status": "passed",
+    "signatures": 2
+  },
+  "authorization": "uid_package_signing_allowlist",
+  "method_count": 15,
+  "model_count": 43
+}

@@ -1,0 +1,1497 @@
+{
+  "status": "COMPLETE_WITH_DOCUMENTED_LIMITS",
+  "hardware_verified": false,
+  "summary": {
+    "capabilities": 64,
+    "screens": 38,
+    "navigation_edges": 71
+  },
+  "capabilities": [
+    {
+      "id": "core.lifecycle",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "core/cloud/src/main/kotlin/dev/nacho/wibox/core/cloud/WiboxCloud.kt",
+        "docs/protocol.md#7"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "core.capability_negotiation",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "core/cloud/src/main/kotlin/dev/nacho/wibox/core/cloud/EventModels.kt",
+        "E020"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "auth.opaque_registration",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E004",
+        "E010",
+        "docs/rea-analysis.md#20"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "auth.user_login",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E004",
+        "E010"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "auth.oauth_password",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E029",
+        "E033",
+        "P-OAUTH-PASSWORD"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "auth.oauth_refresh",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E033",
+        "E034",
+        "E035",
+        "P-OAUTH-REFRESH"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "auth.session_restore",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E034",
+        "E036",
+        "P-SESSION-RESTORE"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "auth.logout",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E036",
+        "E041"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "discovery.regional_services",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E034",
+        "E040",
+        "U-SERVICE-DISCOVERY",
+        "docs/rea-analysis.md#20"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "devices.list",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E004",
+        "E010",
+        "E020",
+        "U-DEVICE-LIST"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "devices.dynamic_credentials",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E010",
+        "E013",
+        "E022"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "devices.local_discovery",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E014",
+        "E017",
+        "E018"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "devices.online_status",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E020",
+        "E041",
+        "E063"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "pairing.qr",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E007",
+        "E012"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "pairing.ap_wifi",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E014",
+        "E015",
+        "E017",
+        "E018"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "pairing.audio",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E016",
+        "E017",
+        "E018"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "pairing.bind",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E009",
+        "E010",
+        "E013"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "invitations.accept",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E008",
+        "E010"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "invitations.manage",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E055",
+        "analysis/apk/ui-inventory.json#share_manage"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "invitations.issue",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E008",
+        "E011",
+        "analysis/apk/ui-inventory.json#share_device"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "invitations.permissions",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E019",
+        "E055"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "shadow.get",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E041",
+        "P-SHADOW-STATUS"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "shadow.multi",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E041",
+        "P-SHADOW-MULTI"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "shadow.subscribe",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E041",
+        "P-SHADOW-SUB"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "shadow.unsubscribe",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E041",
+        "P-SHADOW-UNSUB"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "events.alarm_parser",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E056",
+        "E057",
+        "P-ALARM-FCM"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "events.push_registration",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E048",
+        "E056",
+        "E057"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "events.realtime",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E037",
+        "E038",
+        "E039",
+        "E040",
+        "E063",
+        "E073",
+        "U-REALTIME"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "events.history",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E051",
+        "E052"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "events.photo",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E051",
+        "E052",
+        "analysis/apk/ui-inventory.json#tab_events"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "events.delete",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E051",
+        "analysis/apk/ui-inventory.json#tab_events"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "events.filters",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E051",
+        "analysis/apk/ui-inventory.json#tab_events"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "media.preview_single",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E011",
+        "E021",
+        "E042",
+        "U-MEDIA"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "media.preview_multi",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E021",
+        "E023",
+        "analysis/apk/ui-inventory.json#preview"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "media.stream_controls",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E021",
+        "E024",
+        "E026"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "media.listen",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E023"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "media.talk",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E011",
+        "E023"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "media.snapshot",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E021",
+        "analysis/apk/ui-inventory.json#preview"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "media.record",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E021",
+        "analysis/apk/ui-inventory.json#preview"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "media.local_gallery",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E062",
+        "analysis/apk/ui-inventory.json#tab_gallery"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "media.local_share_save",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E062",
+        "E075"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "actions.unlock",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E019",
+        "E023",
+        "E025",
+        "U-ACTIONS"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "actions.f1",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E019",
+        "E023",
+        "U-ACTIONS"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "actions.call_guard",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E019",
+        "E054",
+        "U-ACTIONS"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "actions.call_accept",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E057",
+        "E058",
+        "E059",
+        "U-ACTIONS"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "actions.call_reject",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E057",
+        "E058",
+        "E059",
+        "U-ACTIONS"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "calls.lifecycle",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E056",
+        "E057",
+        "E059"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "config.rename",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "analysis/apk/ui-inventory.json#device_info"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "config.passwords",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E031",
+        "E048",
+        "analysis/apk/ui-inventory.json#password_modify"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "config.unlock_security",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E019",
+        "analysis/apk/ui-inventory.json#unlock_setting"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "config.alarms",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E051",
+        "E055",
+        "analysis/apk/ui-inventory.json#config"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "config.wifi",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E014",
+        "E015",
+        "analysis/apk/ui-inventory.json#router"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "config.time_sync",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E055",
+        "analysis/apk/ui-inventory.json#config"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "config.playback_intercom",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "analysis/apk/ui-inventory.json#config",
+        "E021",
+        "E023"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "config.delete_device",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E041",
+        "E055",
+        "analysis/apk/ui-inventory.json#config"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "firmware.check",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "analysis/apk/ui-inventory.json#upgrade"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "firmware.apply",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "analysis/apk/ui-inventory.json#upgrade"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "app.update_check",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E049",
+        "E050"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "app.privacy_terms",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E064",
+        "analysis/apk/ui-inventory.json#about"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "app.deep_link",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E006",
+        "E057",
+        "analysis/apk/ui-inventory.json#loading",
+        "analysis/apk/ui-inventory.json#cache"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "app.diagnostics",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E061",
+        "E067"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "app.sound_vibration",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E058",
+        "E060"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "security.persistence",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E036",
+        "E043",
+        "E044",
+        "E045",
+        "E046",
+        "E047",
+        "core/cloud/src/main/kotlin/dev/nacho/wibox/core/cloud/CloudModels.kt"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    },
+    {
+      "id": "events.notifications",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/architecture/provider-matrix.json",
+        "E056",
+        "E057",
+        "E058",
+        "E059"
+      ],
+      "notes": "Capability re-checked against the modernized app, the provider port and the Binder API before delivery.",
+      "cloud_notes": "Evidence retained from the provider matrix without elevation: stock QVCloud dynamic contract observed only for app.update_check (opaque registration produced no further contract); realtime, media streaming and physical actions remain unsupported; physical hardware unverified."
+    }
+  ],
+  "screens": [
+    {
+      "id": "loading",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "cache",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "main_tab",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "add_type",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "preview",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "online_type",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "product_choose",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "product_intro",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "handle_wifi",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "wifi_list_legacy",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "wifi_set_legacy",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "device_bind",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "online_devices",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "scan",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "config",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "password_modify",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "unlock_setting",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "device_info",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "about",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "image_pager",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "video_player",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "push_call",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "debug",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "upgrade",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "guide",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "add_method_legacy",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "router",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "voice",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "wifi_progress",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "share_device",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "pairing_fail",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "share_manage",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "share_bind",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "tab_devices",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "tab_events",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "tab_event_list",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "tab_gallery",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    },
+    {
+      "id": "tab_settings",
+      "status": "reviewed",
+      "evidence": [
+        "analysis/final-audit/audit-matrix.json",
+        "analysis/ui-modernization/manifest.json",
+        "analysis/ui-modernization/route-coverage.json"
+      ],
+      "notes": "Screen reviewed against the audited inventory, real captures and instrumented flows."
+    }
+  ],
+  "navigation_edges_reviewed": [
+    [
+      "loading",
+      "main_tab"
+    ],
+    [
+      "loading",
+      "push_call"
+    ],
+    [
+      "loading",
+      "preview"
+    ],
+    [
+      "cache",
+      "loading"
+    ],
+    [
+      "main_tab",
+      "tab_devices"
+    ],
+    [
+      "main_tab",
+      "tab_events"
+    ],
+    [
+      "main_tab",
+      "tab_gallery"
+    ],
+    [
+      "main_tab",
+      "tab_settings"
+    ],
+    [
+      "add_type",
+      "product_intro"
+    ],
+    [
+      "add_type",
+      "online_type"
+    ],
+    [
+      "preview",
+      "config"
+    ],
+    [
+      "preview",
+      "password_modify"
+    ],
+    [
+      "online_type",
+      "online_devices"
+    ],
+    [
+      "online_type",
+      "device_bind"
+    ],
+    [
+      "product_choose",
+      "product_intro"
+    ],
+    [
+      "product_intro",
+      "scan"
+    ],
+    [
+      "product_intro",
+      "router"
+    ],
+    [
+      "product_intro",
+      "handle_wifi"
+    ],
+    [
+      "handle_wifi",
+      "router"
+    ],
+    [
+      "handle_wifi",
+      "wifi_progress"
+    ],
+    [
+      "wifi_list_legacy",
+      "wifi_set_legacy"
+    ],
+    [
+      "wifi_set_legacy",
+      "config"
+    ],
+    [
+      "wifi_set_legacy",
+      "product_intro"
+    ],
+    [
+      "device_bind",
+      "main_tab"
+    ],
+    [
+      "device_bind",
+      "scan"
+    ],
+    [
+      "online_devices",
+      "device_bind"
+    ],
+    [
+      "scan",
+      "product_intro"
+    ],
+    [
+      "scan",
+      "device_bind"
+    ],
+    [
+      "scan",
+      "share_bind"
+    ],
+    [
+      "config",
+      "device_info"
+    ],
+    [
+      "config",
+      "password_modify"
+    ],
+    [
+      "config",
+      "unlock_setting"
+    ],
+    [
+      "config",
+      "router"
+    ],
+    [
+      "config",
+      "upgrade"
+    ],
+    [
+      "config",
+      "share_manage"
+    ],
+    [
+      "config",
+      "main_tab"
+    ],
+    [
+      "password_modify",
+      "config"
+    ],
+    [
+      "unlock_setting",
+      "config"
+    ],
+    [
+      "device_info",
+      "config"
+    ],
+    [
+      "about",
+      "debug"
+    ],
+    [
+      "image_pager",
+      "video_player"
+    ],
+    [
+      "image_pager",
+      "tab_gallery"
+    ],
+    [
+      "video_player",
+      "image_pager"
+    ],
+    [
+      "push_call",
+      "preview"
+    ],
+    [
+      "push_call",
+      "main_tab"
+    ],
+    [
+      "debug",
+      "loading"
+    ],
+    [
+      "upgrade",
+      "config"
+    ],
+    [
+      "guide",
+      "main_tab"
+    ],
+    [
+      "add_method_legacy",
+      "router"
+    ],
+    [
+      "add_method_legacy",
+      "handle_wifi"
+    ],
+    [
+      "router",
+      "wifi_progress"
+    ],
+    [
+      "router",
+      "voice"
+    ],
+    [
+      "router",
+      "config"
+    ],
+    [
+      "voice",
+      "device_bind"
+    ],
+    [
+      "voice",
+      "main_tab"
+    ],
+    [
+      "wifi_progress",
+      "pairing_fail"
+    ],
+    [
+      "wifi_progress",
+      "device_bind"
+    ],
+    [
+      "wifi_progress",
+      "main_tab"
+    ],
+    [
+      "wifi_progress",
+      "handle_wifi"
+    ],
+    [
+      "share_device",
+      "share_manage"
+    ],
+    [
+      "pairing_fail",
+      "main_tab"
+    ],
+    [
+      "share_manage",
+      "share_device"
+    ],
+    [
+      "share_manage",
+      "config"
+    ],
+    [
+      "share_bind",
+      "main_tab"
+    ],
+    [
+      "tab_devices",
+      "add_type"
+    ],
+    [
+      "tab_devices",
+      "preview"
+    ],
+    [
+      "tab_devices",
+      "config"
+    ],
+    [
+      "tab_events",
+      "tab_event_list"
+    ],
+    [
+      "tab_event_list",
+      "tab_events"
+    ],
+    [
+      "tab_gallery",
+      "image_pager"
+    ],
+    [
+      "tab_settings",
+      "about"
+    ]
+  ],
+  "ui_modernization_verified": true,
+  "research_supplement_verified": true
+}

@@ -1,0 +1,1328 @@
+{
+  "schema_version": 1,
+  "analysis_id": "rea-wibox-reference-2026-10-31",
+  "source": {
+    "id": "rea",
+    "name": "morluto/rea",
+    "url": "https://github.com/morluto/rea",
+    "clone_url": "https://github.com/morluto/rea.git",
+    "branch": "main",
+    "commit": "d48e472fa6a664cacbb400560e673533005795ce",
+    "commit_subject": "fix(mcp): preserve repeated HTTP host allowlists (#8164)",
+    "commit_timestamp": "2026-10-31T03:13:07+08:00",
+    "local_checkout": "/home/nacho/temp/opencode-work/rea-reference",
+    "package_name": "rea-agents",
+    "package_version": "6.8.0",
+    "license": {
+      "spdx": "MIT",
+      "path": "LICENSE",
+      "third_party_notice": "THIRD_PARTY_NOTICES.md",
+      "reuse_decision": "No se copia codigo sustancial. Solo se citan identificadores y hechos con trazabilidad."
+    },
+    "verification_commands": [
+      "git remote get-url origin",
+      "git branch --show-current",
+      "git rev-parse HEAD",
+      "git show -s --format=%cI HEAD",
+      "git status --short",
+      "git grep -in -e wibox -e fermax -e duox HEAD",
+      "git ls-files '*.kt' '*.kts'",
+      "git submodule status"
+    ]
+  },
+  "additional_sources": [
+    {
+      "id": "duhow-wibox",
+      "name": "duhow/wibox",
+      "url": "https://github.com/duhow/wibox#1",
+      "clone_url": "https://github.com/duhow/wibox.git",
+      "branch": "main",
+      "commit": "d8502d780f1d4ac3f2ec1a8425a98588fd7f53a7",
+      "commit_timestamp": "2026-10-18T15:52:35+02:00",
+      "commit_subject": "docs: add guide to use physical ethernet connection",
+      "local_checkout": "/home/nacho/temp/opencode-work/duhow-wibox-reference",
+      "license": {
+        "identifier": "GPL-3.0",
+        "path": "LICENSE",
+        "scope_note": "Texto GPLv3 y etiqueta GitHub GPL-3.0. No se infiere si la variante del proyecto es only u or-later.",
+        "reuse_decision": "No se copia codigo sustancial. Los hechos y protocolos se citan con trazabilidad."
+      },
+      "source_role": "Firmware parcheado y documentacion de hardware Wibox. No es el APK ni una implementacion Kotlin del cloud.",
+      "verification_commands": [
+        "git remote get-url origin",
+        "git branch --show-current",
+        "git rev-parse HEAD",
+        "git show -s --format=%cI HEAD",
+        "git status --short"
+      ]
+    },
+    {
+      "id": "cmos486-blog",
+      "name": "Firmware custom para el Fermax WiBox",
+      "url": "https://www.cmos486.es/blog/wibox-media-fermax-firmware-home-assistant",
+      "publication_date": "2026-09-12",
+      "retrieved_at": "2026-10-31",
+      "source_role": "Articulo de tercero sobre cmos486/wibox-media custom. Sus afirmaciones no se elevan a hechos de codigo o APK sin otra evidencia.",
+      "license": "No se reutiliza codigo del articulo. Solo se resume su contenido con enlace."
+    }
+  ],
+  "coverage": {
+    "mode": "static-only",
+    "credentials_used": false,
+    "real_services_contacted": false,
+    "target_apk_supplied": false,
+    "tracked_files": 6860,
+    "typescript_files": 5429,
+    "submodules_initialized": false,
+    "limitations": [
+      "El commit no contiene un APK Wibox ni una captura de red Wibox.",
+      "Los cinco submodulos son motores genericos de analisis y quedaron sin inicializar. No se usan como evidencia del protocolo Wibox.",
+      "La ausencia se afirma para este commit y las rutas inspeccionadas, no para otros repositorios o versiones."
+    ]
+  },
+  "rea_execution": {
+    "status": "executed-static-analysis",
+    "package_version": "6.8.0",
+    "runtime": "/home/nacho/temp/opencode-work/rea-runtime/node_modules/rea-agents/scripts/rea.mjs",
+    "provider": "jadx-headless-mcp-0.7.1",
+    "provider_jar_sha256": "6e5eacf500b64292bfb73c49797c1958f6ee44646e43e868039ae7feb573ff75",
+    "target_apk_sha256": "08d78731fe79481b60b4250e736f653cd7af91932844a612b0b5c5a989aac7ce",
+    "real_services_contacted": false,
+    "devices_used": false,
+    "source_build_limitation": "Node 26.12.1 rechazo el modo TypeScript transform del script metadata:check. Se uso el paquete oficial precompilado sin modificar REA.",
+    "artifact_glob": "analysis/rea/wibox-*.json",
+    "commands": [
+      "inspect-android-package",
+      "search-android-classes",
+      "inspect-android-class",
+      "inspect-android-method",
+      "trace-android-references"
+    ],
+    "confirmed": [
+      "OAuthApi.getToken y refreshToken usan SUB_URL=/qvoauthv2/token.",
+      "QvOAuthManager construye grants password y refresh_token con los parametros documentados.",
+      "QvShadowApi y QvShadowHttpManager cubren status, multi, subscribe y unsubscribe.",
+      "UserApi.upChannelForFreeLogin es usado por QvAuthManager y HttpUserAuthManager.",
+      "QvLocationManager delega discovery en QvP2PManager.queryServiceAddress con tipo, grupo y callback."
+    ],
+    "limitations": [
+      "Las interfaces Retrofit no tienen cuerpo y REA no muestra sus anotaciones en inspect-android-method.",
+      "La presencia de clases MQTT o P2P no demuestra actividad runtime ni proporciona por si sola un wire format independiente.",
+      "No se infiere un body de exito de alto nivel para upChannelForFreeLogin.",
+      "La ejecucion estatica no certifica compatibilidad con una cuenta o servicio real."
+    ]
+  },
+  "reference_assessment": {
+    "is_wibox_client": false,
+    "is_fermax_protocol_reference": false,
+    "actual_purpose": "Herramienta local de ingenieria inversa con CLI y MCP para artefactos, aplicaciones y comportamiento grabado.",
+    "useful_for_project": true,
+    "useful_role": "Analizar estaticamente el APK, sus firmas y capturas historicas. No aporta el contrato cloud de Wibox.",
+    "evidence": [
+      {
+        "path": "README.md",
+        "lines": "6-10",
+        "contains": ["REA: Reverse Engineer Anything", "One MCP for reverse engineering"]
+      },
+      {
+        "path": "README.md",
+        "lines": "61-65",
+        "contains": ["REA connects your agent", "Analysis runs locally"]
+      },
+      {
+        "path": "package.json",
+        "lines": "2-10",
+        "contains": ["rea-agents", "Reverse engineer anything", "git+https://github.com/morluto/rea.git"]
+      }
+    ]
+  },
+  "architecture": {
+    "languages": [
+      {
+        "name": "TypeScript",
+        "role": "CLI, MCP, dominio, aplicacion, contratos y adaptadores",
+        "evidence": [
+          {
+            "path": "docs/architecture.mermaid",
+            "lines": "4-28",
+            "contains": ["src/cli.ts", "src/main.ts", "src/application/"]
+          }
+        ]
+      },
+      {
+        "name": "JavaScript y MJS",
+        "role": "Dispatcher, scripts y tooling de Node.js",
+        "evidence": [
+          {
+            "path": "scripts/rea.mjs",
+            "lines": "1-20",
+            "contains": ["#!/usr/bin/env node", "prepareCliProcessEnvironment"]
+          }
+        ]
+      },
+      {
+        "name": "Python, Java, Swift y C/C++",
+        "role": "Puentes de proveedores y controles nativos, no cliente cloud",
+        "evidence": [
+          {
+            "path": "package.json",
+            "lines": "49-108",
+            "contains": ["bridge/hopper_bridge.py", "bridge/ghidra/ReaGhidraBridge.java", "NativeUIChildren.swift"]
+          },
+          {
+            "path": "docs/architecture.mermaid",
+            "lines": "65-69",
+            "contains": ["native/windows/src/", "Node-API"]
+          }
+        ]
+      }
+    ],
+    "kotlin_files": 0,
+    "layers": [
+      "CLI y MCP",
+      "composition",
+      "server",
+      "application",
+      "contracts",
+      "domain",
+      "providers y bridges",
+      "config"
+    ]
+  },
+  "components": [
+    {
+      "name": "CLI y dispatcher",
+      "path": "src/cli.ts + scripts/rea.mjs",
+      "purpose": "Comandos locales de analisis y seleccion de stdio o HTTP MCP.",
+      "wibox_relevance": "tooling-only",
+      "evidence": [
+        {
+          "path": "scripts/rea.mjs",
+          "lines": "9-12",
+          "contains": ["MCP runtime", "stdio", "--http"]
+        }
+      ]
+    },
+    {
+      "name": "Servidor MCP",
+      "path": "src/main.ts + src/server/",
+      "purpose": "MCP por stdio y streamable HTTP con sesiones JSON-RPC.",
+      "wibox_relevance": "not-wibox",
+      "evidence": [
+        {
+          "path": "src/main.ts",
+          "lines": "41-69",
+          "contains": ["streamable HTTP", "serveStreamableHttp"]
+        }
+      ]
+    },
+    {
+      "name": "Nucleo de analisis",
+      "path": "src/application/ + src/domain/ + src/contracts/",
+      "purpose": "Workflows compartidos, Evidence, contratos y errores tipados.",
+      "wibox_relevance": "design-reference-only",
+      "evidence": [
+        {
+          "path": "docs/architecture.mermaid",
+          "lines": "21-28",
+          "contains": ["Shared CLI/MCP workflows", "EvidenceLedger"]
+        },
+        {
+          "path": "docs/architecture.mermaid",
+          "lines": "72-83",
+          "contains": ["Caller-visible schemas", "Pure side-effect-free", "Zod-validated"]
+        }
+      ]
+    },
+    {
+      "name": "Proveedor Android",
+      "path": "src/android/ + bridge/android/",
+      "purpose": "Inventario estatico de APK, clases, metodos, referencias y JNI mediante JADX externo.",
+      "wibox_relevance": "useful-for-apk-analysis",
+      "evidence": [
+        {
+          "path": "docs/android-analysis.md",
+          "lines": "1-14",
+          "contains": ["Static Android APK analysis", "headless JADX", "artifact-bound Evidence"]
+        },
+        {
+          "path": "src/server/registerAndroidTools.ts",
+          "lines": "33-56",
+          "contains": ["inspect_android_package", "search_android_classes", "inspect_android_jni_bindings"]
+        }
+      ]
+    },
+    {
+      "name": "Analisis de capturas",
+      "path": "src/captures/ + src/pcap/ + adaptadores web",
+      "purpose": "Lectura offline de HAR, SAZ, mitmproxy y pcap sin contactar las URLs grabadas.",
+      "wibox_relevance": "useful-for-future-captures",
+      "evidence": [
+        {
+          "path": "docs/web-network-captures.md",
+          "lines": "1-6",
+          "contains": ["Historical web network captures", "offline operation", "never fetched"]
+        },
+        {
+          "path": "docs/pcap-analysis.md",
+          "lines": "1-6",
+          "contains": ["already saved pcap/pcapng", "does not acquire traffic"]
+        }
+      ]
+    }
+  ],
+  "endpoints": [
+    {
+      "name": "REA MCP stdio",
+      "scope": "rea-only",
+      "transport": "stdio JSON-RPC MCP",
+      "url_or_path": null,
+      "default": true,
+      "evidence": [
+        {
+          "path": "src/main.ts",
+          "lines": "8-9",
+          "contains": ["serveStdio"]
+        },
+        {
+          "path": "src/main.ts",
+          "lines": "30-39",
+          "contains": ["stdin: process.stdin", "serve: serveStdio"]
+        }
+      ]
+    },
+    {
+      "name": "REA MCP HTTP",
+      "scope": "rea-only",
+      "transport": "plain HTTP streamable MCP y SSE",
+      "url_or_path": "/mcp",
+      "default_host": "127.0.0.1",
+      "default_port": 0,
+      "evidence": [
+        {
+          "path": "src/server/http/serveStreamableHttp.ts",
+          "lines": "44-45",
+          "contains": ["MCP_HTTP_PATH", "/mcp"]
+        },
+        {
+          "path": "src/config/mcpHttpEndpoint.ts",
+          "lines": "13-16",
+          "contains": ["DEFAULT_MCP_HTTP_HOST", "127.0.0.1", "DEFAULT_MCP_HTTP_PORT"]
+        }
+      ]
+    },
+    {
+      "name": "JEB MCP local",
+      "scope": "external-analysis-provider",
+      "transport": "HTTP o HTTPS MCP",
+      "url_or_path": "http://127.0.0.1:8425/mcp",
+      "evidence": [
+        {
+          "path": "src/config/jebMcpEndpoint.ts",
+          "lines": "6-8",
+          "contains": ["DEFAULT_JEB_MCP_ENDPOINT", "http://127.0.0.1:8425/mcp"]
+        }
+      ]
+    }
+  ],
+  "models": [
+    {
+      "name": "Evidence",
+      "scope": "rea-only",
+      "fields": ["evidence_id", "subject", "provider", "operation", "parameters", "raw_result", "normalized_result", "confidence", "authority", "limitations", "locations", "evidence_links"],
+      "evidence": [
+        {
+          "path": "src/domain/evidence.ts",
+          "lines": "84-107",
+          "contains": ["evidence_id", "normalized_result", "confidence", "limitations"]
+        }
+      ]
+    },
+    {
+      "name": "AnalysisErrorProjection",
+      "scope": "rea-only",
+      "fields": ["code", "category", "message", "retryable", "remediation", "recovery", "details"],
+      "evidence": [
+        {
+          "path": "src/contracts/errorSchemas.ts",
+          "lines": "7-38",
+          "contains": ["categorySchema", "retryable", "analysisErrorProjectionSchema"]
+        }
+      ]
+    },
+    {
+      "name": "jadxApp",
+      "scope": "android-analysis",
+      "fields": ["package", "version_name", "version_code", "min_sdk", "target_sdk", "permissions"],
+      "evidence": [
+        {
+          "path": "src/android/JadxProtocol.ts",
+          "lines": "73-80",
+          "contains": ["jadxAppSchema", "version_name", "permissions"]
+        }
+      ]
+    },
+    {
+      "name": "AdbDevice",
+      "scope": "adb-not-wibox",
+      "fields": ["serial", "state", "transport", "product", "model", "device", "transport_id", "kind", "kind_basis"],
+      "evidence": [
+        {
+          "path": "src/domain/adb/adbDeviceAnalysis.ts",
+          "lines": "471-485",
+          "contains": ["serial", "transport_id", "kind_basis"]
+        }
+      ]
+    },
+    {
+      "name": "FridaDeviceList",
+      "scope": "frida-not-wibox",
+      "fields": ["devices", "cleanup_error"],
+      "evidence": [
+        {
+          "path": "src/domain/fridaDiscovery.ts",
+          "lines": "3-13",
+          "contains": ["fridaDeviceListSchema", "device_id", "cleanup_error"]
+        }
+      ]
+    }
+  ],
+  "transports": [
+    {
+      "name": "MCP stdio",
+      "scope": "rea-only",
+      "protocols": ["JSON-RPC", "MCP"],
+      "evidence": [
+        {
+          "path": "docs/architecture.mermaid",
+          "lines": "4-8",
+          "contains": ["stdio default", "streamable HTTP opt-in"]
+        }
+      ]
+    },
+    {
+      "name": "MCP streamable HTTP",
+      "scope": "rea-only",
+      "protocols": ["HTTP", "SSE", "JSON-RPC", "MCP"],
+      "evidence": [
+        {
+          "path": "src/server/http/serveStreamableHttp.ts",
+          "lines": "180-199",
+          "contains": ["application/json", "text/event-stream"]
+        }
+      ]
+    },
+    {
+      "name": "JADX stdio",
+      "scope": "android-analysis",
+      "protocols": ["JSON-RPC", "MCP", "newline-delimited frames"],
+      "evidence": [
+        {
+          "path": "src/android/JadxMcpTransport.ts",
+          "lines": "21-37",
+          "contains": ["MAX_FRAME_BYTES", "SDK-framed stdio"]
+        },
+        {
+          "path": "src/android/JadxMcpTransport.ts",
+          "lines": "70-99",
+          "contains": ["stdin", "stdout", "protocol"]
+        }
+      ]
+    },
+    {
+      "name": "CDP WebSocket loopback",
+      "scope": "browser-analysis-not-wibox-realtime",
+      "protocols": ["WebSocket", "CDP"],
+      "evidence": [
+        {
+          "path": "src/browser/CdpConnection.ts",
+          "lines": "79-113",
+          "contains": ["loopback CDP WebSocket", "new WebSocket"]
+        }
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "name": "inspect_android_package",
+      "category": "static-apk",
+      "purpose": "Paquete, SDK, permisos, manifiesto y componentes.",
+      "evidence": [
+        {
+          "path": "src/contracts/android/androidToolContracts.ts",
+          "lines": "52-69",
+          "contains": ["inspect_android_package", "decoded manifest", "Does not execute"]
+        }
+      ]
+    },
+    {
+      "name": "search_android_classes",
+      "category": "static-apk",
+      "purpose": "Busqueda estatica de clases en un APK local.",
+      "evidence": [
+        {
+          "path": "src/contracts/android/androidToolContracts.ts",
+          "lines": "98-110",
+          "contains": ["search_android_classes", "no APK execution"]
+        }
+      ]
+    },
+    {
+      "name": "inspect_android_class",
+      "category": "static-apk",
+      "purpose": "Metodos, campos, clases internas y mapping R8/ProGuard.",
+      "evidence": [
+        {
+          "path": "src/contracts/android/androidToolContracts.ts",
+          "lines": "113-140",
+          "contains": ["inspect_android_class", "R8/ProGuard"]
+        }
+      ]
+    },
+    {
+      "name": "inspect_android_method",
+      "category": "static-apk",
+      "purpose": "Decompilacion de un metodo con fallback smali.",
+      "evidence": [
+        {
+          "path": "src/contracts/android/androidToolContracts.ts",
+          "lines": "142-164",
+          "contains": ["inspect_android_method", "smali fallback"]
+        }
+      ]
+    },
+    {
+      "name": "trace_android_references",
+      "category": "static-apk",
+      "purpose": "Referencias estaticas entrantes a clases y metodos.",
+      "evidence": [
+        {
+          "path": "src/contracts/android/androidToolContracts.ts",
+          "lines": "166-190",
+          "contains": ["trace_android_references", "No reflection"]
+        }
+      ]
+    },
+    {
+      "name": "inspect_android_jni_bindings",
+      "category": "static-apk-native",
+      "purpose": "Relacionar declaraciones DEX nativas y exports JNI sin ejecutar el objetivo.",
+      "evidence": [
+        {
+          "path": "src/contracts/android/androidToolContracts.ts",
+          "lines": "23-50",
+          "contains": ["inspect_android_jni_bindings", "No target execution"]
+        }
+      ]
+    },
+    {
+      "name": "inspect_web_network_capture",
+      "category": "offline-capture",
+      "purpose": "Inspeccionar capturas HAR, mitmproxy y SAZ sin repetir peticiones.",
+      "evidence": [
+        {
+          "path": "docs/web-network-captures.md",
+          "lines": "1-20",
+          "contains": ["inspect_web_network_capture", "offline", "never fetched"]
+        }
+      ]
+    },
+    {
+      "name": "inspect_pcap_capture",
+      "category": "offline-capture",
+      "purpose": "Resumir endpoints, DNS, SNI, protocolos y URI de capturas guardadas.",
+      "evidence": [
+        {
+          "path": "docs/pcap-analysis.md",
+          "lines": "40-57",
+          "contains": ["inspect_pcap_capture", "endpoints", "tls-sni", "http-uris"]
+        }
+      ]
+    }
+  ],
+  "wibox_cloud": {
+    "reference_status": "absent-in-this-commit",
+    "endpoints": [],
+    "models": [],
+    "functions": [],
+    "authentication": {
+      "status": "not-implemented-in-reference",
+      "justification": "No hay flujo de login, access token, refresh token, caducidad ni almacenamiento de credenciales Wibox. La sesion UUID de MCP no es autenticacion de usuario.",
+      "evidence": [
+        {
+          "path": "src/server/http/serveStreamableHttp.ts",
+          "lines": "404-417",
+          "contains": ["sessionIdGenerator", "randomUUID", "connect"]
+        },
+        {
+          "path": "src/config/environment.ts",
+          "lines": "47-84",
+          "contains": ["REA_ANALYSIS_PROVIDER", "REA_JEB_MCP_URL"]
+        }
+      ],
+      "negative_command": "git grep -n -i -E 'refresh_token|expires_in|grant_type|SharedPreferences|AndroidKeyStore' HEAD -- src bridge native package.json"
+    },
+    "devices": {
+      "status": "not-implemented-in-reference",
+      "justification": "No hay emparejamiento, alta, descubrimiento o lista de dispositivos Wibox. Los modelos ADB y Frida pertenecen a dispositivos de analisis.",
+      "evidence": [
+        {
+          "path": "src/domain/adb/adbDeviceAnalysis.ts",
+          "lines": "471-485",
+          "contains": ["serial", "usb", "emulator"]
+        },
+        {
+          "path": "src/domain/fridaDiscovery.ts",
+          "lines": "3-13",
+          "contains": ["Device observations", "fridaDeviceListSchema"]
+        }
+      ],
+      "negative_command": "git grep -n -i -E 'wibox|fermax|duox|doorbell|videoportero|openDoor|answerCall' HEAD -- . ':!docs/releases' ':!docs/api'"
+    },
+    "realtime": {
+      "status": "not-implemented-in-reference",
+      "justification": "No hay canal MQTT, SIP o WebRTC de Wibox. WebSocket se usa para CDP de navegador y SSE para MCP, no para eventos de videoportero.",
+      "evidence": [
+        {
+          "path": "src/browser/CdpConnection.ts",
+          "lines": "79-113",
+          "contains": ["loopback CDP WebSocket", "new WebSocket"]
+        },
+        {
+          "path": "src/server/http/serveStreamableHttp.ts",
+          "lines": "180-199",
+          "contains": ["text/event-stream", "streamable POST"]
+        }
+      ],
+      "negative_command": "git grep -n -i -E 'RTCPeerConnection|mqtts?://|refresh_token|expires_in' HEAD -- src bridge native package.json"
+    },
+    "actions_and_states": {
+      "status": "not-implemented-in-reference",
+      "justification": "No hay apertura de puerta, llamada, contestar, colgar ni estados Wibox. Las acciones ADB son operaciones del dispositivo de analisis y no se ejecutaron."
+    },
+    "cryptography": {
+      "status": "no-wibox-cryptography",
+      "justification": "SHA-256 de Evidence, HMAC del bridge Cutter y UUID de sesion pertenecen a REA. No revelan cifrado, pinning o firma del protocolo Wibox.",
+      "evidence": [
+        {
+          "path": "src/cutter/cutterBridgeMac.ts",
+          "lines": "1-16",
+          "contains": ["createHmac", "sha256", "Cutter"]
+        },
+        {
+          "path": "src/domain/evidence.ts",
+          "lines": "35-46",
+          "contains": ["providerSchema", "sha256"]
+        }
+      ]
+    },
+    "errors_and_retries": {
+      "status": "no-wibox-contract",
+      "justification": "Los errores tipados y timeouts documentados pertenecen a REA, MCP, JADX y CDP. No se puede derivar el envelope, backoff o politica de reintentos de Wibox."
+    }
+  },
+  "configuration": {
+    "mechanism": "Variables de entorno validadas con Zod y flags de ejecucion.",
+    "wibox_credentials_found": false,
+    "secret_handling": "Hay clasificacion y exclusion de credenciales en capturas, no un almacen de tokens Wibox.",
+    "evidence": [
+      {
+        "path": "src/config/environment.ts",
+        "lines": "47-94",
+        "contains": ["environmentSchema", "REA_JEB_MCP_TIMEOUT_MS", "JAVA_HOME"]
+      },
+      {
+        "path": "src/application/environment/environmentBuildReport.ts",
+        "lines": "23-51",
+        "contains": ["CREDENTIAL_SEGMENTS", "authorization", "token"]
+      }
+    ]
+  },
+  "risks": [
+    {
+      "id": "wrong-reference",
+      "severity": "critical-for-protocol-work",
+      "statement": "Usar este repositorio como especificacion Wibox produciria un contrato inventado.",
+      "evidence": [
+        {
+          "path": "README.md",
+          "lines": "6-10",
+          "contains": ["Reverse Engineer Anything"]
+        }
+      ]
+    },
+    {
+      "id": "mcp-exposure",
+      "severity": "rea-deployment-only",
+      "statement": "El listener HTTP es HTTP plano y el adaptador muestra validacion Host/Origin, no autenticacion Wibox ni un login. El valor por defecto loopback reduce la exposicion. No se audito la seguridad completa de REA.",
+      "evidence": [
+        {
+          "path": "src/server/http/serveStreamableHttp.ts",
+          "lines": "452-456",
+          "contains": ["http://", "MCP_HTTP_PATH"]
+        },
+        {
+          "path": "src/server/http/serveStreamableHttp.ts",
+          "lines": "483-512",
+          "contains": ["hostHeaderValidationResponse", "originValidationResponse", "slot.handle"]
+        },
+        {
+          "path": "src/config/mcpHttpEndpoint.ts",
+          "lines": "13-16",
+          "contains": ["loopback default", "127.0.0.1"]
+        }
+      ]
+    },
+    {
+      "id": "duhow-unauthenticated-get-actions",
+      "severity": "custom-local-security",
+      "statement": "El parche expone acciones fisicas mediante GET HTTP sin autenticacion visible. No se extrapola al cloud de fabrica.",
+      "evidence": [
+        {
+          "source_id": "duhow-wibox",
+          "path": "include/web/index.html",
+          "lines": "38-63",
+          "contains": ["run.cgi?c=", "x.open(\"GET\""]
+        },
+        {
+          "source_id": "duhow-wibox",
+          "path": "include/web/setup.sh",
+          "lines": "13-18",
+          "contains": ["busybox httpd"]
+        }
+      ]
+    },
+    {
+      "id": "duhow-plaintext-and-secret-handling",
+      "severity": "custom-local-security",
+      "statement": "MQTT se compila sin TLS y las credenciales se exportan desde fichero a argumentos de proceso.",
+      "evidence": [
+        {
+          "source_id": "duhow-wibox",
+          "path": "scripts/81_mosquitto.sh",
+          "lines": "59-63",
+          "contains": ["WITH_TLS=no"]
+        },
+        {
+          "source_id": "duhow-wibox",
+          "path": "include/bin/mqtt_functions.sh",
+          "lines": "14-26",
+          "contains": ["xargs", "-u ${MQTT_USER}", "-P ${MQTT_PASS}"]
+        }
+      ]
+    },
+    {
+      "id": "third-party-cloud-not-current",
+      "severity": "protocol-certainty",
+      "statement": "La IP, autenticacion y secuencia NTS proceden de un log de tercero sin request/response ni contraste con el APK actual.",
+      "evidence": [
+        {
+          "source_id": "duhow-wibox",
+          "path": "docs/system.md",
+          "lines": "148-193",
+          "contains": ["AuthPwd", "47.254.155.166", "P2P"]
+        }
+      ]
+    }
+  ],
+  "duhow_wibox": {
+    "scope": "custom-local-firmware-and-third-party-stock-notes",
+    "components": [
+      {
+        "name": "UART listener",
+        "evidence_class": "code",
+        "purpose": "Leer codigos de /dev/ttySGK1 y convertirlos en acciones, alarmas y eventos MQTT.",
+        "evidence": [
+          {
+            "source_id": "duhow-wibox",
+            "path": "include/bin/listener.sh",
+            "lines": "1-24",
+            "contains": ["INTERCOM_DEVICE", "CODES_FILE", "mqtt_ding"]
+          }
+        ]
+      },
+      {
+        "name": "HTTP CGI",
+        "evidence_class": "code",
+        "purpose": "Servidor local y comandos de apertura, llamada, F1 y guardia.",
+        "evidence": [
+          {
+            "source_id": "duhow-wibox",
+            "path": "include/web/run.cgi",
+            "lines": "1-21",
+            "contains": ["func_open", "func_dspy", "func_fone", "func_guard"]
+          }
+        ]
+      },
+      {
+        "name": "MQTT listener y Home Assistant",
+        "evidence_class": "code",
+        "purpose": "Pub/sub local, disponibilidad, acciones y discovery.",
+        "evidence": [
+          {
+            "source_id": "duhow-wibox",
+            "path": "include/bin/listener_mqtt.sh",
+            "lines": "34-49",
+            "contains": ["mosquitto_sub", "door/set"]
+          },
+          {
+            "source_id": "duhow-wibox",
+            "path": "include/bin/mqtt_config_homeassistant.sh",
+            "lines": "5-16",
+            "contains": ["setup_topic", "setup_device_base"]
+          }
+        ]
+      },
+      {
+        "name": "WiFi AP provisioning",
+        "evidence_class": "code",
+        "purpose": "Configuracion de red local con SSID, password e IP derivados del UDID.",
+        "evidence": [
+          {
+            "source_id": "duhow-wibox",
+            "path": "include/bin/ap_start.sh",
+            "lines": "13-28",
+            "contains": ["UDID", "hostapd", "192.168.111.1"]
+          }
+        ]
+      },
+      {
+        "name": "Firmware updater",
+        "evidence_class": "code",
+        "purpose": "Actualizar solo mtd4 y comparar MD5, sin autenticar la imagen.",
+        "evidence": [
+          {
+            "source_id": "duhow-wibox",
+            "path": "include/bin/update_firmware.sh",
+            "lines": "1-18",
+            "contains": ["DATAPART", "MAXSIZE"]
+          }
+        ]
+      },
+      {
+        "name": "Sofia y NTS",
+        "evidence_class": "third-party-documentation",
+        "purpose": "Programa propietario, management local y agente cloud. No hay binario en el checkout.",
+        "evidence": [
+          {
+            "source_id": "duhow-wibox",
+            "path": "docs/system.md",
+            "lines": "73-81",
+            "contains": ["Sofia", "TCP/34567"]
+          },
+          {
+            "source_id": "duhow-wibox",
+            "path": "docs/system.md",
+            "lines": "148-153",
+            "contains": ["Cloud agent", "AuthPwd", "DevId"]
+          }
+        ]
+      }
+    ],
+    "code_confirmed": {
+      "description": "Los scripts del commit confirman UART local, CGI HTTP y MQTT del firmware parcheado. No ejecutan ni demuestran el cloud del APK original.",
+      "endpoints": [
+        {
+          "name": "Custom CGI HTTP",
+          "transport": "plain HTTP",
+          "bind": "TCP 80, fallback TCP 81",
+          "path": "/cgi-bin/run.cgi?c=<command>",
+          "commands": ["open", "dspy", "dspn", "fone", "guard", "unlock"],
+          "authentication": "none-visible-in-setup-or-cgi",
+          "evidence": [
+            {
+              "source_id": "duhow-wibox",
+              "path": "include/web/setup.sh",
+              "lines": "13-18",
+              "contains": ["PORT=80", "PORT=81", "busybox httpd"]
+            },
+            {
+              "source_id": "duhow-wibox",
+              "path": "include/web/run.cgi",
+              "lines": "3-18",
+              "contains": ["func_open", "func_unlock", "Status: 404"]
+            }
+          ]
+        },
+        {
+          "name": "Custom MQTT",
+          "transport": "plain MQTT",
+          "port_evidence": "1883 documented as tested",
+          "base_topic": "wibox/${MODEL}",
+          "client_id": "wibox_${MODEL}",
+          "evidence": [
+            {
+              "source_id": "duhow-wibox",
+              "path": "USAGE.md",
+              "lines": "10-25",
+              "contains": ["plain MQTT port 1883", "MQTT_HOST", "MQTT_USER", "MQTT_PASS"]
+            },
+            {
+              "source_id": "duhow-wibox",
+              "path": "include/bin/mqtt_functions.sh",
+              "lines": "20-30",
+              "contains": ["MQTT_OPTS", "wibox/${MODEL}", "wibox_${MODEL}"]
+            }
+          ]
+        }
+      ],
+      "uart": {
+        "device": "/dev/ttySGK1",
+        "frame_length_read_by_listener": 4,
+        "prefix": "FB",
+        "checksum": "Documentado como suma de bytes. La tabla contiene los frames completos usados por los scripts.",
+        "actions": {
+          "ALARM_REPORT": "FB 11 00 1C",
+          "TRANSFER_CMD_UNLOCK_DOOR": "FB 12 01 1E",
+          "START_CALL": "FB 14 01 20",
+          "STOP_CALL": "FB 14 00 1F",
+          "CALL_GUARD": "FB 15 00 20",
+          "START_F1": "FB 17 01 23",
+          "STOP_F1": "FB 17 00 22",
+          "PUSH_STATE_0": "FB 19 00 24",
+          "PUSH_STATE_1": "FB 19 01 25",
+          "CMD_STOP_RING": "FB 23 00 2E"
+        },
+        "listener_coverage": {
+          "defined_codes_are_not_all_handled": true,
+          "hang_up_1_handled": false,
+          "factory_reset_handled": true,
+          "note": "La tabla de codigos no es una matriz de funciones soportadas. El listener solo actua sobre las ramas presentes.",
+          "evidence": [
+            {
+              "source_id": "duhow-wibox",
+              "path": "include/bin/listener.sh",
+              "lines": "86-159",
+              "contains": ["is_code CMD_RESET", "is_code HANG_UP_0", "is_code CMD_STOP_RING"],
+              "not_contains": ["is_code HANG_UP_1"]
+            },
+            {
+              "source_id": "duhow-wibox",
+              "path": "include/wibox_codes.txt",
+              "lines": "1-24",
+              "contains": ["HANG_UP_1", "CALL_GUARD_ERROR_2", "SAVE_ADDR_4"]
+            }
+          ]
+        },
+        "evidence": [
+          {
+            "source_id": "duhow-wibox",
+            "path": "docs/codes.md",
+            "lines": "1-23",
+            "contains": ["/dev/ttySGK1", "uCrc", "TRANSFER_CMD_UNLOCK_DOOR"]
+          },
+          {
+            "source_id": "duhow-wibox",
+            "path": "include/wibox_codes.txt",
+            "lines": "1-24",
+            "contains": ["ALARM_REPORT", "TRANSFER_CMD_UNLOCK_DOOR", "START_CALL", "STOP_CALL"]
+          }
+        ]
+      },
+      "mqtt_topics": [
+        {
+          "topic": "wibox/${MODEL}/door/set",
+          "payloads": ["ON", "PRESS"],
+          "effect": "Escribe TRANSFER_CMD_UNLOCK_DOOR en UART y publica OFF al segundo. No hay ack fisico tipado.",
+          "evidence": [
+            {
+              "source_id": "duhow-wibox",
+              "path": "include/bin/listener_mqtt.sh",
+              "lines": "42-51",
+              "contains": ["door/set", "TRANSFER_CMD_UNLOCK_DOOR", "-m OFF"]
+            }
+          ]
+        },
+        {
+          "topic": "wibox/${MODEL}/door",
+          "payloads": ["ON", "ONLINE", "OFF", "OFFLINE"],
+          "effect": "Inicia o termina la llamada local con START_CALL o STOP_CALL.",
+          "evidence": [
+            {
+              "source_id": "duhow-wibox",
+              "path": "include/bin/listener_mqtt.sh",
+              "lines": "52-63",
+              "contains": ["START_CALL", "STOP_CALL", "LAST_OPEN"]
+            }
+          ]
+        },
+        {
+          "topic": "wibox/${MODEL}/forward",
+          "payloads": ["ON", "OFF"],
+          "effect": "Publica el estado de desvio y permite cambiarlo mediante PUSH_STATE.",
+          "evidence": [
+            {
+              "source_id": "duhow-wibox",
+              "path": "include/bin/listener.sh",
+              "lines": "147-155",
+              "contains": ["PUSH_STATE_0", "PUSH_STATE_1", "forward"]
+            },
+            {
+              "source_id": "duhow-wibox",
+              "path": "include/bin/listener_mqtt.sh",
+              "lines": "64-75",
+              "contains": ["PUSH_STATE_1", "PUSH_STATE_0"]
+            }
+          ]
+        },
+        {
+          "topic": "wibox/${MODEL}/f1",
+          "payloads": ["ON", "OFF", "PRESS"],
+          "effect": "Activa, desactiva o pulsa F1 durante tres segundos.",
+          "evidence": [
+            {
+              "source_id": "duhow-wibox",
+              "path": "include/bin/listener_mqtt.sh",
+              "lines": "77-88",
+              "contains": ["START_F1", "STOP_F1", "sleep 3"]
+            }
+          ]
+        },
+        {
+          "topic": "wibox/${MODEL}/ding y /ding/last",
+          "payloads": ["ON", "OFF", "timestamp"],
+          "effect": "Evento de llamada y fecha del ultimo timbre. El ultimo se publica retenido.",
+          "evidence": [
+            {
+              "source_id": "duhow-wibox",
+              "path": "include/bin/listener.sh",
+              "lines": "122-140",
+              "contains": ["ALARM_REPORT", "mqtt_ding", "ding/last"]
+            }
+          ]
+        },
+        {
+          "topic": "wibox/${MODEL}",
+          "payloads": ["init", "config", "online", "offline"],
+          "effect": "Disponibilidad y configuracion. El will offline es retenido y keepalive es 300.",
+          "evidence": [
+            {
+              "source_id": "duhow-wibox",
+              "path": "include/bin/listener_mqtt.sh",
+              "lines": "37-43",
+              "contains": ["-k 300", "--will-payload offline", "--will-retain"]
+            }
+          ]
+        }
+      ],
+      "home_assistant_discovery": {
+        "topic_pattern": "homeassistant/<type>/<unique_id>/config",
+        "entities": ["door", "f1", "opener", "forward", "ding", "last_ding", "linkquality"],
+        "evidence": [
+          {
+            "source_id": "duhow-wibox",
+            "path": "include/bin/mqtt_config_homeassistant.sh",
+            "lines": "5-16",
+            "contains": ["homeassistant", "identifiers", "configuration_url"]
+          },
+          {
+            "source_id": "duhow-wibox",
+            "path": "include/bin/mqtt_config_homeassistant.sh",
+            "lines": "64-98",
+            "contains": ["device_automation", "button door", "binary_sensor ding", "sensor linkquality"]
+          }
+        ]
+      },
+      "wifi_ap": {
+        "ssid_pattern": "IDS7938<ultimos-4-del-UDID>",
+        "password_rule": "UDID completo",
+        "address": "192.168.111.1",
+        "security_note": "Es provisioning local del firmware parcheado, no pairing cloud ni un secreto seguro si el UDID es observable.",
+        "activation": "STA_TO_AP se documenta tras mantener el boton mas de 5 segundos. No es alta de cuenta.",
+        "evidence": [
+          {
+            "source_id": "duhow-wibox",
+            "path": "include/bin/ap_start.sh",
+            "lines": "13-28",
+            "contains": ["UDID", "SSID", "PASSWORD", "192.168.111.1"]
+          },
+          {
+            "source_id": "duhow-wibox",
+            "path": "docs/codes.md",
+            "lines": "34-35",
+            "contains": ["STA_TO_AP", "+5s"]
+          }
+        ]
+      },
+      "credentials": {
+        "mqtt": "Fichero /mnt/mtd/mqtt.conf con MQTT_HOST, MQTT_USER y MQTT_PASS. Los valores se copian a /tmp, se exportan con xargs y se pasan por linea de comandos.",
+        "factory_documentation": "INSTALL.md documenta passwords root de fabrica segun consola. No se usaron ni se reproducen en el inventario.",
+        "wifi_stock": "La guia dice que las credenciales WiFi de Sofia estan cifradas y que no podian recuperarlas. No identifica algoritmo ni clave.",
+        "evidence": [
+          {
+            "source_id": "duhow-wibox",
+            "path": "include/bin/mqtt_functions.sh",
+            "lines": "9-26",
+            "contains": ["MQTT_CONFIG_STORE", "xargs", "-P ${MQTT_PASS}"]
+          },
+          {
+            "source_id": "duhow-wibox",
+            "path": "INSTALL.md",
+            "lines": "39-52",
+            "contains": ["telnet", "root", "Sofia"]
+          },
+          {
+            "source_id": "duhow-wibox",
+            "path": "INSTALL.md",
+            "lines": "90-107",
+            "contains": ["credentials are encrypted", "cannot retrieve"]
+          }
+        ]
+      },
+      "transport_security": {
+        "mqtt_tls": false,
+        "reason": "La compilacion configura WITH_TLS=no y USAGE declara MQTT plano 1883.",
+        "http_tls": false,
+        "evidence": [
+          {
+            "source_id": "duhow-wibox",
+            "path": "scripts/81_mosquitto.sh",
+            "lines": "59-63",
+            "contains": ["WITH_THREADING=no", "WITH_TLS=no"]
+          },
+          {
+            "source_id": "duhow-wibox",
+            "path": "include/web/setup.sh",
+            "lines": "13-18",
+            "contains": ["busybox httpd"]
+          }
+        ]
+      },
+      "resilience": {
+        "mqtt_heartbeat": "Timeout de suscripcion 45 segundos y reinicio tras 60 segundos en ciertos estados de desconexion.",
+        "network_healthcheck": "Hasta 10 intentos, espera 20 segundos, ping con timeout 3 segundos y reinicio al agotar. Es comportamiento custom, no backoff cloud.",
+        "evidence": [
+          {
+            "source_id": "duhow-wibox",
+            "path": "include/bin/heartbeat_mqtt.sh",
+            "lines": "7-24",
+            "contains": ["TIMEOUT=45", "WAIT=60", "-W ${TIMEOUT}"]
+          },
+          {
+            "source_id": "duhow-wibox",
+            "path": "include/bin/heartbeat.sh",
+            "lines": "3-10",
+            "contains": ["ATTEMPTS=10", "DELAY=20", "-W 3"]
+          },
+          {
+            "source_id": "duhow-wibox",
+            "path": "include/bin/heartbeat.sh",
+            "lines": "33-61",
+            "contains": ["Waiting for next retry", "Healthcheck failed"]
+          }
+        ]
+      }
+    },
+    "third_party_stock_notes": {
+      "evidence_class": "Repository documentation and captured log excerpts, not binary or APK verification performed here.",
+      "cloud": {
+        "agent": "ntsclientcon_goke_static o NTS Client",
+        "local_management_port": "TCP 34567",
+        "cloud_log_endpoints": ["47.254.155.166 UDP 8300", "47.254.155.166 HTTPS 443"],
+        "config_names": ["npc_nts_client_config.ini", "/var/cloud/states", "DevId", "AuthPwd"],
+        "sequence": ["Inicio del agente", "Deteccion de red y NAT", "Login al servidor de autenticacion", "Registro del dispositivo", "P2P y conexion TCP logica"],
+        "limitations": "La IP y los mensajes proceden del log pegado en docs/system.md. No se contacto el servicio, no hay captura propia y no se verifico que sigan vigentes ni que el APK use el mismo canal.",
+        "evidence": [
+          {
+            "source_id": "duhow-wibox",
+            "path": "docs/system.md",
+            "lines": "148-179",
+            "contains": ["Cloud agent", "AuthPwd", "47.254.155.166", "Login authentication"]
+          },
+          {
+            "source_id": "duhow-wibox",
+            "path": "docs/system.md",
+            "lines": "184-193",
+            "contains": ["P2P", "logical TCP connection"]
+          }
+        ]
+      },
+      "local_stock_ports": [
+        {"port": "TCP 34567", "purpose": "Management local", "evidence": [{"source_id": "duhow-wibox", "path": "docs/system.md", "lines": "73-81", "contains": ["TCP/34567", "UDP/5000"]}]},
+        {"port": "TCP 80 y 443", "purpose": "Webserver Sofia", "evidence": [{"source_id": "duhow-wibox", "path": "docs/system.md", "lines": "75-81", "contains": ["TCP/80", "TCP/443"]}]},
+        {"port": "UDP 5000", "purpose": "Autodiscovery", "evidence": [{"source_id": "duhow-wibox", "path": "docs/system.md", "lines": "276-290", "contains": ["ASZENO.SEARCH.V4.1", "5000"]}]},
+        {"port": "TCP 6683", "purpose": "system_sofia restringido a loopback segun documentacion", "evidence": [{"source_id": "duhow-wibox", "path": "docs/system.md", "lines": "103-112", "contains": ["TCP/6683", "127.0.0", "1032"]}]},
+        {"port": "TCP 9527", "purpose": "Consola interDebug", "evidence": [{"source_id": "duhow-wibox", "path": "docs/system.md", "lines": "195-212", "contains": ["TCP/9527", "SIGUSR1"]}]}
+      ],
+      "secrets": {
+        "location": "/mnt/mtd/Config/secret",
+        "encoding": "base64 according to repository documentation, not encryption established",
+        "fields": {
+          "TD/TD5": "deviceToken dividido en secciones",
+          "K1/K2": "dos claves alfanumericas de 32 caracteres",
+          "VC": "Verify Code impreso en QR",
+          "DVC": "Device Verify Code, innerAuthCode o m_dVerifyCode",
+          "HVC": "Hash Verify Code. La documentacion solo dice apparently SHA256, por lo que el algoritmo no esta confirmado",
+          "FD": "Activated o NotActive",
+          "ASC/RST": "Flags de significado incierto en la documentacion"
+        },
+        "renewal_and_expiry": "No documentados. No se puede inferir OAuth, JWT, refresh o caducidad.",
+        "evidence": [
+          {
+            "source_id": "duhow-wibox",
+            "path": "docs/system.md",
+            "lines": "305-318",
+            "contains": ["base64", "deviceToken", "Verify Code", "Apparently a SHA256"]
+          }
+        ]
+      },
+      "vds_address": {
+        "status": "documented-not-cloud-pairing",
+        "note": "SAVE_ADDR 0x04 aparece tras configurar con P2 y pulsar el portero. El blog relaciona la direccion VDS con escuchar el piso correcto. No se equipara a DevId ni a pairing NTS.",
+        "evidence": [
+          {
+            "source_id": "duhow-wibox",
+            "path": "docs/codes.md",
+            "lines": "30-31",
+            "contains": ["SAVE_ADDR 0x04", "button P2"]
+          }
+        ]
+      },
+      "sip": {
+        "status": "not-established-for-stock",
+        "justification": "duhow no aporta un cliente SIP ni endpoints SIP. El blog habla del daemon de otro firmware custom, no prueba SIP en el APK o cloud de fabrica."
+      },
+      "media_contract_unknowns": [
+        "registrar, URI, extension y credenciales SIP",
+        "SDP y signalling WebRTC",
+        "STUN, TURN y credenciales ICE",
+        "URL y credenciales RTSP",
+        "canal de eventos realtime del cloud original"
+      ]
+    },
+    "firmware": {
+      "tested_versions": ["V500.R001.A103.00.G0021.B007", "V500.R001.A103.00.G0021.B013"],
+      "custom_behavior": "Sofia se desactiva por defecto. Se puede reactivar con /mnt/mtd/factory, pero la guia indica que Sofia y el parche no trabajan a la vez.",
+      "update_scope": "Solo mtd4 /usr. update_firmware.sh compara MD5 antes y despues, limita tamano y no verifica una firma del fabricante.",
+      "limitations": "MD5 verifica igualdad de bytes escritos, no autenticidad. La guia exige backup y acceso serie de recuperacion. No se ejecuto ningun paso.",
+      "evidence": [
+        {
+          "source_id": "duhow-wibox",
+          "path": "README.md",
+          "lines": "9-19",
+          "contains": ["Disable Sofia", "V500.R001.A103.00.G0021.B007", "V500.R001.A103.00.G0021.B013"]
+        },
+        {
+          "source_id": "duhow-wibox",
+          "path": "USAGE.md",
+          "lines": "27-37",
+          "contains": ["enabling Sofia", "disable this patched application", "factory"]
+        },
+        {
+          "source_id": "duhow-wibox",
+          "path": "include/bin/update_firmware.sh",
+          "lines": "1-18",
+          "contains": ["/dev/mtdblock4", "MAXSIZE"]
+        },
+        {
+          "source_id": "duhow-wibox",
+          "path": "include/bin/update_firmware.sh",
+          "lines": "23-49",
+          "contains": ["md5sum", "POST_UPDATE_HASH", "Hash matches"]
+        }
+      ]
+    }
+  },
+  "cmos486_third_party_claims": [
+    {
+      "topic": "custom-firmware-scope",
+      "claim": "El fork cmos486/wibox-media ofrece RTSP H.264, audio bidireccional WebRTC, MQTT con Home Assistant, apertura, eventos, snapshots, OTA y metricas.",
+      "evidence_type": "third-party-blog-claim-not-code-verified",
+      "url": "https://www.cmos486.es/blog/wibox-media-fermax-firmware-home-assistant",
+      "section": "Implementado en el custom firmware",
+      "stock_cloud_applicability": false
+    },
+    {
+      "topic": "sip-webrtc",
+      "claim": "El daemon SIP del fork segator permanece disponible, pero el fork cmos486 prioriza WebRTC directo contra el firmware y no requiere servidor SIP para su tarjeta.",
+      "evidence_type": "third-party-blog-claim-not-code-verified",
+      "url": "https://www.cmos486.es/blog/wibox-media-fermax-firmware-home-assistant",
+      "section": "Implementado en el custom firmware y La tarjeta de Home Assistant",
+      "stock_cloud_applicability": false
+    },
+    {
+      "topic": "hardware-and-vds",
+      "claim": "El articulo identifica SoC Goke GK7102S, programa propietario con nube, cramfs, bus VDS y UART. Tambien afirma que una direccion VDS incorrecta impide recibir llamadas sin error visible.",
+      "evidence_type": "third-party-blog-claim-not-code-verified",
+      "url": "https://www.cmos486.es/blog/wibox-media-fermax-firmware-home-assistant",
+      "section": "Informacion WiBox y Lo que tocaba averiguar",
+      "stock_cloud_applicability": "hardware-context-only"
+    },
+    {
+      "topic": "firmware-access",
+      "claim": "El articulo lista B007 y B010 con telnet y B013 solo serie, y recomienda tratar versiones nuevas como solo serie hasta prueba contraria.",
+      "evidence_type": "third-party-blog-claim-not-code-verified",
+      "url": "https://www.cmos486.es/blog/wibox-media-fermax-firmware-home-assistant",
+      "section": "Paso 1: lee antes de flashear",
+      "stock_cloud_applicability": "firmware-access-only"
+    },
+    {
+      "topic": "configuration",
+      "claim": "El custom usa /mnt/mtd/sip_media.conf con mqtt_host, mqtt_user y mqtt_pass, video y RTSP desactivados inicialmente, y MQTT discovery.",
+      "evidence_type": "third-party-blog-claim-not-code-verified",
+      "url": "https://www.cmos486.es/blog/wibox-media-fermax-firmware-home-assistant",
+      "section": "Paso 5 y Paso 6",
+      "stock_cloud_applicability": false
+    }
+  ],
+  "comparability": {
+    "apk_version_correlated": false,
+    "package_name_correlated": false,
+    "signature_correlated": false,
+    "traffic_correlated": false,
+    "statement": "No se puede afirmar que REA corresponda a ninguna version del APK Wibox. Son artefactos de naturaleza distinta y el commit no aporta una version, firma o captura Wibox.",
+    "required_apk_checks": [
+      "applicationId, versionName, versionCode y SHA-256 del APK",
+      "firmas v1/v2/v3 y certificado del APK",
+      "hosts, URL, metodos HTTP, headers y cuerpos",
+      "login, refresh, expiracion y almacenamiento de tokens",
+      "alta, emparejamiento y modelos de dispositivo",
+      "acciones, estados y correlacion de respuestas",
+      "MQTT, SIP, WebRTC u otro canal de tiempo real",
+      "Registrar y credenciales SIP, SDP, signalling WebRTC, STUN/TURN/ICE y URL RTSP",
+      "Direccion VDS frente a identidad cloud y pairing NTS",
+      "TLS, pinning, claves, firmas y cifrado aplicado",
+      "errores, reintentos, timeouts, rate limit e idempotencia"
+    ]
+  },
+  "kotlin_core_contract": {
+    "status": "proposal-not-derived-from-wibox-evidence",
+    "module": "core:cloud",
+    "entry_points": ["WiboxCloud", "TokenStore", "CloudTransport", "RealtimeTransport", "Clock"],
+    "models": ["AuthSession", "Device", "DeviceCapability", "DeviceState", "CloudAction", "CloudEvent", "CloudError"],
+    "operations": ["authenticate", "refreshSession", "logout", "pairDevice", "listDevices", "performAction", "observeEvents", "close"],
+    "design_rules": [
+      "No publicar una operacion Wibox como soportada hasta tener evidencia del APK o de una captura autorizada.",
+      "Mantener el core libre de Android y de clientes HTTP concretos.",
+      "Renovar sesion con single-flight, reloj inyectado y margen de expiracion.",
+      "Persistir tokens atomicamente y redactar logs.",
+      "Reintentar solo operaciones idempotentes o con clave de idempotencia confirmada.",
+      "Representar errores y capacidades desconocidas sin convertirlos en exito o ausencia."
+    ]
+  },
+  "verification": {
+    "command": "python3 analysis/rea/verify_analysis.py",
+    "working_directory": "repository-root",
+    "success_marker": "REA_ANALYSIS_VERIFIED",
+    "dependencies": "Python standard library only",
+    "negative_controls": [
+      "truncated report passed directly to the report validator",
+      "inventory copy without MQTT topics",
+      "inventory copy with a missing evidence file",
+      "inventory copy with an empty components array"
+    ],
+    "evidence_checks": [
+      "source checkout and relative file existence",
+      "line ranges inside each file",
+      "required snippets inside cited ranges",
+      "forbidden snippets outside negative evidence",
+      "report file:line references resolved against the proper source"
+    ]
+  },
+  "analysis_passes": [
+    "pass-1-complete-inventory",
+    "pass-2-protocol-reread",
+    "pass-3-error-omission-review",
+    "pass-4-polish"
+  ]
+}

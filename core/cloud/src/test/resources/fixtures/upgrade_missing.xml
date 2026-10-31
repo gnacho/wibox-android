@@ -1,0 +1,7 @@
+<envelope>
+  <header><flag>tdkcloud</flag><result>0</result></header>
+  <content>
+    <priority>0</priority><version>5.1.11</version><url></url><description></description>
+    <config><version>0</version><url></url></config>
+  </content>
+</envelope>

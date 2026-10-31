@@ -1,0 +1,1111 @@
+{
+  "source_apk_sha256": "08d78731fe79481b60b4250e736f653cd7af91932844a612b0b5c5a989aac7ce",
+  "selection": "Only app-specific layouts, filtered app values and representative state/image resources. No APK, keys, native libraries, proprietary font or third-party layout trees.",
+  "file_count": 189,
+  "files": [
+    {
+      "path": "drawable/bg_dialog.xml",
+      "sha256": "a6690867967e8b133b9f55e4ea5199d9901245fd75b9f8c0a7bc57167b0dc657",
+      "bytes": 381
+    },
+    {
+      "path": "drawable/button_bg.xml",
+      "sha256": "923c61a5f9d08ae448d4090f19f0224dbdb7c92b8de29599ba4186f2308819f9",
+      "bytes": 238
+    },
+    {
+      "path": "drawable/checkbox_bg.xml",
+      "sha256": "cd1135034fc48238e013f9db74a1a1f946193adf50539a84a577ea62670c9348",
+      "bytes": 327
+    },
+    {
+      "path": "drawable/common_dialog_bg.xml",
+      "sha256": "04e92b9604c6f4724bdb877034a2de3eed209fee9a342c201dc69bcf3421bcfe",
+      "bytes": 220
+    },
+    {
+      "path": "drawable/main_selector_btn_cancel.xml",
+      "sha256": "40b9367ae1940578d3898f1b21f63f436bcb7dde8065fbd1462a22a380a44f27",
+      "bytes": 332
+    },
+    {
+      "path": "drawable/main_selector_btn_file_edit.xml",
+      "sha256": "2b9406484fa57800089606fbad27383512124399c38e1944e874264b59531e51",
+      "bytes": 328
+    },
+    {
+      "path": "drawable/preview_shape_item_bg.xml",
+      "sha256": "3b2e2c9812f77714f4b54beadbcd0d26957aee335959942a43e03ec71d437396",
+      "bytes": 431
+    },
+    {
+      "path": "drawable/publico_my_progress.xml",
+      "sha256": "5c04692b6d6c840c9ae9e1578280820de87de912e8a12abd64b176608dddf91d",
+      "bytes": 1025
+    },
+    {
+      "path": "drawable/publico_selector_bg_round.xml",
+      "sha256": "1f78ae11320b635005b93eb36b5b0ebb64e21b3dd0b285edb8a980780fb52fbd",
+      "bytes": 326
+    },
+    {
+      "path": "drawable/publico_selector_btn_add.xml",
+      "sha256": "c8516580dcf0ca34bdc87f8c744381cfb36e66319d226c090d7214a2093adb2e",
+      "bytes": 332
+    },
+    {
+      "path": "drawable/publico_selector_btn_back.xml",
+      "sha256": "750544f3fa90c6af09412280b94df8c97cd5b8ef712eaa20617e9fd48368f9eb",
+      "bytes": 334
+    },
+    {
+      "path": "drawable/publico_selector_btn_bg.xml",
+      "sha256": "e7ab7d3ff6f2c3ff41d1389f396b79777939dcd04a29c1e05103a2a89cf443a9",
+      "bytes": 237
+    },
+    {
+      "path": "drawable/publico_selector_btn_cancel.xml",
+      "sha256": "a532114f9ce801611c683d4a8c6e76e089b71e49f5cbca3140d1dae229eb953f",
+      "bytes": 338
+    },
+    {
+      "path": "drawable/publico_shape_dialog_bg.xml",
+      "sha256": "374b060522ecd2150147c83a1d6cdf7460fdb37175cf7ac0da4be3f25e4f3cb6",
+      "bytes": 190
+    },
+    {
+      "path": "drawable/publico_shape_rectangle_2.xml",
+      "sha256": "ddacedbe96aa52fe531e71accf0cc7b884b3438564d41b0d42fea7e837e622c2",
+      "bytes": 235
+    },
+    {
+      "path": "drawable/selector_accept.xml",
+      "sha256": "a29edd86815b70b77c25031775a067884fc8c1e588510413c78ad50d5bb9ea25",
+      "bytes": 328
+    },
+    {
+      "path": "drawable/selector_accept_h.xml",
+      "sha256": "cd25090497157d94c61acc03a130cdcd28475fc83c4cb2df992dfe9b0913c0bf",
+      "bytes": 336
+    },
+    {
+      "path": "drawable/selector_add_new_dev.xml",
+      "sha256": "288777c39b0f89c871e041a4d8a5bff3a6ebc6f356c3ef23039a9197a4e0d344",
+      "bytes": 324
+    },
+    {
+      "path": "drawable/selector_bt_go_1_full_screen.xml",
+      "sha256": "c83187d76a8376ef1eea331941dbd0c3c1a1b45d120636e88eab1168eaf4e4e8",
+      "bytes": 330
+    },
+    {
+      "path": "drawable/selector_bt_go_2_full_screen.xml",
+      "sha256": "59b80cc406a8d1464b6c9d0890cde2f4fc6eabdcb89a347e73b566a865c5726a",
+      "bytes": 330
+    },
+    {
+      "path": "drawable/selector_bt_red.xml",
+      "sha256": "d2136dc6fb188647a967a85e1f6e0915a241962aa0792791b1dab2be7c99015e",
+      "bytes": 310
+    },
+    {
+      "path": "drawable/selector_btn_picutre.xml",
+      "sha256": "86e79f70efcb93346bba5c94bfa399b47a4a7fcd3201130c4a0bbb24566feb1d",
+      "bytes": 333
+    },
+    {
+      "path": "drawable/selector_btn_save.xml",
+      "sha256": "d7723cb2071f15df0662e3b3005539f15a27a00ce96181a09a639949f47d8eb7",
+      "bytes": 318
+    },
+    {
+      "path": "drawable/selector_btn_unlock1.xml",
+      "sha256": "487ee9b93adce19dc84641c6a71f048adeab848d7bb906153491e2825704db5c",
+      "bytes": 322
+    },
+    {
+      "path": "drawable/selector_btn_unlock1_plus.xml",
+      "sha256": "a9c6dbe1d2863156c68fa340c944d8324177bb6b66c57731504c20d083bbbf39",
+      "bytes": 332
+    },
+    {
+      "path": "drawable/selector_btn_unlock2.xml",
+      "sha256": "d53b2ac3447b14e6ef3a49ddec03a997657ad220aea05bf8b0d4cb22043b6a63",
+      "bytes": 322
+    },
+    {
+      "path": "drawable/selector_btn_unlock2_plus.xml",
+      "sha256": "1d513833e2b0feb3459fc1d6df8a4aa2d099cb3c61fdddb28d8db3bb55063fdc",
+      "bytes": 332
+    },
+    {
+      "path": "drawable/selector_btn_unlock_big.xml",
+      "sha256": "b0859512a53cd80e65164e9e125d436167b62fe1d413d19711798eacf578c39a",
+      "bytes": 332
+    },
+    {
+      "path": "drawable/selector_btn_wifi_item.xml",
+      "sha256": "842b3187ce847754515036191fdbbdc356abc3f3a1b36f163916cf8619889b38",
+      "bytes": 243
+    },
+    {
+      "path": "drawable/selector_call_guard.xml",
+      "sha256": "7fac952beef363b6aa223d0cdb3092cf2690034728b9bb2e3952e1715077066e",
+      "bytes": 282
+    },
+    {
+      "path": "drawable/selector_channel_switch.xml",
+      "sha256": "ac862018593f6a89851cab82685280db42e5b4562792e0641e5fde7af23c94e8",
+      "bytes": 290
+    },
+    {
+      "path": "drawable/selector_channel_switch_h.xml",
+      "sha256": "f20c5324e3dea8d89a25789e98af7cf360728f37ca211920e3c61864eca7ee49",
+      "bytes": 294
+    },
+    {
+      "path": "drawable/selector_close_small.xml",
+      "sha256": "10a61d155d8fe1d252060b2cc3a27289c27d643356d59354cefa0be722611a90",
+      "bytes": 330
+    },
+    {
+      "path": "drawable/selector_delete_one.xml",
+      "sha256": "5af3e3d733445f3cb80e44e6ae2242bf62e2f05dc025710d6e18b0de82b99399",
+      "bytes": 322
+    },
+    {
+      "path": "drawable/selector_device_f1.xml",
+      "sha256": "7f14bbd0bf3e78201ab9c0e088e8f36bce471477037ec6e2c139bcca4826e33e",
+      "bytes": 280
+    },
+    {
+      "path": "drawable/selector_device_lock1.xml",
+      "sha256": "b3d00297f63c6a3180177009d087cca06d2de47dc5c7462e9140ad5879aca66d",
+      "bytes": 286
+    },
+    {
+      "path": "drawable/selector_edit_small.xml",
+      "sha256": "fb6e54b44dde3d8f7f682bf4f2a096004a54ad5ead918e4c2081240091d06dea",
+      "bytes": 328
+    },
+    {
+      "path": "drawable/selector_f1.xml",
+      "sha256": "42820b8ee691377f51ea84f3ab8ece03938a7dcaae5f5d97ba0dcf47ba40d7d6",
+      "bytes": 266
+    },
+    {
+      "path": "drawable/selector_f1_plus.xml",
+      "sha256": "f9bb73ed8c8ea945057a3dfad64f0be3fe29fd6ba5312397b3fe4eccbc78ab51",
+      "bytes": 276
+    },
+    {
+      "path": "drawable/selector_file_all_selected.xml",
+      "sha256": "0da016e51be8bf4b4056afa7e94744141492e2b83837a54b7f5a5bcf8ef6a5b9",
+      "bytes": 330
+    },
+    {
+      "path": "drawable/selector_file_delete.xml",
+      "sha256": "91b59c033cac81315f67d6d9814b2465080489bf7ead046f81ada1e8bffe1543",
+      "bytes": 348
+    },
+    {
+      "path": "drawable/selector_home.xml",
+      "sha256": "695e3a98c2d2faf6bd42df2272076b21b70d07deeb332fa370763fa6ef71274f",
+      "bytes": 270
+    },
+    {
+      "path": "drawable/selector_input_delete_grey.xml",
+      "sha256": "8bf240f8a3ca75bf0521b4ffc6f261970a4b983c3813570ed48242c468e12c97",
+      "bytes": 322
+    },
+    {
+      "path": "drawable/selector_open_small.xml",
+      "sha256": "ec51f10f0c904eba6b4eabc8f0074e4eda9aca38e9783453fd971ea6cf8c3ec8",
+      "bytes": 328
+    },
+    {
+      "path": "drawable/selector_preview_f1.xml",
+      "sha256": "5ece3f775ced72565917b2494b330b2816883bc7815091c9724c8f74f3097f22",
+      "bytes": 282
+    },
+    {
+      "path": "drawable/selector_preview_full_screen_talk.xml",
+      "sha256": "78634f973439a5353b79549c300460814f77309e0d5125a940cf961f321de6d6",
+      "bytes": 358
+    },
+    {
+      "path": "drawable/selector_preview_talk.xml",
+      "sha256": "fb90948ab0523654cdc603d97ef46f541c60a267d60b922146d7f70f1c71cbaf",
+      "bytes": 334
+    },
+    {
+      "path": "drawable/selector_refuse.xml",
+      "sha256": "9be91cd4d3bc957d325194402947f24c5728df01857402a444cc6dada1162539",
+      "bytes": 328
+    },
+    {
+      "path": "drawable/selector_refuse_h.xml",
+      "sha256": "19c96afa38e08c4c0b646993a28a7f0c9fad4ad96239c12c6238be5078652239",
+      "bytes": 336
+    },
+    {
+      "path": "drawable/selector_scroll_to_right.xml",
+      "sha256": "6d7177095411ef8a5cfa584a9acf5d99fa928c8a1521cfad94cfd53823cfd582",
+      "bytes": 334
+    },
+    {
+      "path": "drawable/selector_shape_rectangle.xml",
+      "sha256": "3fbfcb1edbdb447f1bff1d2bf22552462ed8739030b2a5e3d8178482993e564b",
+      "bytes": 354
+    },
+    {
+      "path": "drawable/selector_share.xml",
+      "sha256": "b628eb7959056a95e0f299b38107313e822c6b9ac93bf63e249084f1b6200fe0",
+      "bytes": 336
+    },
+    {
+      "path": "drawable/selector_window_btn_add.xml",
+      "sha256": "abc7a9dd643f3c112290c2c11c56f0ba21ceaa890a9d45c4bd60f5f3343ec070",
+      "bytes": 334
+    },
+    {
+      "path": "drawable/selector_window_btn_play.xml",
+      "sha256": "075e1df8f283c6e662854369460a484c71e2bd160789f0eeb9847817e1a1baa8",
+      "bytes": 336
+    },
+    {
+      "path": "drawable/selector_window_btn_refresh.xml",
+      "sha256": "3b5bdb89b1bb3e7aa92ccc8498f8004844252afc6965e3c2071ba7489333b4fe",
+      "bytes": 342
+    },
+    {
+      "path": "drawable/shape_share_tv_bg.xml",
+      "sha256": "26cd37842b59afee93829f99aaf7f443de3b0ae1335b35a042cd5f3dd76d1379",
+      "bytes": 403
+    },
+    {
+      "path": "drawable-ldrtl-xhdpi/icon_arrow_list_right.png",
+      "sha256": "503e5eb932fc0b5cf59b44b59ab7dce4756b037a1b9a0f61fec2fa231f91c451",
+      "bytes": 224,
+      "width": 44,
+      "height": 44,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/backgroud_calling.png",
+      "sha256": "0ad3b37df573bb3cb6dacc72282642b2bd3d377321934e379258c581383d4b7d",
+      "bytes": 164509,
+      "width": 720,
+      "height": 1280,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/btn_accept.png",
+      "sha256": "5c53fdb72c1079bb930f55746265ede104428cfbc9c90f19e3c1f20de4dc2d48",
+      "bytes": 1988,
+      "width": 120,
+      "height": 120,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/btn_preview_mode_normal.png",
+      "sha256": "e3a02304c8a76eb904c6a57e2c469bb04a8c0c16bc4e724e9937574964855295",
+      "bytes": 230,
+      "width": 50,
+      "height": 50,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/btn_refuse.png",
+      "sha256": "247ebaa8f6f7c48145f935a7bd4cab7fe471be5de608964e64c0254fc1d52e35",
+      "bytes": 1633,
+      "width": 120,
+      "height": 120,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/device_add_sound_waver.png",
+      "sha256": "76eab6e14b132c9e3e4484b956c4bdcdb8163d853d2b221ae9a65406f18b7ca3",
+      "bytes": 2924,
+      "width": 564,
+      "height": 180,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/device_add_wifi_set.png",
+      "sha256": "fd4d2ed3e59d6f82afe6369ca7d81bedce3d7f6064b73fa290b039ce77be8e13",
+      "bytes": 1998,
+      "width": 564,
+      "height": 180,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/device_cover_default.png",
+      "sha256": "429e0a1ae5172d9017752de81876c5ad4b7df38012fe071bdecd111099ce3b40",
+      "bytes": 2018,
+      "width": 600,
+      "height": 450,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/device_status_offline.png",
+      "sha256": "633d914fe60b12dc808fa8cc261204c08769ba365cc5c46286d69948dc2ed8af",
+      "bytes": 620,
+      "width": 48,
+      "height": 48,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/device_status_online.png",
+      "sha256": "00a8ed82892371b223b6953d60f68eeac893d1d9fefab7dd86631cea3822b9b2",
+      "bytes": 799,
+      "width": 48,
+      "height": 48,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/device_type_7410.png",
+      "sha256": "f93e562206d8dc4ffaf016e4730692f0a9bb3014d5a031d52b9049b26f3e11b2",
+      "bytes": 1798,
+      "width": 112,
+      "height": 126,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/device_type_9440.png",
+      "sha256": "ea59eae3029704c87c805221f3713f3f894e67eaa9ea50316eacd9df56170dcd",
+      "bytes": 552,
+      "width": 112,
+      "height": 78,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/file_mangement_icon_video.png",
+      "sha256": "f89fb591a5e9fabb44e07baf97da0e8c3bb7cab21513c0e77a47820510b48a73",
+      "bytes": 1521,
+      "width": 88,
+      "height": 88,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/guide_display1.png",
+      "sha256": "4a5299c8f7d840b8ddab8b1bab8204cbcb38d2418a38d1b6e08182ea58ab742c",
+      "bytes": 47743,
+      "width": 640,
+      "height": 960,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/guide_display2.png",
+      "sha256": "03e34b1a206c70c32fbcf072b8cbfe95165a0e68efa7871a823aa0993694b00b",
+      "bytes": 50804,
+      "width": 640,
+      "height": 960,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/guide_display3.png",
+      "sha256": "7790be39eb19480ebdc0d48549731a4f18061439d31e24c4dfd94bf9a08d802f",
+      "bytes": 46398,
+      "width": 640,
+      "height": 960,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/ico_logo.png",
+      "sha256": "8155a85332bc44026b0304d3dfbb265607dc649a9b4189fc5c04fe455657d994",
+      "bytes": 12382,
+      "width": 140,
+      "height": 140,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/icon_alarm_light.png",
+      "sha256": "fa83cd9df2aeb52e3571b703382aabc39a6ae02002516fec9ce47808d81b3281",
+      "bytes": 720,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/icon_arrow_list_right.png",
+      "sha256": "d5299c2b2bea913d64743330d91b46cb0a9efd7348217b274dc8ab798d57f211",
+      "bytes": 227,
+      "width": 44,
+      "height": 44,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/icon_arrow_list_right_new.png",
+      "sha256": "108780ce6ad3cd5719d8f56781d117cbc301b493a849e7551e9e58b51f23a0da",
+      "bytes": 630,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/icon_call_guard_light.png",
+      "sha256": "a521d26765c8b65e36ea8878d39580406f1b2f1ae815247119ae8f19bd40d6f0",
+      "bytes": 1322,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/icon_copy.png",
+      "sha256": "5c18ed1957219bb85596bbba4f849a74627d4459d5c7af09c1ba08701bfd87a8",
+      "bytes": 386,
+      "width": 50,
+      "height": 50,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/icon_f1_light.png",
+      "sha256": "249fa57631f36d2b4401b4974945980598250b6f4b3c46ee9af1c259ae8e142e",
+      "bytes": 755,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/icon_preview_light.png",
+      "sha256": "6068d8282777ca54bd99ddf6c789b9cfd161e9e1946c10a2a3f94333f98db7f0",
+      "bytes": 1113,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/icon_status_3.png",
+      "sha256": "13d8a1348d69af496eb6caeb57bdb5143d513236f7859de9c43d84b9c10ba343",
+      "bytes": 795,
+      "width": 40,
+      "height": 40,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/icon_unlock_big.png",
+      "sha256": "c4b86c7f420670168da20d27d69b0b5eedcf094df4abe7350a44c0c759ae4cac",
+      "bytes": 1967,
+      "width": 84,
+      "height": 84,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/icon_unlock_big_press.png",
+      "sha256": "18500eef4ed70b66599f6ff1ab22bf9d5229416944a3a8fdbc4bc1bcf1c4b1b5",
+      "bytes": 2346,
+      "width": 84,
+      "height": 84,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/icon_unlock_dark.png",
+      "sha256": "7882b1691527a8eb6fdd2ef3576151efd1b5e5c7224f7107280a3692dfd551a4",
+      "bytes": 587,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/icon_unlock_fail.png",
+      "sha256": "fa745475ee9bc6b65a6220681ae26032d4df3f8f0d7dad374e0042d4e5859155",
+      "bytes": 12431,
+      "width": 240,
+      "height": 240,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/icon_unlock_light.png",
+      "sha256": "337dc65dce6ec7f532d0c7009154659f1a0b19478283da2ffa22bfbb20da39ab",
+      "bytes": 690,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/icon_unlock_success.png",
+      "sha256": "e3483b960a486c5ddca96407ed6f2185027f87fc8cc9afc294f163076fbdade3",
+      "bytes": 11403,
+      "width": 240,
+      "height": 240,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/logo.png",
+      "sha256": "fc313ee648af176b30b65a4d3d1914a65f05f4cfe212649ceed723d81d6119a7",
+      "bytes": 10336,
+      "width": 120,
+      "height": 120,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/main_btn_call_log.png",
+      "sha256": "30ae975a9fd725e77630842f26119b7a4d6e28c002557ed1b0ea2a155e71dec8",
+      "bytes": 1090,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/main_btn_call_log_select.png",
+      "sha256": "15cf4716adedc35f9778d0ffa9d01a269ce51b4bdc2f1f1ac268ad9a5f3d35f3",
+      "bytes": 613,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/main_btn_device.png",
+      "sha256": "08f09210d1123ca350d8ad365bc81b27adc8fe9523ab5633a5240350d3d3ad4d",
+      "bytes": 1635,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/main_btn_device_select.png",
+      "sha256": "6eeb4ad3baf3ed8ffb916cf57191b205c0c671fbd9fe77534ef27916763b0ca3",
+      "bytes": 998,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/main_btn_file.png",
+      "sha256": "67e74702b909367e2ddf4dc3b554ec94163b642f6d25b59c5ff4928fc6f42803",
+      "bytes": 942,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/main_btn_file_select.png",
+      "sha256": "67c7bcd05d3f66c7b825c6cd745f29b5bcc24d0e0795b303f413a10b7ad6a2a9",
+      "bytes": 775,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/main_btn_setting.png",
+      "sha256": "aea63fc2f5dcf442b2fd805eb4333335a4b5399eb945050d3bcc39d7f32cacdc",
+      "bytes": 1536,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/main_btn_setting_select.png",
+      "sha256": "e233c6a1b34cc73e197349b7ef81149d21f08981266d313162163c73fdc86629",
+      "bytes": 709,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/move_detection_logo.png",
+      "sha256": "bce2f51ef8d005010d27e9a051dd22c668065e5d3c67b6b0f221e0638618a316",
+      "bytes": 1440,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/prompt_setup_wifi.png",
+      "sha256": "af23525e4a0d15dfb45297111cef85e77c96550d8098056deeae2f41b128eef1",
+      "bytes": 13862,
+      "width": 534,
+      "height": 270,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/publico_icon_video.png",
+      "sha256": "f89fb591a5e9fabb44e07baf97da0e8c3bb7cab21513c0e77a47820510b48a73",
+      "bytes": 1521,
+      "width": 88,
+      "height": 88,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/qr_code_n.png",
+      "sha256": "b612b77f91528a0349f7e97119eb2fdd8e67d49d62bff1f9db16b060167da865",
+      "bytes": 555,
+      "width": 64,
+      "height": 64,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/reset_device_img.png",
+      "sha256": "1067fa1d59bcfe81e6ddfff75c810ec47b34d1d36b58dc26c4b9238f4d902b27",
+      "bytes": 42491,
+      "width": 560,
+      "height": 560,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/share_more_way.png",
+      "sha256": "c83b740e7ef9ae75dc1f37060b3d190a3c4f99131cff6a4462e4a258072239fa",
+      "bytes": 2718,
+      "width": 200,
+      "height": 200,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/start.png",
+      "sha256": "53a1229992f5df3e8039d3cd760c7dfbb18bb1f1235a574e8e1ceb7e9ae8648f",
+      "bytes": 230512,
+      "width": 1082,
+      "height": 1922,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/start_v2.9.png",
+      "sha256": "88cedbb2dd6e4259d68a3448f01459017557829ef0e9dc17823f46974137f1d0",
+      "bytes": 198680,
+      "width": 1080,
+      "height": 1920,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/wifi_0.png",
+      "sha256": "64e865c0c7ede2cfec123b1bd159252ca0b3f0bf3ae7223f5a38b9f55d917584",
+      "bytes": 4078,
+      "width": 181,
+      "height": 128,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/wifi_1.png",
+      "sha256": "ad93463d22b2d5d9f7ebe327523b0add38b635fbc5603fa7e326d848e95f9f8a",
+      "bytes": 1230,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/wifi_2.png",
+      "sha256": "7c5735018413baeb9134ad0e7d9c8955716e46669f71edc4f887350bba47c751",
+      "bytes": 1284,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/wifi_3.png",
+      "sha256": "89e45795586a55b61f0009719832296dd20f896b4139235eeffad235b3510fbc",
+      "bytes": 1305,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "drawable-xhdpi/wifi_4.png",
+      "sha256": "ba63520e6ac23682107b7309daa58844538f8d9591a8e57947a26f482ea32c4d",
+      "bytes": 1206,
+      "width": 60,
+      "height": 60,
+      "format": "PNG"
+    },
+    {
+      "path": "layout/activity_da_add_type.xml",
+      "sha256": "7520422abe5e1b3721747bcb0838bc3d60ca2f47b320315c154704872f002ab1",
+      "bytes": 1408
+    },
+    {
+      "path": "layout/activity_da_capture.xml",
+      "sha256": "bdb81d9dac5c90f494a2dffa18695006d207158e6d6d4bd4361ed895322010da",
+      "bytes": 3737
+    },
+    {
+      "path": "layout/activity_da_device_bind.xml",
+      "sha256": "fa2308b514b52f63f0bc29ab24d200967e07ae8d5f2526ff484d7fd6c47508ce",
+      "bytes": 5213
+    },
+    {
+      "path": "layout/activity_da_device_config_fail.xml",
+      "sha256": "7f725384a728e3e689c2ec6b5f40ac3bd6fc426e8be1a2f959512fb36e47d006",
+      "bytes": 1343
+    },
+    {
+      "path": "layout/activity_da_new_handle_wifi.xml",
+      "sha256": "a448072a9ef90a4d164683637509d522e398ac64028ff5d0ba937ba619335ca4",
+      "bytes": 4248
+    },
+    {
+      "path": "layout/activity_da_new_produce_choose.xml",
+      "sha256": "9186bec564b4e9bc6751e0b106dd49cb8a0905d2ef805c9d3e0d015dcc9dc575",
+      "bytes": 2873
+    },
+    {
+      "path": "layout/activity_da_new_produce_introduce.xml",
+      "sha256": "332fb11ee1ee9d293f757333ca00dc96867fbc3130c67e7be473e4960eff9c0e",
+      "bytes": 1929
+    },
+    {
+      "path": "layout/activity_da_online_device_list.xml",
+      "sha256": "9daf0abf636640ea409d262bead657e59dbe7736b0bd02ab1527cee80992cb19",
+      "bytes": 1173
+    },
+    {
+      "path": "layout/activity_da_online_type_choose.xml",
+      "sha256": "27b713625871eb3f73cce05d5626e67d4d0f93d6ef16d795a13fc57b4a2fbc99",
+      "bytes": 820
+    },
+    {
+      "path": "layout/activity_da_router_info.xml",
+      "sha256": "e04a2dc3db007b599eba2fd8d30ce31fa3c410e6bb8707510f37dcce6501aa83",
+      "bytes": 5822
+    },
+    {
+      "path": "layout/activity_da_type_choose.xml",
+      "sha256": "3952f8c9de234674768ce49de91f45ea2a1393b254ffdf8270f117d77c87c069",
+      "bytes": 809
+    },
+    {
+      "path": "layout/activity_da_voice_set.xml",
+      "sha256": "772cc1a152733b8833029d4b84c4ef6258194dd78cebaeee8ed41a933ef4322a",
+      "bytes": 2205
+    },
+    {
+      "path": "layout/activity_da_wifi_set.xml",
+      "sha256": "a43d3acf77858b51babd0ccba691ee90543d4c863d4e9355504b12b14658f191",
+      "bytes": 1647
+    },
+    {
+      "path": "layout/activity_dm_config.xml",
+      "sha256": "22ced49abf6c1f3ea41f1bbb05e3628df0da4b21e7e9825d2bba837f90c65954",
+      "bytes": 15057
+    },
+    {
+      "path": "layout/activity_dm_device_info_edit.xml",
+      "sha256": "83a5eb8da6c4e2878040844136fbab448409554ce4d12b9d2b8ab921149cee4c",
+      "bytes": 2012
+    },
+    {
+      "path": "layout/activity_dm_password_modify.xml",
+      "sha256": "286c302439229429f1de8945d26869254b339f9e92a9603f2460cef3011dc764",
+      "bytes": 4398
+    },
+    {
+      "path": "layout/activity_dm_unlock_setting.xml",
+      "sha256": "74405cb0c6e8af980be77732f2d601b6957bb1d70c1da128b95c827ae8866ca3",
+      "bytes": 3152
+    },
+    {
+      "path": "layout/activity_dm_upgrade.xml",
+      "sha256": "7f0b65a3a0c4d929ded918990a4c8c1159baa2f839038ae70050a7db7bb0142b",
+      "bytes": 2842
+    },
+    {
+      "path": "layout/activity_dm_wifi_list.xml",
+      "sha256": "7ae69c1dcd1ea32d6fdf50a58eb38e6e1d53038849793500d8ea1f6433f00049",
+      "bytes": 2288
+    },
+    {
+      "path": "layout/activity_dm_wifi_set.xml",
+      "sha256": "c531be4a37179c199897af01d87f74ea828bdae0be24b2f0d95c8e7fd788b294",
+      "bytes": 2246
+    },
+    {
+      "path": "layout/activity_fm_image_pager.xml",
+      "sha256": "7d1c3c8a96de941229e147615382cec7e4072337cd31ba8dac1893559da1c701",
+      "bytes": 1661
+    },
+    {
+      "path": "layout/activity_fm_local_video_play.xml",
+      "sha256": "01d1a4f09657c470019f5d698ef7e078203794da388381dc6bb03bae1b5dc5f7",
+      "bytes": 3164
+    },
+    {
+      "path": "layout/activity_loading.xml",
+      "sha256": "d6187e29b775e8b126cf30ec2f1f24c63f166def528daf4133e41a1fdde4aad5",
+      "bytes": 324
+    },
+    {
+      "path": "layout/activity_main_tab.xml",
+      "sha256": "c41960d087a4963bbd8ed059e0a736e67f7a1422f017cd59a3e7d426cf721824",
+      "bytes": 3505
+    },
+    {
+      "path": "layout/activity_me_about.xml",
+      "sha256": "bda0c1ec4d6a442fec290f7771e0c92cdec20e7b74597cd8af82d01315293937",
+      "bytes": 2102
+    },
+    {
+      "path": "layout/activity_preview.xml",
+      "sha256": "79971da168f1a8706f1b79d47933346fb96359077d04908bb401133bddf9cc47",
+      "bytes": 8401
+    },
+    {
+      "path": "layout/activity_push_call.xml",
+      "sha256": "f2a63856c3213752d7ce2d4ca807ea90fb36879c4dba28d20ccc241a9f7a8808",
+      "bytes": 2282
+    },
+    {
+      "path": "layout/activity_share_bind.xml",
+      "sha256": "aea8af1a2c6093edb6f54d3052a491665c72eb06289ff7bdc63cb0633b75d8d7",
+      "bytes": 3983
+    },
+    {
+      "path": "layout/activity_share_device.xml",
+      "sha256": "9d331856a3ada3a957841e484935fa0dae5b37b490b501f7ac80cd593be7bdbc",
+      "bytes": 5909
+    },
+    {
+      "path": "layout/activity_share_manage.xml",
+      "sha256": "fdf6a451a5b0630342c478cbe0f087414568c939a5cd3800ee3bcfac6b55261b",
+      "bytes": 1547
+    },
+    {
+      "path": "layout/activity_start_guide.xml",
+      "sha256": "bd2c51b50f2a7874fb08a0257e19065ab419e813ddd5efd8f8f2382f45faad39",
+      "bytes": 1353
+    },
+    {
+      "path": "layout/activity_test_info.xml",
+      "sha256": "75c571828b66a7d169e2952976895375bcda57ad42a3f5151815246823bdfc54",
+      "bytes": 7891
+    },
+    {
+      "path": "layout/cust_keyboard.xml",
+      "sha256": "b4b304f51a858c4f9f82f88cacf6a0ca0e5308ea711ce12e16238f577cf83dfd",
+      "bytes": 8399
+    },
+    {
+      "path": "layout/cust_keyboard_full_screen.xml",
+      "sha256": "f401568404a87e00c005262236654e2b0cb2249e3575213c1ddc92200fbf8364",
+      "bytes": 5335
+    },
+    {
+      "path": "layout/custom_conditions_dialog.xml",
+      "sha256": "c0bf58fcf2a1f4f8c0e7abd9c7556dcc8c028062d3b4ee32dd13450f144845a9",
+      "bytes": 4071
+    },
+    {
+      "path": "layout/custom_dialog.xml",
+      "sha256": "93c67c2d62a5425506845859fcde41480c8ad9a1a9a7f84dd1e5785602e11a81",
+      "bytes": 3665
+    },
+    {
+      "path": "layout/custom_dialog_with_never_show.xml",
+      "sha256": "6a9a2c1706b4d9170c6b3e65b8bf5b9aa7da26a0e51bfde81a01388f6aa0c415",
+      "bytes": 3332
+    },
+    {
+      "path": "layout/custom_horizontal_progressbar.xml",
+      "sha256": "aeb361fb8003cb81ec8e8de369154bf9d4ab6f9d23a3c674e86a29ff96a49d0e",
+      "bytes": 931
+    },
+    {
+      "path": "layout/custom_notification.xml",
+      "sha256": "e043f17a02355cda9b7ce3552917dfc8f916ac502df5237e5af4e18920725fe2",
+      "bytes": 1743
+    },
+    {
+      "path": "layout/custom_notification_big.xml",
+      "sha256": "bbdfaa5a4b6cc8d826782b5ba946ac3c97c8f203cbc3cddd07cb90855bc02f6e",
+      "bytes": 1723
+    },
+    {
+      "path": "layout/custom_unlock_dialog.xml",
+      "sha256": "7b8ec31d0a1ad8d404cf4f0474cf259eebc82721e2d7a382c6f335f3492f9c80",
+      "bytes": 9145
+    },
+    {
+      "path": "layout/device_version_dialog.xml",
+      "sha256": "eeba69374a339d7a01f57291baa08f2ba9c1bc2e54e0d8bf17b8e65a26b5518c",
+      "bytes": 2545
+    },
+    {
+      "path": "layout/file_grid_header.xml",
+      "sha256": "695270b830acbcb306ec9756ad92d673ce3f55ab931f3fe6c73a6f1430f942c7",
+      "bytes": 725
+    },
+    {
+      "path": "layout/file_grid_item.xml",
+      "sha256": "e2b77a384fd053f85ea7d43d454fce404f0920887fec44f2ff5e3245532b71e7",
+      "bytes": 1131
+    },
+    {
+      "path": "layout/fragment_device_list.xml",
+      "sha256": "a5a73ad000fa232f41f9ca50d03cfa55277355949288a3add63baf51f77e86b4",
+      "bytes": 2033
+    },
+    {
+      "path": "layout/fragment_flie.xml",
+      "sha256": "6a7878f94f1cd17e3099bd7ae09aae6c1e16e6505d780f6b6cbaad898897afc5",
+      "bytes": 3320
+    },
+    {
+      "path": "layout/fragment_main_message_type.xml",
+      "sha256": "9cb70bd06bf99d37050402a4f22974dde6f03db84887a0d11845e6015650ae1a",
+      "bytes": 3026
+    },
+    {
+      "path": "layout/fragment_me.xml",
+      "sha256": "84c4e172d046adc58f10d2cab4b7b9a1ee5f20f28d641c905a83df54faeeae77",
+      "bytes": 6979
+    },
+    {
+      "path": "layout/fragment_message_list.xml",
+      "sha256": "0c9945754846388a2cdae694183955701cc40ac58a3014d65d47ddb46c4b0b33",
+      "bytes": 4450
+    },
+    {
+      "path": "layout/image_dialog.xml",
+      "sha256": "bb0d4534c5ef22b6bbea14b0a4b2ccea0b672631fda749f270ac82f6b2cf2566",
+      "bytes": 1571
+    },
+    {
+      "path": "layout/item_alarm_header.xml",
+      "sha256": "d05de60ef7e29aac6e996a1e53a49615aeb015380c4c1fb7380c149312d58e38",
+      "bytes": 800
+    },
+    {
+      "path": "layout/item_device.xml",
+      "sha256": "1cc4dbe7d64a59b22d4564d8ef8d410fc603c583651117d15fcce42c02cac56e",
+      "bytes": 3760
+    },
+    {
+      "path": "layout/item_device_share.xml",
+      "sha256": "c9bc229fdba8e40dff4f14a93e4653cebf682282aa25d5c335c40ede0456cbec",
+      "bytes": 5419
+    },
+    {
+      "path": "layout/item_lan_search_device.xml",
+      "sha256": "91aa5af2ef8950c9cee18558dde4b97df6a8c9d0f15c2800ac347813f6e44b02",
+      "bytes": 983
+    },
+    {
+      "path": "layout/item_message.xml",
+      "sha256": "1a314e393fb5874e946187e9562960c7d886becd20f8b10d539f7c954669e1ff",
+      "bytes": 3384
+    },
+    {
+      "path": "layout/item_new_device.xml",
+      "sha256": "cf34c9408bcb533cf62191eadd86105282349e65eba672ec7c207643f53ada61",
+      "bytes": 925
+    },
+    {
+      "path": "layout/item_preview_device.xml",
+      "sha256": "de534ed1062c26ab500739f0c7f2181372c9ddd87ae93f80116e5a4e724ee2e5",
+      "bytes": 899
+    },
+    {
+      "path": "layout/item_viewpager.xml",
+      "sha256": "c449e8fdfa936daea6d338a6a71308b85951b462008a0461ecedc487c8944c24",
+      "bytes": 725
+    },
+    {
+      "path": "layout/item_wifi_info.xml",
+      "sha256": "4aded2ef4f62a5b9dd2362f43ed3656a8d1fa4d4a457d0a98ba12af61c2798f6",
+      "bytes": 1175
+    },
+    {
+      "path": "layout/multi_full_screen_operate_bar.xml",
+      "sha256": "731128a87c71e6a87107c6eae2fdd13ae7102fe2306a2779341c1c8412943ffb",
+      "bytes": 8219
+    },
+    {
+      "path": "layout/new_app_version_dialog.xml",
+      "sha256": "afecad88236076bcf0d51adec8601345c1515a84b941fa8a5b8d68872309433d",
+      "bytes": 3875
+    },
+    {
+      "path": "layout/pop_windows_channels.xml",
+      "sha256": "117a67769b0f0e0ed6d38900c3d0f1f6913593ba0322ab4990195aaa0a138e1c",
+      "bytes": 660
+    },
+    {
+      "path": "layout/preview_item_play.xml",
+      "sha256": "f98a4ae2972ec9e5e9db1a98a3b1eed3467b2aa630570a96d38c3141d8dd4a49",
+      "bytes": 2400
+    },
+    {
+      "path": "layout/publico_custom_progress.xml",
+      "sha256": "e645b244c0a69445d8021e6744ddc985a3604e05fcf30ff500b1847a2a598b1b",
+      "bytes": 1153
+    },
+    {
+      "path": "layout/publico_custom_progress_dlg.xml",
+      "sha256": "665e3cccb3bf462feae597ffcc43b51ab0d20295ade1aec27f9a944e48ae5383",
+      "bytes": 546
+    },
+    {
+      "path": "layout/publico_dialog_bottom_item.xml",
+      "sha256": "e2ffac61ee8e17f0a3e1a051b57d81ed03643f357fb13bf80ffdfc7acddd2291",
+      "bytes": 1485
+    },
+    {
+      "path": "layout/publico_dialog_bottom_loop.xml",
+      "sha256": "88c04464a979c7d1b903b6dc25de470d7c2e7549f43cca4580cfc5edb146e69f",
+      "bytes": 1262
+    },
+    {
+      "path": "layout/publico_dialog_bottom_option.xml",
+      "sha256": "8389ae82aa8c525338a4e260d8ac3385ba05b1b045fab61c176ddc093236e4dd",
+      "bytes": 1270
+    },
+    {
+      "path": "layout/publico_include_title.xml",
+      "sha256": "ca03262c55cbcc2c9ede5127728d60342eacaa96bc1b41a3f81c01876b7a88b4",
+      "bytes": 504
+    },
+    {
+      "path": "layout/share_dialog_detail.xml",
+      "sha256": "870ff01a9689f9eceb06f0cb864b3c327ed0e41466175d7a4866dcf845e14075",
+      "bytes": 5974
+    },
+    {
+      "path": "layout/toast_layout.xml",
+      "sha256": "4f5fc8502747b18f359d4b59a36a68e99c6f8119587f74110490f4100f2756d3",
+      "bytes": 622
+    },
+    {
+      "path": "layout/video_playing_mode_item.xml",
+      "sha256": "7f0c40da2f46c77a6ed2c7a609c2a13267b26a99d453d07e4cc637fdd9a48cd0",
+      "bytes": 420
+    },
+    {
+      "path": "layout/xrefreshview_footer.xml",
+      "sha256": "959f57dcb33dd443d63b2c4a77c19667d26f6cb34b954628ffc25c1eaf2d1549",
+      "bytes": 975
+    },
+    {
+      "path": "layout/xrefreshview_header.xml",
+      "sha256": "fc4f9af14417c37b3c6e202f0e4da4e4d1b2b201298edc4f40d8ef5e7b924e0a",
+      "bytes": 2279
+    },
+    {
+      "path": "values/app-colors.xml",
+      "sha256": "f713926dffcf3197fc9f31dd4afd8f41b48a37280b880eb03a09dde8accf3fa3",
+      "bytes": 2176
+    },
+    {
+      "path": "values/app-dimens.xml",
+      "sha256": "e4bb8eef0b2fe9b9a1a36bf4d0f583ba9e6c9f88a68b1fdbf4cf370ab01cf284",
+      "bytes": 1591
+    },
+    {
+      "path": "values/app-styles.xml",
+      "sha256": "f846526abba9784443c5c064e20460161fd864009fba9de29541d5fcbd58040b",
+      "bytes": 10620
+    },
+    {
+      "path": "values/strings-en.xml",
+      "sha256": "d518b351616243e93c024017196fe602844711f7e3e6bc1e8bf239a728ee802a",
+      "bytes": 22820
+    },
+    {
+      "path": "values/strings-es.xml",
+      "sha256": "bb75bf110d5edf587d690662b15cbd114de93bc8f7aaf450c9f2f064e780054d",
+      "bytes": 24172
+    },
+    {
+      "path": "values-night/colors.xml",
+      "sha256": "bfbb57a7801bd4275be84b2dc91bcfa4d5d71a7db4f40edd8dbd7681c8665495",
+      "bytes": 64
+    }
+  ]
+}

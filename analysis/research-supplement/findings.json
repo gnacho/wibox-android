@@ -1,0 +1,339 @@
+{
+  "schema_version": 1,
+  "leaf": "leaf-1.2.11",
+  "analysis_date": "2026-10-31",
+  "status": "public_source_supplement_complete_static_only",
+  "overall_provider_effect": "no_elevation",
+  "conclusions": [
+    {
+      "id": "DUHOW-CUSTOM-001",
+      "classification": "custom_wibox_duhow",
+      "statement": "duhow builds and boots a custom /usr image, so its HTTP, MQTT and Dropbear capabilities are not stock QVCloud contracts.",
+      "evidence": [
+        {"source": "duhow_repo", "refs": ["README.md:3-19", "scripts/50_move_run.sh:1-4", "include/web/run.cgi:3-21", "include/bin/listener_mqtt.sh:37-88"]},
+        {"source": "duhow_install", "refs": ["INSTALL.md:77-117"]}
+      ],
+      "evidence_level": "code_and_documentation",
+      "provider_effect": "no_elevation"
+    },
+    {
+      "id": "DUHOW-SOFIA-002",
+      "classification": "custom_wibox_duhow",
+      "statement": "The custom boot can run Sofia temporarily for hardware initialization and then stop NTS, which is not evidence of an active stock cloud path.",
+      "evidence": [
+        {"source": "duhow_repo", "refs": ["include/run.sh:108-126", "include/bin/Sofia_temp.sh:36-45", "USAGE.md:27-37"]}
+      ],
+      "evidence_level": "code",
+      "provider_effect": "no_elevation"
+    },
+    {
+      "id": "WAYFI-SCOPE-003",
+      "classification": "stock_wayfi_historical",
+      "statement": "The Polish articles document WayFi with Hi3518EV200 and firmware V500.R001.A003.00.CG0021.B003, not Wi-Box F03266.",
+      "evidence": [
+        {"source": "linuch_part1", "refs": ["ONVIF GetDeviceInformation output", "pasted com.fermax.wayfi push JSON"]},
+        {"source": "linuch_part2", "refs": ["Pasted U-Boot and Linux boot log"]}
+      ],
+      "evidence_level": "archived_third_party_narrative",
+      "provider_effect": "no_elevation"
+    },
+    {
+      "id": "WAYFI-UART-004",
+      "classification": "custom_wayfi_historical",
+      "statement": "Only limited UART command meaning correlation is established between the WayFi CGI narrative and duhow code, without transferring the serial device or platform.",
+      "evidence": [
+        {"source": "linuch_part3", "refs": ["sesam.cgi section"]},
+        {"source": "duhow_repo", "refs": ["include/wibox_codes.txt:1-24", "include/web/run.cgi:5-12"]}
+      ],
+      "evidence_level": "cross_source_static_correlation",
+      "provider_effect": "no_elevation"
+    },
+    {
+      "id": "CMOS-WEBRTC-005",
+      "classification": "custom_wibox_cmos486",
+      "statement": "cmos486 implements an RTSP ONVIF PCMA sendonly backchannel, while go2rtc and the HA card provide the WebRTC browser path. The daemon is not shown to be a native WebRTC server.",
+      "evidence": [
+        {"source": "cmos486_media_repo", "refs": ["src/sip_media/rtsp_stream.c:453-460", "docs/homeassistant-two-way-audio.md:7-20"]},
+        {"source": "cmos486_card_repo", "refs": ["wibox-intercom-video-card.js:525-539", "wibox-intercom-video-card.js:574-628"]}
+      ],
+      "evidence_level": "code_and_architecture_documentation",
+      "provider_effect": "no_elevation"
+    },
+    {
+      "id": "CMOS-CAPABILITIES-006",
+      "classification": "custom_wibox_cmos486",
+      "statement": "RTSP, MQTT events, snapshots, OTA logic and Prometheus endpoints exist in the pinned custom source, but none was executed or tested on hardware.",
+      "evidence": [
+        {"source": "cmos486_media_repo", "refs": ["src/sip_media/rtsp_stream.c:423-477", "src/sip_media/mqtt.c:476-527", "src/sip_media/mqtt.c:617-640", "src/sip_media/mqtt.c:1265-1354", "src/sip_media/prometheus.c:261-286"]}
+      ],
+      "evidence_level": "static_code_only",
+      "provider_effect": "no_elevation"
+    },
+    {
+      "id": "CMOS-OTA-007",
+      "classification": "custom_wibox_cmos486",
+      "statement": "The OTA code exists, but the packaged repository setting points to segator while FORK.md documents a device-level change to cmos486. MD5 is not an origin signature.",
+      "evidence": [
+        {"source": "cmos486_media_repo", "refs": ["include/etc/sip_media.conf.default:74-75", "FORK.md:93-102", "docs/updates.md:12-22"]}
+      ],
+      "evidence_level": "code_and_documentation",
+      "provider_effect": "no_elevation"
+    },
+    {
+      "id": "CARD-UI-008",
+      "classification": "custom_wibox_ha_ui",
+      "statement": "wibox-intercom-video-card is a Lovelace frontend requiring custom firmware and go2rtc, not a daemon or a stock integration.",
+      "evidence": [
+        {"source": "cmos486_card_repo", "refs": ["README.md:15-16", "README.md:89-97", "wibox-intercom-video-card.js:507-539"]}
+      ],
+      "evidence_level": "code_and_documentation",
+      "provider_effect": "no_elevation"
+    },
+    {
+      "id": "SEGATOR-SIP-009",
+      "classification": "custom_wibox_segator",
+      "statement": "segator replaces the vendor workflow with a custom local SIP media daemon and related MQTT, RTSP, snapshot, OTA and Prometheus functions. It does not prove stock SIP.",
+      "evidence": [
+        {"source": "segator_media_repo", "refs": ["README.md:1-19", "docs/architecture.md:39-54"]}
+      ],
+      "evidence_level": "code_and_documentation",
+      "provider_effect": "no_elevation"
+    },
+    {
+      "id": "FORK-DIFF-010",
+      "classification": "custom_wibox_cmos486",
+      "statement": "cmos486 and segator diverge at a55b8de, with 29 and 3 unique commits respectively. Later segator code aborts on TLS hostname setup failure while pinned cmos486 logs and continues.",
+      "evidence": [
+        {"source": "cmos486_media_repo", "refs": ["repository_comparisons.cmos486_vs_segator", "src/firmware_update.c:471-475"]},
+        {"source": "segator_media_repo", "refs": ["src/firmware_update.c:471-478", "commit eed32e1"]}
+      ],
+      "evidence_level": "git_history_and_static_code_difference",
+      "provider_effect": "no_elevation"
+    },
+    {
+      "id": "ESP32-PHYSICAL-011",
+      "classification": "physical_fermax_esp32_bridge",
+      "statement": "The ESP32 project is a timed relay and HTTP/Telegram bridge for an unspecified Fermax intercom, with no demonstrated Wi-Box or cloud integration.",
+      "evidence": [
+        {"source": "esp32_repo", "refs": ["porteroCasa/porteroCasa.ino:13-33", "porteroCasa/porteroCasa.ino:79-95", "telegramBot/espH0m3_bot.py:26-36"]}
+      ],
+      "evidence_level": "static_code_only",
+      "provider_effect": "no_elevation"
+    },
+    {
+      "id": "DUOX-TALKS-012",
+      "classification": "duox_plus_research",
+      "statement": "Recon and TROOPERS describe DUOX PLUS two-wire and RFID research. They do not establish Wi-Box, VDS or QVCloud behavior.",
+      "evidence": [
+        {"source": "recon_talk", "refs": ["Talk abstract"]},
+        {"source": "troopers_duox_talk", "refs": ["Talk abstract"]},
+        {"source": "troopers_home", "refs": ["General event and archive context only"]}
+      ],
+      "evidence_level": "official_scope_description",
+      "provider_effect": "no_elevation"
+    },
+    {
+      "id": "FORUM-COMMUNITY-013",
+      "classification": "community_wibox_mixed",
+      "statement": "The requested forum post /7 is an unverified user reliability narrative. The custom segator announcement is in /8 and remains community corroboration only.",
+      "evidence": [
+        {"source": "ha_forum_post7", "refs": ["JSON-LD answer /7", "JSON-LD answer /8"]}
+      ],
+      "evidence_level": "community_only",
+      "provider_effect": "no_elevation"
+    },
+    {
+      "id": "OFFICIAL-F03266-014",
+      "classification": "official_wibox_product",
+      "statement": "F03266 is an officially documented VDS Wi-Box reference 3266, currently marked discontinued, with app features but no published protocol specification.",
+      "evidence": [
+        {"source": "fermax_product", "refs": ["Product status", "Descripción", "CARACTERÍSTICAS TÉCNICAS", "APP PARA MÓVILES"]}
+      ],
+      "evidence_level": "manufacturer_documentation",
+      "provider_effect": "no_elevation"
+    },
+    {
+      "id": "STATIC-ONLY-015",
+      "classification": "custom_wibox_cmos486",
+      "statement": "No custom capability was executed, so static source presence does not change runtime compatibility or any stock media, event or action status.",
+      "evidence": [
+        {"source": "cmos486_media_repo", "refs": ["Source-only review limitation"]},
+        {"source": "segator_media_repo", "refs": ["Source-only review limitation"]},
+        {"source": "duhow_repo", "refs": ["Source-only review limitation"]}
+      ],
+      "evidence_level": "methodological_limit",
+      "provider_effect": "no_elevation"
+    }
+  ],
+  "security_scope": {
+    "cve_2026_86585": {
+      "id": "CVE-2026-86585",
+      "confirmed": true,
+      "confirmation_sources": ["fermax_advisories", "cve_awg_api", "nvd_api", "circl_cve"],
+      "title": "Improper Verification of the Firmware Signature vulnerability",
+      "cwe": "CWE-347",
+      "cvss": {"version": "4.0", "score": 7.7, "severity": "HIGH", "attack_vector": "ADJACENT"},
+      "product": "DUOX PLUS monitor firmware (VEO Wi-Fi range)",
+      "narrative_products": ["VEO Wi-Fi", "VEO-XS Wi-Fi"],
+      "structured_platforms": ["VEO-WIFI", "VEO-XS-WIFI", "VEO-XS-WIFI-DDA", "VEO-XL-WIFI", "VEO-XL-WIFI-DDA"],
+      "affected_versions": "< 01.48.001",
+      "mitigation": "01.48.001 or later, derived from the vendor affected range and not independently installed or tested",
+      "dates": {
+        "reserved_cna": "2026-09-08T07:00:51.689Z",
+        "published_cna": "2026-09-16T10:13:22.416Z",
+        "published_nvd": "2026-09-16T11:16:44.070Z",
+        "updated_cna": "2026-09-16T17:47:00.863Z",
+        "last_modified_nvd": "2026-09-18T19:44:10.957Z"
+      },
+      "nvd_status": "Deferred",
+      "exploitation_tested": false,
+      "exploit_instructions_included": false
+    },
+    "wibox_f03266": {
+      "classification": "not_listed_no_evidence_of_applicability",
+      "affected": null,
+      "applies_by_inference": false,
+      "reason": "Wi-Box F03266 is absent from the vendor advisory, CNA record and NVD record, and is a VDS product rather than the listed DUOX PLUS monitor firmware."
+    },
+    "stock_qvcloud": {
+      "new_vulnerability_evidence": false,
+      "applies_by_inference": false,
+      "provider_elevation": false
+    },
+    "custom_updaters": {
+      "classification": "outside_confirmed_cve_scope_not_a_security_certification",
+      "affected": null,
+      "applies_by_inference": false,
+      "note": "The presence of MD5, TLS or custom OTA logic does not prove or disprove the same defect and was not exploited or fully audited."
+    },
+    "duox_rfid_talks": {
+      "classification": "separate_research_scope",
+      "applies_to_wibox_by_inference": false
+    }
+  },
+  "future_provider_implications": [
+    {
+      "id": "mqtt-duhow",
+      "provider": "mqtt",
+      "status": "future_not_implemented",
+      "available_now": false,
+      "stock_compatibility_claimed": false,
+      "opportunity": "A separately versioned local duhow profile for commands and events.",
+      "requirements": [
+        "Custom duhow firmware and exact device/firmware identification",
+        "Explicit broker, topics, payloads and Home Assistant discovery contract",
+        "Authentication, transport security suitable for the deployment and secret handling",
+        "Reconnect, duplicate, gap, command correlation and physical acknowledgement tests"
+      ],
+      "limitations": ["Plain MQTT and no physical acknowledgement in reviewed evidence", "Not the static OAuth MQTT of the APK and not stock QVCloud"]
+    },
+    {
+      "id": "mqtt-custom-media",
+      "provider": "mqtt",
+      "status": "future_not_implemented",
+      "available_now": false,
+      "stock_compatibility_claimed": false,
+      "opportunity": "Separate cmos486 or segator profiles for native MQTT entities and events, with media negotiated outside MQTT.",
+      "requirements": [
+        "Choose one fork and commit instead of merging their contracts",
+        "Map media/state, UART events, snapshots and OTA entities explicitly",
+        "Validate SIP or RTSP separately and go2rtc/WebRTC only for cmos486",
+        "Test authentication, reconnection, duplicates and per-device capabilities"
+      ],
+      "limitations": ["Different topics and semantics from duhow", "No stock P2P or stock local MQTT evidence"]
+    },
+    {
+      "id": "self-hosted-api",
+      "provider": "self-hosted",
+      "status": "future_not_implemented",
+      "available_now": false,
+      "stock_compatibility_claimed": false,
+      "opportunity": "A versioned self-hosted API informed by the local HA architecture, without treating HA or go2rtc as a ready-made cloud.",
+      "requirements": [
+        "Accounts, enrollment, inventory and authorization",
+        "Versioned events, actions, acknowledgement, media and recovery contracts",
+        "Revocation, secret storage, multi-user isolation and security tests",
+        "A concrete provider implementation before advertising any capability"
+      ],
+      "limitations": ["No self-hosted adapter or API exists in this supplement", "A relay cannot transparently certify QVCloud compatibility"]
+    },
+    {
+      "id": "binder-aidl",
+      "provider": "external-api",
+      "status": "future_not_implemented",
+      "available_now": false,
+      "stock_compatibility_claimed": false,
+      "opportunity": "Expose real provider metadata, capabilities, events and actions to authorized Android clients while retaining provider-neutral boundaries.",
+      "requirements": [
+        "A real provider with per-device capabilities before exposing an operation",
+        "UID and signing-certificate authorization, scopes and revocable grants",
+        "Ack levels, event gaps, cancellation, correlation and two-signature tests",
+        "A separate authorized channel for any future media, never large media parcels or secrets over Binder"
+      ],
+      "limitations": ["Binder does not create provider compatibility", "The reviewed external API design excludes media and secrets"]
+    },
+    {
+      "id": "esp32-physical-bridge",
+      "provider": "possible_separate_physical_profile",
+      "status": "out_of_scope_not_a_provider",
+      "available_now": false,
+      "stock_compatibility_claimed": false,
+      "opportunity": "Only a separately engineered physical bridge could be evaluated in the future.",
+      "requirements": ["Exact Fermax model and electrical review", "Safe isolation and physical acknowledgement", "Authorized endpoint and explicit hardware validation"],
+      "limitations": ["No Wi-Box evidence and no action performed"]
+    },
+    {
+      "id": "duox-rfid-research",
+      "provider": "none",
+      "status": "out_of_scope_not_a_provider",
+      "available_now": false,
+      "stock_compatibility_claimed": false,
+      "opportunity": "No Wi-Box provider opportunity is inferred from DUOX PLUS or RFID talks.",
+      "requirements": ["Product-specific evidence before any future separate research"],
+      "limitations": ["DUOX PLUS and Wi-Box VDS are different scopes"]
+    }
+  ],
+  "provider_matrix_guard": {
+    "path": "analysis/architecture/provider-matrix.json",
+    "baseline_sha256": "912878dcef3f697cef5d7fc561dc1d1542a241673993343909fbdf4d6dd6a915",
+    "expected_totals": {"capabilities": 64, "screens": 38},
+    "expected_stock_states": {
+      "actions.unlock": "unsupported",
+      "media.preview_single": "unsupported",
+      "media.talk": "unsupported",
+      "events.realtime": "unsupported",
+      "firmware.apply": "unsupported",
+      "app.update_check": "static_evidence_only"
+    },
+    "expected_future_providers": {
+      "mqtt": {"phase": "future_not_implemented", "implemented_as_complete_provider": false},
+      "self-hosted": {"phase": "future_not_implemented", "implemented_as_complete_provider": false}
+    },
+    "custom_evidence_must_not_change_stock": true
+  },
+  "dynamic_inventory_guard": {
+    "path": "analysis/dynamic/inventory.json",
+    "baseline_sha256": "f31824799489b4e89712be985c611efc80f6502a830fd513e74c540bb9523ea6",
+    "runtime_cloud_compatibility_claimed": false,
+    "physical_actions_attempted": 0
+  },
+  "web_access": {
+    "curl_sources_checked": 25,
+    "http_200": 25,
+    "inaccessible_sources": [],
+    "limitations": [
+      "NVD HTML returned 200 but webfetch did not yield useful text; NVD API supplied the readable JSON.",
+      "Archived Wayback pages represent captures from 2021 and articles from 2019-2020, not current device state.",
+      "Repository observations are pinned to commits on 2026-10-31 and do not follow later changes."
+    ]
+  },
+  "not_done": [
+    "No hardware, QVCloud or device contact",
+    "No opening, call, pairing, flash, reboot, OTA or cloud disable action",
+    "No execution of source projects, tests or builds",
+    "No independent runtime validation of custom capabilities",
+    "No exploitation or exploit instructions",
+    "No provider implementation or compatibility increase",
+    "No edits outside docs/research-supplement.md and analysis/research-supplement/**"
+  ]
+}

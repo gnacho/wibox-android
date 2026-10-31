@@ -1,0 +1,47 @@
+{
+  "code": 0,
+  "data": {
+    "thingId": "fixture-device-001",
+    "fields": {
+      "Device_state": {
+        "F1_state": 0,
+        "Switch_state": {
+          "channel": 1,
+          "index": 2,
+          "state": 1,
+          "type": 0,
+          "Future_switch": "fixture-switch"
+        },
+        "Private_mode_state": 0,
+        "Fisheye_chn_state": 3,
+        "Lock_state": [
+          {
+            "channel": 1,
+            "lock": 1,
+            "state": 0,
+            "Future_lock": "fixture-lock"
+          }
+        ],
+        "Alarm_zone_mode": 2,
+        "Smart_relay": [
+          {
+            "code": "fixture-relay",
+            "status": 1,
+            "Future_relay": "fixture-relay-extension"
+          }
+        ],
+        "Future_state": {
+          "fixture": true
+        }
+      },
+      "Future_fields": "fixture-preserved"
+    }
+  },
+  "errTip": null,
+  "msg": null,
+  "path": "/fixture/status",
+  "timestamp": 1800000000123,
+  "Future_response": {
+    "fixture": true
+  }
+}

@@ -1,0 +1,11 @@
+certificate_pinner_in_quvii_count=0
+websocket_in_quvii_count=0
+webrtc_in_quvii_count=0
+sip_client_in_quvii_count=0
+root_calls_in_ubell_count=0
+root_declaration=com/quvii/ubell/publico/util/Utils.java:245
+root_warning_only_resource=key_root_warning
+StartGuideActivity_external_reference_count=0
+DAAddTypeActivity_external_reference_count=0
+DANewProduceChooseActivity_external_reference_count=0
+DMWifiListActivity_external_reference_count=0

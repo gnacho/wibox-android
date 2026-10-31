@@ -1,0 +1,24 @@
+{
+  "code": 0,
+  "data": [
+    {
+      "thingId": "fixture-device-001",
+      "fields": {
+        "Device_state": {
+          "F1_state": 0,
+          "Lock_state": []
+        }
+      }
+    },
+    {
+      "thingId": "fixture-device-002",
+      "fields": {
+        "Device_state": null
+      }
+    }
+  ],
+  "errTip": null,
+  "msg": null,
+  "path": "/fixture/status/multi",
+  "timestamp": 1800000000456
+}

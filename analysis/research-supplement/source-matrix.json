@@ -1,0 +1,759 @@
+{
+  "schema_version": 1,
+  "leaf": "leaf-1.2.11",
+  "consulted_at": "2026-10-31",
+  "method": "Public web and source review only. No code execution, device contact or physical action.",
+  "classification_vocabulary": [
+    "custom_wibox_duhow",
+    "stock_wayfi_historical",
+    "custom_wayfi_historical",
+    "custom_wibox_cmos486",
+    "custom_wibox_ha_ui",
+    "custom_wibox_segator",
+    "community_wibox_mixed",
+    "physical_fermax_esp32_bridge",
+    "duox_plus_research",
+    "conference_context",
+    "duox_plus_monitor_cve",
+    "official_wibox_product"
+  ],
+  "sources": [
+    {
+      "id": "duhow_repo",
+      "url": "https://github.com/duhow/wibox",
+      "supporting_urls": ["https://api.github.com/repos/duhow/wibox"],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "source_repository",
+      "credibility": "primary_code_and_history",
+      "classification": "custom_wibox_duhow",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "Fermax Wi-Box",
+        "model": "Wi-Box linked to F03266",
+        "stock_firmware": ["V500.R001.A103.00.G0021.B007", "V500.R001.A103.00.G0021.B013"],
+        "custom_firmware": "Patch built from this commit, not a stock release"
+      },
+      "repository": {
+        "branch": "main",
+        "commit": "d8502d780f1d4ac3f2ec1a8425a98588fd7f53a7",
+        "commit_date": "2026-10-18T15:52:35+02:00",
+        "git_describe": "d8502d7",
+        "license": "GPL-3.0",
+        "license_evidence": "LICENSE:1-2",
+        "github_fork": false
+      },
+      "verified_claims": [
+        {
+          "claim": "The repository patches the device for local use instead of the vendor cloud and lists Dropbear, HTTP, MQTT and Home Assistant.",
+          "evidence": ["README.md:3-19"]
+        },
+        {
+          "claim": "Sofia can run temporarily for hardware initialization while the original NTS client is stopped afterwards.",
+          "evidence": ["include/run.sh:108-126", "include/bin/Sofia_temp.sh:36-45"]
+        },
+        {
+          "claim": "HTTP CGI and MQTT map local commands to UART in the custom patch.",
+          "evidence": ["include/web/setup.sh:13-18", "include/web/run.cgi:3-21", "include/bin/listener_mqtt.sh:37-88"]
+        }
+      ],
+      "unverified_claims": [
+        "NTS endpoints, authentication and P2P notes were not contacted or validated at runtime.",
+        "Compatibility with firmware versions other than the two documented versions is not established."
+      ],
+      "relation": "Custom Wi-Box firmware and third-party stock notes. No QVCloud or stock provider capability is added."
+    },
+    {
+      "id": "duhow_install",
+      "url": "https://github.com/duhow/wibox/blob/main/INSTALL.md",
+      "supporting_urls": [],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "repository_install_guide",
+      "credibility": "primary_documentation_same_commit",
+      "classification": "custom_wibox_duhow",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "Fermax Wi-Box",
+        "model": "Wi-Box linked to F03266",
+        "stock_firmware": ["V500.R001.A103.00.G0021.B007", "V500.R001.A103.00.G0021.B013"],
+        "custom_firmware": "Custom /usr image flashed to mtd4"
+      },
+      "repository": {
+        "branch": "main",
+        "commit": "d8502d780f1d4ac3f2ec1a8425a98588fd7f53a7",
+        "commit_date": "2026-10-18T15:52:35+02:00",
+        "git_describe": "d8502d7",
+        "license": "GPL-3.0",
+        "license_evidence": "LICENSE:1-2",
+        "github_fork": false
+      },
+      "verified_claims": [
+        {
+          "claim": "The guide builds a custom image and flashes only the /usr mtd4 partition.",
+          "evidence": ["INSTALL.md:77-85", "INSTALL.md:109-117"]
+        },
+        {
+          "claim": "The documented hardware path includes serial ttySGK2 at 115200 and the tested stock versions B007 and B013.",
+          "evidence": ["INSTALL.md:6-12", "INSTALL.md:35-43", "README.md:17-19"]
+        },
+        {
+          "claim": "The guide preserves the distinction between custom boot and original factory boot.",
+          "evidence": ["scripts/50_move_run.sh:1-4", "include/run.sh:37", "USAGE.md:27-37"]
+        }
+      ],
+      "unverified_claims": [
+        "No backup, flash, reboot or recovery instruction was executed.",
+        "The G021/G0021 typographical discrepancy is preserved and not normalized."
+      ],
+      "relation": "Installation evidence for custom firmware only. It does not describe a stock update mechanism."
+    },
+    {
+      "id": "linuch_part1",
+      "url": "https://web.archive.org/web/20211121234612/https://linuch.pl/blog/fermax-wayfi-wideodomofon-hack-czesc-1",
+      "supporting_urls": [],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "archived_blog",
+      "credibility": "third_party_narrative_with_pasted_outputs",
+      "classification": "stock_wayfi_historical",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "Fermax WayFi",
+        "model": "WayFi display kit, not Wi-Box F03266",
+        "stock_firmware": ["V500.R001.A003.00.CG0021.B003"],
+        "custom_firmware": null
+      },
+      "repository": null,
+      "verified_claims": [
+        {
+          "claim": "The archived article narrates Nmap, ONVIF, RTSP, SSDP and QVCloud/UMEYE observations for WayFi.",
+          "evidence": ["Sections Nmap i usługi sieciowe, Wireshark i analiza ruchu sieciowego and ONVIF"]
+        },
+        {
+          "claim": "The article identifies a different app package and an older firmware family from the Wi-Box forks.",
+          "evidence": ["Section Wireshark i analiza ruchu sieciowego, pasted push JSON and ONVIF GetDeviceInformation output"]
+        }
+      ],
+      "unverified_claims": [
+        "The original packet capture and firmware image were not available for independent validation.",
+        "RTSP, ONVIF, URIs, credentials and historical endpoints cannot be transferred to Wi-Box stock."
+      ],
+      "relation": "Historical stock WayFi research. duhow separately documents ONVIF as disabled for its Wi-Box target."
+    },
+    {
+      "id": "linuch_part2",
+      "url": "https://web.archive.org/web/20211124125931/https://linuch.pl/blog/fermax-wayfi-wideodomofon-hack-czesc-2",
+      "supporting_urls": [],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "archived_blog",
+      "credibility": "third_party_narrative_with_pasted_boot_log",
+      "classification": "stock_wayfi_historical",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "Fermax WayFi",
+        "model": "Hi3518EV200, ARM926EJ-S, 47 MB RAM, 16 MB flash",
+        "stock_firmware": ["Firmware family introduced in part 1, V500.R001.A003.00.CG0021.B003"],
+        "custom_firmware": "Boot environment altered by the author, not Wi-Box firmware"
+      },
+      "repository": null,
+      "verified_claims": [
+        {
+          "claim": "The article narrates UART access and pastes a boot log identifying Hi3518EV200, Linux 3.4.35, 47 MB RAM and 16 MB SPI flash.",
+          "evidence": ["Sections describing serial access and the pasted U-Boot/Linux boot log"]
+        }
+      ],
+      "unverified_claims": [
+        "No original board, image or boot log file was independently inspected.",
+        "Hi3518EV200, memory size, pinout and boot procedure are not established for Wi-Box F03266."
+      ],
+      "relation": "Historical WayFi hardware, not evidence for Wi-Box hardware or cloud."
+    },
+    {
+      "id": "linuch_part3",
+      "url": "https://web.archive.org/web/20211128173119/https://linuch.pl/blog/fermax-wayfi-wideodomofon-hack-czesc-3",
+      "supporting_urls": [],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "archived_blog",
+      "credibility": "third_party_narrative_with_pasted_script",
+      "classification": "custom_wayfi_historical",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "Fermax WayFi",
+        "model": "Hi3518EV200 platform from part 2, not Wi-Box F03266",
+        "stock_firmware": ["Firmware family introduced in part 1"],
+        "custom_firmware": "Author-modified CramFS mtd4 with BusyBox CGI"
+      },
+      "repository": null,
+      "verified_claims": [
+        {
+          "claim": "The article pastes a custom CGI that writes four-byte open and display commands to /dev/ttyAMA2.",
+          "evidence": ["Sections Plan działania, Firmware and sesam.cgi"]
+        },
+        {
+          "claim": "The two command meanings match entries independently present in duhow Wi-Box code.",
+          "evidence": ["Blog sesam.cgi section compared with duhow include/wibox_codes.txt:1-24"]
+        }
+      ],
+      "unverified_claims": [
+        "The pasted CGI was not executed and is not proof of Wi-Box compatibility.",
+        "The full partition layout, UART device and command set cannot be generalized to Wi-Box."
+      ],
+      "relation": "Historical custom WayFi patch with limited UART correlation to duhow, not stock Wi-Box evidence."
+    },
+    {
+      "id": "cmos486_blog",
+      "url": "https://www.cmos486.es/blog/wibox-media-fermax-firmware-home-assistant",
+      "supporting_urls": [],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "author_blog",
+      "credibility": "third_party_author_claims_checked_against_code",
+      "classification": "custom_wibox_cmos486",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "Fermax WiBox",
+        "model": "GK7102S according to the article",
+        "stock_firmware": ["V500.R001.A103.00.G0021.B007", "V500.R001.A103.00.G0021.B010", "V500.R001.A103.00.G0021.B013"],
+        "custom_firmware": "Article documents v0.18.14 download, repository HEAD is pinned separately"
+      },
+      "repository": null,
+      "verified_claims": [
+        {
+          "claim": "The article explicitly says the manufacturer firmware is replaced and lists RTSP, two-way WebRTC audio, events, snapshots, MQTT, OTA and Prometheus.",
+          "evidence": ["Sections Aviso antes de nada and Implementado en el custom firmware"]
+        },
+        {
+          "claim": "The article identifies duhow, Conclusio and segator as prior work and the companion card as the HA frontend.",
+          "evidence": ["Sections El origen de todo and La tarjeta de Home Assistant"]
+        }
+      ],
+      "unverified_claims": [
+        "Bench results, VDS coexistence, measured jitter and real call/media behavior were not reproduced.",
+        "The article does not prove native WebRTC in the daemon or any stock capability."
+      ],
+      "relation": "Author overview of custom cmos486. Code confirms the architecture but not independent runtime behavior."
+    },
+    {
+      "id": "cmos486_media_repo",
+      "url": "https://github.com/cmos486/wibox-media",
+      "supporting_urls": ["https://api.github.com/repos/cmos486/wibox-media"],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "source_repository",
+      "credibility": "primary_code_history_and_fork_metadata",
+      "classification": "custom_wibox_cmos486",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "Fermax WiBox",
+        "model": "GK7102S",
+        "stock_firmware": ["B007 and B010 telnet documented", "B013 serial-only documented"],
+        "custom_firmware": "custom branch, v0.18.15-4-g090854b"
+      },
+      "repository": {
+        "branch": "custom",
+        "commit": "090854bef1085679fb3f42e431e9ffa2d1ad958c",
+        "commit_date": "2026-09-11T20:59:10+02:00",
+        "git_describe": "v0.18.15-4-g090854b",
+        "license": "GPL-3.0",
+        "license_evidence": "LICENSE:1-2",
+        "github_fork": true,
+        "parent": "segator/wibox-media"
+      },
+      "verified_claims": [
+        {
+          "claim": "RTSP advertises H.264 and PCMA tracks and an optional ONVIF sendonly PCMA backchannel trackID=2.",
+          "evidence": ["src/sip_media/rtsp_stream.c:423-477", "src/sip_media/rtsp_stream.c:480-535"]
+        },
+        {
+          "claim": "The documented two-way path is WiBox RTSP to go2rtc to browser WebRTC, not a native daemon WebRTC server.",
+          "evidence": ["docs/homeassistant-two-way-audio.md:7-20"]
+        },
+        {
+          "claim": "MQTT call/UART events, snapshots, OTA controls and Prometheus endpoints are implemented in source.",
+          "evidence": ["src/sip_media/mqtt.c:617-640", "src/sip_media/mqtt.c:1646-1664", "src/sip_media/mqtt.c:476-527", "src/sip_media/mqtt.c:1265-1354", "src/sip_media/prometheus.c:261-286"]
+        },
+        {
+          "claim": "Packaged OTA configuration still names segator/wibox-media while FORK.md documents changing the device to the fork repository.",
+          "evidence": ["include/etc/sip_media.conf.default:74-75", "FORK.md:93-102"]
+        }
+      ],
+      "unverified_claims": [
+        "No RTSP, WebRTC, SIP, MQTT, snapshot, OTA or metrics runtime was exercised.",
+        "Top-level GPL-3.0 does not by itself resolve all proprietary SDK/blob redistribution or build reproducibility questions."
+      ],
+      "relation": "Actual GitHub fork of segator with custom ONVIF/go2rtc/WebRTC, VDS and health work. No stock provider elevation."
+    },
+    {
+      "id": "cmos486_card_repo",
+      "url": "https://github.com/cmos486/wibox-intercom-video-card",
+      "supporting_urls": ["https://api.github.com/repos/cmos486/wibox-intercom-video-card"],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "source_repository",
+      "credibility": "primary_frontend_code",
+      "classification": "custom_wibox_ha_ui",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "WiBox Intercom Video Card",
+        "model": "Home Assistant Lovelace card, not device firmware",
+        "stock_firmware": null,
+        "custom_firmware": "Requires cmos486/wibox-media for talkback; Home Assistant 2024.4.0 or newer"
+      },
+      "repository": {
+        "branch": "main",
+        "commit": "a0d24354f1daf1cff02ce0cf9381b72d8c90fc14",
+        "commit_date": "2026-09-01T17:18:26+02:00",
+        "git_describe": "v1.0.1-1-ga0d2435",
+        "license": "Apache-2.0",
+        "license_evidence": "LICENSE:1-2 and README.md:299-301",
+        "github_fork": false
+      },
+      "verified_claims": [
+        {
+          "claim": "The card uses RTCPeerConnection, getUserMedia and three transceivers for microphone, video and incoming audio.",
+          "evidence": ["wibox-intercom-video-card.js:507-539"]
+        },
+        {
+          "claim": "Signalling uses the authenticated Home Assistant WebSocket proxy to go2rtc.",
+          "evidence": ["wibox-intercom-video-card.js:574-628", "README.md:48-69"]
+        },
+        {
+          "claim": "The repository is a frontend card and explicitly requires custom firmware for talkback.",
+          "evidence": ["README.md:15-16", "README.md:89-97"]
+        }
+      ],
+      "unverified_claims": [
+        "No browser, Home Assistant, mobile app or go2rtc session was executed.",
+        "The card does not implement a media daemon, MQTT, SIP, OTA or stock compatibility."
+      ],
+      "relation": "Home Assistant UI companion for custom firmware only."
+    },
+    {
+      "id": "segator_media_repo",
+      "url": "https://github.com/segator/wibox-media",
+      "supporting_urls": ["https://api.github.com/repos/segator/wibox-media"],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "source_repository",
+      "credibility": "primary_code_and_history",
+      "classification": "custom_wibox_segator",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "Fermax WiBox",
+        "model": "GK7102S",
+        "stock_firmware": ["V500.R001.A103.00.G0021.B007", "V500.R001.A103.00.G0021.B010", "V500.R001.A103.00.G0021.B013 serial-only"],
+        "custom_firmware": "main branch, v0.18.1-1-ga64530b"
+      },
+      "repository": {
+        "branch": "main",
+        "commit": "a64530bb5a17d7b1ce512bf065ccba90ae2d0027",
+        "commit_date": "2026-10-22T19:22:01+02:00",
+        "git_describe": "v0.18.1-1-ga64530b",
+        "license": "GPL-3.0",
+        "license_evidence": "LICENSE:1-2",
+        "github_fork": false
+      },
+      "verified_claims": [
+        {
+          "claim": "The custom firmware provides SIP PCMA calls, optional H.264, snapshots, DTMF/MQTT, HA discovery, Prometheus and OTA.",
+          "evidence": ["README.md:1-19", "docs/architecture.md:39-54"]
+        },
+        {
+          "claim": "Sofia is a short hardware warmup and the custom daemon owns serial, SIP, media, MQTT and updates.",
+          "evidence": ["README.md:137-154", "docs/architecture.md:7-54"]
+        },
+        {
+          "claim": "Current HEAD fails closed if TLS hostname verification setup fails.",
+          "evidence": ["src/firmware_update.c:471-478", "commit eed32e1"]
+        }
+      ],
+      "unverified_claims": [
+        "GitHub fork=false does not prove absence of conceptual code lineage, so only documented duhow lineage is stated.",
+        "No SIP call, media stream, OTA or hardware result was independently tested."
+      ],
+      "relation": "Independent custom SIP/media repository based on prior duhow work and parent of the cmos486 GitHub fork. No stock SIP evidence."
+    },
+    {
+      "id": "ha_forum_post7",
+      "url": "https://community.home-assistant.io/t/wi-box-fermax-integration-home-assistant-help/525777/7",
+      "supporting_urls": [],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "community_forum",
+      "credibility": "community_corroboration_only",
+      "classification": "community_wibox_mixed",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "Fermax Wi-Box",
+        "model": "Not specified",
+        "stock_firmware": null,
+        "custom_firmware": "segator/wibox-media is advertised in post /8, not /7"
+      },
+      "repository": null,
+      "verified_claims": [
+        {
+          "claim": "Post /7 is a user reliability report about repeated replacements and failures after simultaneous power and internet loss.",
+          "evidence": ["JSON-LD suggestedAnswer with url ending /7, published 2025-03-05"]
+        },
+        {
+          "claim": "Post /8, not /7, contains segator's announcement of custom audio/video, HA and SIP support.",
+          "evidence": ["JSON-LD suggestedAnswer with url ending /8, published 2026-07-01"]
+        }
+      ],
+      "unverified_claims": [
+        "The user reliability report and hardware failure rate were not independently verified.",
+        "Forum statements are not protocol or runtime evidence."
+      ],
+      "relation": "Community context only. The custom announcement belongs to segator and does not raise stock support."
+    },
+    {
+      "id": "esp32_repo",
+      "url": "https://github.com/h0r4ci0/Control-Remoto-de-Portero-FERMAX",
+      "supporting_urls": ["https://api.github.com/repos/h0r4ci0/Control-Remoto-de-Portero-FERMAX"],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "source_repository",
+      "credibility": "primary_code_for_a_physical_bridge",
+      "classification": "physical_fermax_esp32_bridge",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "Generic Fermax intercom controlled with ESP32",
+        "model": "Fermax model not specified",
+        "stock_firmware": null,
+        "custom_firmware": "ESP32 sketch and Telegram helper, commit cb21e44"
+      },
+      "repository": {
+        "branch": "main",
+        "commit": "cb21e44ce0820975dfeff47a53ec915e0976099c",
+        "commit_date": "2024-01-01T18:29:26+01:00",
+        "git_describe": "cb21e44",
+        "license": "GPL-3.0",
+        "license_evidence": "LICENSE:1-2",
+        "github_fork": false
+      },
+      "verified_claims": [
+        {
+          "claim": "The sketch drives camera and door relays through GPIO 4 and 5 with timed digital writes.",
+          "evidence": ["porteroCasa/porteroCasa.ino:13-33", "porteroCasa/porteroCasa.ino:79-95"]
+        },
+        {
+          "claim": "The bridge exposes a simple HTTP action and a Telegram bot calls that endpoint.",
+          "evidence": ["porteroCasa/porteroCasa.ino:23", "telegramBot/espH0m3_bot.py:12-17", "telegramBot/espH0m3_bot.py:26-36"]
+        }
+      ],
+      "unverified_claims": [
+        "No Wi-Box, QVCloud, DUOX, MQTT, SIP, RTSP or WebRTC integration was found in the reviewed text files.",
+        "The electrical schematic, Fermax model, physical action and Wi-Box compatibility were not validated."
+      ],
+      "relation": "Physical electrical bridge only, not cloud replacement or evidence for a stock provider."
+    },
+    {
+      "id": "recon_talk",
+      "url": "https://cfp.recon.cx/recon-2026/talk/QQZNHF/",
+      "supporting_urls": [],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "official_conference_talk_page",
+      "credibility": "primary_scope_description_not_reproduced_research",
+      "classification": "duox_plus_research",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "FERMAX DUOX PLUS and RFID access panels",
+        "model": "EM4100, MIFARE Classic and MIFARE Desfire modules discussed",
+        "stock_firmware": null,
+        "custom_firmware": null
+      },
+      "repository": null,
+      "verified_claims": [
+        {
+          "claim": "The 2026-06-20 talk concerns DUOX PLUS two-wire research extended to RFID card technologies.",
+          "evidence": ["Talk abstract, paragraphs 1-3 and scheduled date"]
+        }
+      ],
+      "unverified_claims": [
+        "Slides, video, attacks and device results were not reproduced or used as Wi-Box evidence.",
+        "The page does not mention Wi-Box F03266, VDS or QVCloud."
+      ],
+      "relation": "DUOX PLUS/RFID research only, outside stock Wi-Box and QVCloud scope."
+    },
+    {
+      "id": "troopers_home",
+      "url": "https://troopers.de/",
+      "supporting_urls": [],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "official_conference_site",
+      "credibility": "primary_for_event_context_only",
+      "classification": "conference_context",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "TROOPERS conference",
+        "model": null,
+        "stock_firmware": null,
+        "custom_firmware": null
+      },
+      "repository": null,
+      "verified_claims": [
+        {
+          "claim": "The homepage identifies the event and links to archives, but supplies no Wi-Box protocol evidence.",
+          "evidence": ["Conference overview and Archives sections"]
+        }
+      ],
+      "unverified_claims": [
+        "No technical claim about Fermax is inferred from the generic homepage."
+      ],
+      "relation": "General context only. The separate TROOPERS26 DUOX talk is the relevant scoped source."
+    },
+    {
+      "id": "troopers_duox_talk",
+      "url": "https://troopers.de/troopers26/talks/uscbkd",
+      "supporting_urls": [],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "official_conference_talk_page",
+      "credibility": "primary_scope_description_not_reproduced_research",
+      "classification": "duox_plus_research",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "DUOX PLUS digital non-polarized two-wire intercom",
+        "model": "No Wi-Box model or firmware identified",
+        "stock_firmware": null,
+        "custom_firmware": null
+      },
+      "repository": null,
+      "verified_claims": [
+        {
+          "claim": "The talk covers digital signalling, identification and security of DUOX PLUS using electrical and logic analysis.",
+          "evidence": ["Talk abstract, paragraphs 1-3"]
+        }
+      ],
+      "unverified_claims": [
+        "Slides and video were not used to infer QVCloud, VDS or Wi-Box behavior.",
+        "No attack or signal manipulation was reproduced."
+      ],
+      "relation": "DUOX PLUS protocol research, not a Wi-Box or QVCloud source."
+    },
+    {
+      "id": "circl_cve",
+      "url": "https://vulnerability.circl.lu/vuln/CVE-2026-86585",
+      "supporting_urls": [],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "vulnerability_aggregator",
+      "credibility": "secondary_reproduction_of_cna_nvd_and_cisa",
+      "classification": "duox_plus_monitor_cve",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "CVE-2026-86585",
+        "model": "DUOX PLUS monitor firmware, VEO Wi-Fi range",
+        "stock_firmware": ["Affected before 01.48.001"],
+        "custom_firmware": null
+      },
+      "repository": null,
+      "verified_claims": [
+        {
+          "claim": "CIRCL reproduces the Fermax CNA record with CWE-347, 7.7 High and affected versions before 01.48.001.",
+          "evidence": ["CVE-2026-86585 summary, CNA JSON and impacted products sections"]
+        },
+        {
+          "claim": "The structured platforms include VEO, VEO-XS and also VEO-XL Wi-Fi variants.",
+          "evidence": ["Embedded CNA JSON containers.cna.affected[0].platforms"]
+        }
+      ],
+      "unverified_claims": [
+        "CIRCL sightings or AI-generated classifications were not used as proof of exploitation.",
+        "Wi-Box F03266 is not listed and cannot be added by inference."
+      ],
+      "relation": "Secondary aggregator corroborating official CVE data for DUOX PLUS monitors."
+    },
+    {
+      "id": "fermax_advisories",
+      "url": "https://fermax.com/security-advisories",
+      "supporting_urls": [],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "manufacturer_security_advisory",
+      "credibility": "primary_vendor_confirmation",
+      "classification": "duox_plus_monitor_cve",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "VEO / VEO-XS Wi-Fi monitors, DUOX PLUS",
+        "model": "Official table heading VEO / VEO-XS monitors",
+        "stock_firmware": ["CVE-2026-86585 affects versions before 01.48.001"],
+        "custom_firmware": null
+      },
+      "repository": null,
+      "verified_claims": [
+        {
+          "claim": "Fermax confirms improper firmware signature verification in VEO / VEO-XS Wi-Fi monitors before 01.48.001.",
+          "evidence": ["Security advisories, VEO / VEO-XS monitors table, CVE-2026-86585 row"]
+        },
+        {
+          "claim": "The vendor assigns CVSS 4.0 score 7.7 and links the CVE record.",
+          "evidence": ["Same advisory row and CVSS column"]
+        }
+      ],
+      "unverified_claims": [
+        "No firmware update was performed and the corrected version was not independently tested.",
+        "The advisory does not list Wi-Box F03266 or the custom forks."
+      ],
+      "relation": "Primary confirmation for a DUOX PLUS monitor issue. Mitigation is 01.48.001 or later by the affected range."
+    },
+    {
+      "id": "nvd_page",
+      "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-86585",
+      "supporting_urls": ["https://services.nvd.nist.gov/rest/json/cves/2.0?cveId=CVE-2026-86585"],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible_http_but_text_extraction_limited", "http_status": 200},
+      "type": "national_vulnerability_database_page",
+      "credibility": "primary_nvd_with_api_fallback",
+      "classification": "duox_plus_monitor_cve",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "CVE-2026-86585",
+        "model": "DUOX PLUS monitor firmware",
+        "stock_firmware": ["Affected before 01.48.001"],
+        "custom_firmware": null
+      },
+      "repository": null,
+      "verified_claims": [
+        {
+          "claim": "The NVD page exists and returned HTTP 200; its API supplies the readable authoritative record.",
+          "evidence": ["HTTP retrieval manifest and nvd_api JSON"]
+        }
+      ],
+      "unverified_claims": [
+        "NVD marks vulnStatus Deferred, so no additional NVD analyst conclusion is inferred.",
+        "No exploit status or Wi-Box applicability is inferred."
+      ],
+      "relation": "NVD landing page with official API used for detailed verification."
+    },
+    {
+      "id": "nvd_api",
+      "url": "https://services.nvd.nist.gov/rest/json/cves/2.0?cveId=CVE-2026-86585",
+      "supporting_urls": [],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "national_vulnerability_database_api",
+      "credibility": "primary_structured_nvd_record",
+      "classification": "duox_plus_monitor_cve",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "DUOX PLUS monitor firmware (VEO Wi-Fi range)",
+        "model": "VEO-WIFI, VEO-XS-WIFI, VEO-XS-WIFI-DDA, VEO-XL-WIFI, VEO-XL-WIFI-DDA",
+        "stock_firmware": ["version 0 with lessThan 01.48.001 marked affected"],
+        "custom_firmware": null
+      },
+      "repository": null,
+      "verified_claims": [
+        {
+          "claim": "NVD publishes the CVE with the same description, CWE-347, 7.7 score and affected range.",
+          "evidence": ["vulnerabilities[0].cve.descriptions", "vulnerabilities[0].cve.weaknesses", "vulnerabilities[0].cve.metrics", "vulnerabilities[0].cve.affected"]
+        },
+        {
+          "claim": "NVD timestamps and Deferred status are distinct from the CNA publication record.",
+          "evidence": ["vulnerabilities[0].cve.published", "vulnerabilities[0].cve.lastModified", "vulnerabilities[0].cve.vulnStatus"]
+        }
+      ],
+      "unverified_claims": [
+        "NVD data does not list Wi-Box F03266 and provides no basis for a firmware test here."
+      ],
+      "relation": "Official structured corroboration and exact platform list for the DUOX PLUS CVE."
+    },
+    {
+      "id": "cve_awg_api",
+      "url": "https://cveawg.mitre.org/api/cve/CVE-2026-86585",
+      "supporting_urls": [],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "official_cve_record_api",
+      "credibility": "primary_cna_record",
+      "classification": "duox_plus_monitor_cve",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "DUOX PLUS monitor firmware (VEO Wi-Fi range)",
+        "model": "Structured VEO, VEO-XS and VEO-XL Wi-Fi platforms",
+        "stock_firmware": ["Affected before 01.48.001, defaultStatus unaffected outside the specified range"],
+        "custom_firmware": null
+      },
+      "repository": null,
+      "verified_claims": [
+        {
+          "claim": "The CNA record is PUBLISHED, assigner FERMAX, CWE-347 and CVSS 4.0 7.7 High.",
+          "evidence": ["cveMetadata", "containers.cna.problemTypes", "containers.cna.metrics"]
+        },
+        {
+          "claim": "The affected product and versions are explicitly DUOX PLUS monitor firmware before 01.48.001.",
+          "evidence": ["containers.cna.affected[0]"]
+        }
+      ],
+      "unverified_claims": [
+        "The record does not demonstrate exploitation or include Wi-Box F03266."
+      ],
+      "relation": "Primary CNA record used as the authoritative CVE scope."
+    },
+    {
+      "id": "fermax_product",
+      "url": "https://www.fermax.com/spain/single-products/f03266-desvio-de-llamada-wifi-vds-wi-box",
+      "supporting_urls": [],
+      "consulted_at": "2026-10-31",
+      "access": {"status": "accessible", "http_status": 200},
+      "type": "manufacturer_product_page",
+      "credibility": "primary_official_product_specification",
+      "classification": "official_wibox_product",
+      "stock_evidence_effect": "no_provider_elevation",
+      "product": {
+        "name": "DESVIO DE LLAMADA WIFI VDS WI-BOX",
+        "model": "Reference 3266, F03266, EAN 8424299032665, VDS",
+        "stock_firmware": null,
+        "custom_firmware": null,
+        "market_status": "Discontinued, available while stocks last"
+      },
+      "repository": null,
+      "verified_claims": [
+        {
+          "claim": "The official page identifies a VDS module installed in parallel with a home monitor or telephone and a mobile app paired by QR.",
+          "evidence": ["Descripción and APP PARA MÓVILES sections"]
+        },
+        {
+          "claim": "Published app functions include calls, concierge, F1, door opening, captures, settings and remote firmware update.",
+          "evidence": ["APP PARA MÓVILES section"]
+        },
+        {
+          "claim": "The product is VDS, uses 2.4 GHz Wi-Fi and 18 Vcc, and is marked discontinued.",
+          "evidence": ["CARACTERÍSTICAS GENERALES, CARACTERÍSTICAS TÉCNICAS and product status"]
+        }
+      ],
+      "unverified_claims": [
+        "The page does not publish firmware version, SoC, QVCloud, OAuth, MQTT, SIP, RTSP, ONVIF, WebRTC, topics or a local API.",
+        "Remote firmware update does not establish any similarity to the DUOX PLUS CVE."
+      ],
+      "relation": "Official stock product functions only. No unpublished protocol or fork compatibility is inferred."
+    }
+  ],
+  "repository_comparisons": [
+    {
+      "id": "cmos486_vs_segator",
+      "left": "cmos486/wibox-media@090854bef1085679fb3f42e431e9ffa2d1ad958c",
+      "right": "segator/wibox-media@a64530bb5a17d7b1ce512bf065ccba90ae2d0027",
+      "merge_base": "a55b8de9b19b954238a3c160e283a2c1867e8ce6",
+      "unique_commits": {"cmos486": 29, "segator": 3},
+      "cmos486_diff_from_base": {"files": 39, "insertions": 2843, "deletions": 227},
+      "segator_diff_from_base": {"files": 16, "insertions": 110, "deletions": 10},
+      "verified_changes": [
+        "cmos486 adds ONVIF backchannel and go2rtc/WebRTC interoperability work",
+        "cmos486 adds VDS, health, OTA and robustness changes documented in FORK.md",
+        "segator adds three later commits, including fail-closed TLS hostname setup"
+      ],
+      "evidence": [
+        "git merge-base HEAD FETCH_HEAD",
+        "git rev-list --left-right --count HEAD...FETCH_HEAD",
+        "git diff --shortstat in both three-dot directions",
+        "cmos486 src/firmware_update.c:471-475 compared with segator src/firmware_update.c:471-478"
+      ]
+    }
+  ]
+}

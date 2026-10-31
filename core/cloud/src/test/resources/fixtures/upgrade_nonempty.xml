@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<envelope>
+  <header><flag>tdkcloud</flag><result>0</result></header>
+  <content>
+    <priority>3</priority>
+    <version>5.1.12</version>
+    <url>https://unit.test/fixture-upgrade.apk</url>
+    <description>Fixture &amp; upgrade</description>
+    <config>
+      <version>7</version>
+      <url>https://unit.test/fixture-config.json</url>
+      <picture>https://unit.test/fixture-picture.png</picture>
+    </config>
+  </content>
+</envelope>

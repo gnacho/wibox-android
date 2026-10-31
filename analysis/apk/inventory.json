@@ -1,0 +1,1740 @@
+{
+  "schema_version": 1,
+  "analysis_date": "2026-10-31",
+  "scope": {
+    "mode": "static_local_only",
+    "app_installed": false,
+    "device_used": false,
+    "cloud_contacted_by_analysis": false,
+    "dynamic_behavior_claimed": false,
+    "hypothesis_label_required": "HIPÓTESIS"
+  },
+  "apk": {
+    "path": "/home/nacho/Descargas/wibox-fermax-v2.2/Wibox-Fermax-v2.2.apk",
+    "package": "com.fermax.wibox",
+    "version_name": "v2.2",
+    "version_code": 18,
+    "min_sdk": 21,
+    "target_sdk": 35,
+    "compile_sdk": 35,
+    "sha256": "08d78731fe79481b60b4250e736f653cd7af91932844a612b0b5c5a989aac7ce",
+    "expected_sha256": "08d78731fe79481b60b4250e736f653cd7af91932844a612b0b5c5a989aac7ce",
+    "size_bytes": 45816991,
+    "zip_integrity": "unzip -t: no errors; Python ZipFile.testzip is checked by verifier",
+    "jar_signature": "jarsigner: jar verified; signer self-signed; chain warning recorded",
+    "signer": {
+      "subject": "CN=Qualvision",
+      "issuer": "CN=Qualvision",
+      "certificate_sha256": "5D:DA:34:C8:E6:DC:DD:45:BA:F5:8D:AB:64:5B:F5:96:48:B9:4C:9B:B4:36:02:9C:72:78:D0:C9:10:40:47:81",
+      "public_key": "RSA 2048 bits",
+      "signature_algorithm": "SHA256withRSA"
+    },
+    "build_timestamp_ms": 1744710181402,
+    "build_timestamp_utc": "2025-04-15T09:43:01Z",
+    "build_type": "release",
+    "build_config_debug": false
+  },
+  "tools": [
+    {
+      "name": "JADX",
+      "version": "1.5.6",
+      "source": "https://github.com/skylot/jadx/releases/tag/v1.5.6",
+      "archive_sha256": "545ea2be9c242511bc145755cf4bda2485ade42966e096f8b4d3da2a230e8974"
+    },
+    {
+      "name": "OpenJDK",
+      "version": "17.0.20.1"
+    },
+    {
+      "name": "Python",
+      "version": "3.14.8"
+    },
+    {
+      "name": "Info-ZIP UnZip",
+      "version": "6.00"
+    },
+    {
+      "name": "ImageMagick identify",
+      "version_command": "identify -version, recorded in evidence/toolchain.txt"
+    }
+  ],
+  "decompilation": {
+    "output_dir": "/home/nacho/temp/opencode-work/wibox-jadx",
+    "jadx_exit": 3,
+    "reported_error_count": 7,
+    "source_file_count": 6637,
+    "resource_file_count": 1772,
+    "explicit_jadx_error_files": [
+      "com/google/android/gms/common/api/internal/zah.java",
+      "com/huawei/hms/scankit/p/C0216tc.java",
+      "com/quvii/qvweb/publico/utils/OkHttpUtil.java",
+      "o/g.java"
+    ],
+    "limitations": [
+      "No se afirma cobertura perfecta de bytecode",
+      "Hay métodos con código decompilado incorrecto",
+      "Las clases org.eclipse.paho no aparecen en sources aunque existen referencias y MqttService en el manifiesto",
+      "No se ejecutó código nativo ni se hizo análisis dinámico"
+    ]
+  },
+  "application": {
+    "label": "WI-BOX",
+    "application_class": "com.quvii.ubell.publico.App",
+    "allow_backup": false,
+    "supports_rtl": true,
+    "resizeable_activity": false,
+    "extract_native_libs": true,
+    "network_security_config": null,
+    "uses_cleartext_traffic_explicit": null,
+    "themes": [
+      "AppTheme",
+      "AppTheme.Launcher"
+    ]
+  },
+  "permissions": {
+    "unique_count": 26,
+    "manifest_entries": 27,
+    "duplicates": [
+      "android.permission.USE_FULL_SCREEN_INTENT"
+    ],
+    "names": [
+      "android.permission.ACCESS_COARSE_LOCATION",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.ACCESS_NETWORK_STATE",
+      "android.permission.ACCESS_WIFI_STATE",
+      "android.permission.BLUETOOTH",
+      "android.permission.BLUETOOTH_ADMIN",
+      "android.permission.BLUETOOTH_CONNECT",
+      "android.permission.CAMERA",
+      "android.permission.CHANGE_NETWORK_STATE",
+      "android.permission.CHANGE_WIFI_MULTICAST_STATE",
+      "android.permission.CHANGE_WIFI_STATE",
+      "android.permission.FLASHLIGHT",
+      "android.permission.FOREGROUND_SERVICE",
+      "android.permission.INTERNET",
+      "android.permission.MODIFY_AUDIO_SETTINGS",
+      "android.permission.POST_NOTIFICATIONS",
+      "android.permission.READ_PHONE_STATE",
+      "android.permission.RECEIVE_BOOT_COMPLETED",
+      "android.permission.RECORD_AUDIO",
+      "android.permission.USE_BIOMETRIC",
+      "android.permission.USE_FINGERPRINT",
+      "android.permission.USE_FULL_SCREEN_INTENT",
+      "android.permission.VIBRATE",
+      "android.permission.WAKE_LOCK",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "com.google.android.c2dm.permission.RECEIVE"
+    ]
+  },
+  "components": {
+    "activitys": [
+      {
+        "name": "com.quvii.ubell.main.view.LoadingActivity",
+        "exported_explicit": "true",
+        "exported_effective": "true",
+        "intent_filter_count": 2,
+        "launchMode": "singleTask",
+        "screenOrientation": "portrait",
+        "deep_links": [
+          {
+            "scheme": "wibox",
+            "host": "wibox.com"
+          }
+        ]
+      },
+      {
+        "name": "com.quvii.ubell.push.view.CacheActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "launchMode": "singleTask",
+        "taskAffinity": "",
+        "excludeFromRecents": "true"
+      },
+      {
+        "name": "com.quvii.ubell.main.view.MainTabActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "launchMode": "singleTask",
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.add.view.DANewTypeChooseActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "launchMode": "singleTask",
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.video.view.PreviewActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "launchMode": "singleTask",
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.add.view.DAOnlineTypeChooseActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.add.view.DANewProduceChooseActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.add.view.DANewProduceIntroduceActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "launchMode": "singleTask",
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.add.view.DANewHandleWifiActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.manage.view.DMWifiListActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.manage.view.DMWifiSetActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.add.view.DADeviceBindActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "launchMode": "singleTask",
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.add.view.DAOnlineDeviceListActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.add.view.DACaptureActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.manage.view.DMConfigActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "launchMode": "singleTask",
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.manage.view.DMPasswordModifyActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.manage.view.DMUnlockSettingActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.manage.view.DMDeviceInfoEditActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.me.view.MeAboutActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.fileManage.view.FMImagePagerActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0
+      },
+      {
+        "name": "com.quvii.ubell.fileManage.view.FMLocalVideoPlayActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0
+      },
+      {
+        "name": "com.quvii.ubell.push.view.PushCallActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "launchMode": "singleTask",
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.test.view.TestInfoActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.manage.view.DMUpgradeActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.main.view.StartGuideActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.add.view.DAAddTypeActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.add.view.DARouterInfoActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.add.view.DAVoiceSetActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.add.view.DAWifiSetActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.share.view.ShareDeviceActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.device.add.view.DADeviceConfigFailActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.share.view.ShareManageActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.ubell.share.view.ShareBindActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "screenOrientation": "portrait"
+      },
+      {
+        "name": "com.quvii.qvlib.util.QvPermissionActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "launchMode": "standard"
+      },
+      {
+        "name": "com.google.android.gms.common.api.GoogleApiActivity",
+        "exported_explicit": "false",
+        "exported_effective": "false",
+        "intent_filter_count": 0
+      },
+      {
+        "name": "com.yanzhenjie.permission.PermissionActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "launchMode": "standard"
+      },
+      {
+        "name": "com.huawei.hms.hmsscankit.ScanKitActivity",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0
+      }
+    ],
+    "services": [
+      {
+        "name": "com.quvii.ubell.push.fcm.MyFirebaseMessagingService",
+        "exported_explicit": "false",
+        "exported_effective": "false",
+        "intent_filter_count": 1
+      },
+      {
+        "name": "com.quvii.ubell.push.PushHelperService",
+        "exported_explicit": "false",
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "foregroundServiceType": "shortService"
+      },
+      {
+        "name": "org.eclipse.paho.android.service.MqttService",
+        "exported_explicit": null,
+        "exported_effective": "false",
+        "intent_filter_count": 0
+      },
+      {
+        "name": "com.google.firebase.messaging.FirebaseMessagingService",
+        "exported_explicit": "false",
+        "exported_effective": "false",
+        "intent_filter_count": 1
+      },
+      {
+        "name": "com.google.firebase.components.ComponentDiscoveryService",
+        "exported_explicit": "false",
+        "exported_effective": "false",
+        "intent_filter_count": 0
+      },
+      {
+        "name": "com.google.android.datatransport.runtime.backends.TransportBackendDiscovery",
+        "exported_explicit": "false",
+        "exported_effective": "false",
+        "intent_filter_count": 0
+      },
+      {
+        "name": "com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService",
+        "exported_explicit": "false",
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "permission": "android.permission.BIND_JOB_SERVICE"
+      },
+      {
+        "name": "com.huawei.agconnect.core.ServiceDiscovery",
+        "exported_explicit": "false",
+        "exported_effective": "false",
+        "intent_filter_count": 0
+      }
+    ],
+    "receivers": [
+      {
+        "name": "com.quvii.ubell.push.PushHelperReceiver",
+        "exported_explicit": "false",
+        "exported_effective": "false",
+        "intent_filter_count": 0
+      },
+      {
+        "name": "com.google.firebase.iid.FirebaseInstanceIdReceiver",
+        "exported_explicit": "true",
+        "exported_effective": "true",
+        "intent_filter_count": 1,
+        "permission": "com.google.android.c2dm.permission.SEND"
+      },
+      {
+        "name": "com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver",
+        "exported_explicit": "false",
+        "exported_effective": "false",
+        "intent_filter_count": 0
+      }
+    ],
+    "providers": [
+      {
+        "name": "androidx.core.content.FileProvider",
+        "exported_explicit": "false",
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "authorities": "com.fermax.wibox.file_provider",
+        "grantUriPermissions": "true"
+      },
+      {
+        "name": "com.google.firebase.provider.FirebaseInitProvider",
+        "exported_explicit": "false",
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "authorities": "com.fermax.wibox.firebaseinitprovider"
+      },
+      {
+        "name": "com.yanzhenjie.permission.FileProvider",
+        "exported_explicit": "false",
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "authorities": "com.fermax.wibox.file.path.share",
+        "grantUriPermissions": "true"
+      },
+      {
+        "name": "razerdp.basepopup.BasePopupInitializer",
+        "exported_explicit": "false",
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "authorities": "com.github.razerdp.com.fermax.wibox.BasePopupInitializer"
+      },
+      {
+        "name": "com.huawei.hms.mlsdk.common.provider.MLInitializerProvider",
+        "exported_explicit": "false",
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "authorities": "com.fermax.wibox.MLInitializerProvider"
+      },
+      {
+        "name": "com.huawei.agconnect.core.provider.AGConnectInitializeProvider",
+        "exported_explicit": "false",
+        "exported_effective": "false",
+        "intent_filter_count": 0,
+        "authorities": "com.fermax.wibox.AGCInitializeProvider"
+      }
+    ]
+  },
+  "component_summary": {
+    "activities": 37,
+    "services": 8,
+    "receivers": 3,
+    "providers": 6,
+    "exported": [
+      {
+        "name": "com.quvii.ubell.main.view.LoadingActivity",
+        "exported_explicit": "true",
+        "exported_effective": "true",
+        "intent_filter_count": 2,
+        "launchMode": "singleTask",
+        "screenOrientation": "portrait",
+        "deep_links": [
+          {
+            "scheme": "wibox",
+            "host": "wibox.com"
+          }
+        ]
+      },
+      {
+        "name": "com.google.firebase.iid.FirebaseInstanceIdReceiver",
+        "exported_explicit": "true",
+        "exported_effective": "true",
+        "intent_filter_count": 1,
+        "permission": "com.google.android.c2dm.permission.SEND"
+      }
+    ]
+  },
+  "ui_technology": {
+    "stack": [
+      "XML layouts",
+      "Android Views",
+      "AppCompat Light.NoActionBar",
+      "Fragments",
+      "ViewBinding",
+      "MVP",
+      "MyGLSurfaceView"
+    ],
+    "compose_used": false,
+    "kotlin_present": true,
+    "java_decompiled": true,
+    "main_tabs": [
+      "MainDeviceListFragment",
+      "MainMessageListFragment/MainMessageTypeFragment",
+      "MainFileFragment",
+      "MainMeFragment"
+    ],
+    "evidence": [
+      "E053",
+      "E054",
+      "E060"
+    ]
+  },
+  "cloud_areas": {
+    "bootstrap": {
+      "endpoint": "https://fermax.qvcloud.net:443",
+      "purpose": "Punto de arranque QvCore y descubrimiento P2P",
+      "evidence": [
+        "E001",
+        "E005"
+      ]
+    },
+    "app_upgrade": {
+      "endpoint": "https://matainde.qvcloud.net:1443/webs/version/app/version_check.jsp",
+      "method": "GET",
+      "query": [
+        "os=android",
+        "appid=2021",
+        "version=18",
+        "clientid=<runtime>"
+      ],
+      "headers": [
+        "Accept-Language"
+      ],
+      "timeouts_seconds": {
+        "connect": 10,
+        "read": 10,
+        "write": 10
+      },
+      "evidence": [
+        "E049",
+        "E050"
+      ]
+    },
+    "service_discovery": {
+      "endpoint": "Dinámico, devuelto por QvLocationManager/P2P",
+      "purpose": "URLs regionales HTTPS para user, alarm, MQTT, OAuth, shadow y OpenAPI",
+      "statically_resolved": false,
+      "evidence": [
+        "E034",
+        "E040"
+      ]
+    },
+    "user_auth": {
+      "paths": [
+        "/auth/nologin;jus_duplex=up",
+        "/auth/nologin;jus_duplex=down",
+        "/auth/user;jus_duplex=up",
+        "/auth/user;jus_duplex=down"
+      ],
+      "purpose": "Registro anónimo, login, lista de dispositivos, credenciales dinámicas e invitaciones",
+      "evidence": [
+        "E004",
+        "E010",
+        "E020"
+      ]
+    },
+    "oauth": {
+      "path": "/qvoauthv2/token",
+      "method": "GET",
+      "grant_types": [
+        "password",
+        "refresh_token"
+      ],
+      "password_query": [
+        "grant_type",
+        "client_id",
+        "client_type",
+        "oemid",
+        "appid",
+        "usr",
+        "pwd",
+        "region_id",
+        "client_flag"
+      ],
+      "token_header": "token",
+      "evidence": [
+        "E029",
+        "E033",
+        "E034",
+        "E035",
+        "E036"
+      ]
+    },
+    "alarm": {
+      "paths": [
+        "UserAlarm",
+        "DeviceAlarm"
+      ],
+      "purpose": "Eventos, ajustes de llamada/movimiento y borrado, páginas de 15",
+      "evidence": [
+        "E051",
+        "E052",
+        "E057"
+      ]
+    },
+    "push_openapi": {
+      "paths": [
+        "/openapi-tdk/client/v2/push/token",
+        "/openapi-tdk/client/push/token",
+        "/pushserver/api/v1/client/register"
+      ],
+      "purpose": "Registro de token FCM en backend Qualvision",
+      "evidence": [
+        "E056",
+        "E057"
+      ]
+    },
+    "shadow_http": {
+      "paths": [
+        "/openapi-tdk/device/status",
+        "/openapi-tdk/device/status/multi",
+        "/openapi-tdk/device/status/sub",
+        "/openapi-tdk/device/status/unsub"
+      ],
+      "token_header": "token",
+      "evidence": [
+        "E041"
+      ]
+    },
+    "mqtt": {
+      "endpoint": "Dinámico: ssl:// para mqtts o tcp:// para mqtt",
+      "authentication": "clientId C_<account>_<alarmClient> y access token como password",
+      "topics": [
+        "tdk/client_api/users/get/",
+        "tdk/client_api/sys/get/",
+        "tdk/client_api/sys/update/"
+      ],
+      "qos": 1,
+      "evidence": [
+        "E037",
+        "E038",
+        "E039",
+        "E040",
+        "E041"
+      ]
+    },
+    "local_device": {
+      "endpoint": "https://<ip-o-127.0.0.1>:<cgiPort>/tdkcgi y /tdkcgi/passwordencryption",
+      "legacy_http": "getUnbindDeviceApiUrl fuerza http:// y getDirectDeviceApi admite HTTP según dispositivo/cgiScheme",
+      "pairing_ap_fallback": "https://192.168.111.1:443",
+      "authentication": "Credenciales de dispositivo, Digest MD5 cuando está disponible",
+      "evidence": [
+        "E014",
+        "E031",
+        "E032",
+        "E068",
+        "E074"
+      ]
+    },
+    "media_p2p": {
+      "endpoint": "quii://<user>:<password>@127.0.0.1:<mappedPort>/...",
+      "native_library": "libqv-p2p-v2.so y liblive_player.so",
+      "evidence": [
+        "E011",
+        "E021",
+        "E023",
+        "E042"
+      ]
+    },
+    "firebase": {
+      "endpoint": "FCM y configuración embebida tdkvdp.firebaseio.com",
+      "purpose": "Eventos 19 llamada, 20 llamada atendida y 2 movimiento",
+      "embedded_api_key": "Presente, no reproducido en este inventario",
+      "evidence": [
+        "E056",
+        "E057"
+      ]
+    },
+    "privacy": {
+      "endpoint": "http://94.101.81.118/privacy/privacy_policy.html",
+      "usage": "Constante y cadena presentes; el diálogo actual carga conditions/<idioma>.html local",
+      "evidence": [
+        "E064"
+      ]
+    },
+    "connectivity_probes": {
+      "endpoints": [
+        "https://www.apple.com",
+        "https://www.google.com"
+      ],
+      "purpose": "Comprobación de conectividad del SDK",
+      "evidence": [
+        "E065"
+      ]
+    }
+  },
+  "protocols": {
+    "websocket": {
+      "status": "no_app_usage_found",
+      "detail": "Solo aparece la API de OkHttp, sin newWebSocket/WebSocketListener en código propio",
+      "evidence": [
+        "E029"
+      ]
+    },
+    "mqtt": {
+      "status": "implemented_but_disabled_by_default",
+      "detail": "Paho con OAuth, QoS 1 y reconexión; SUPPORT_DEVICE_SHADOW=false impide la inicialización por defecto y no se encontró override. Clases Paho no localizadas en sources, alcance dinámico no probado",
+      "evidence": [
+        "E037",
+        "E038",
+        "E039",
+        "E040",
+        "E063",
+        "E073"
+      ]
+    },
+    "sip": {
+      "status": "no_call_client_found",
+      "detail": "Modelos para configurar parámetros SIP de dispositivo; no cliente SIP de llamada en Wibox",
+      "evidence": [
+        "E021",
+        "E023"
+      ]
+    },
+    "webrtc": {
+      "status": "no_peerconnection_found",
+      "detail": "libWebrtcAudio.so indica procesado de audio, no prueba señalización WebRTC",
+      "evidence": [
+        "E021",
+        "E023"
+      ]
+    },
+    "p2p": {
+      "status": "primary_media_transport",
+      "detail": "Túneles P2P nativos y URLs quii hacia puertos locales mapeados",
+      "evidence": [
+        "E011",
+        "E021",
+        "E042",
+        "E068"
+      ]
+    }
+  },
+  "authentication": {
+    "user_visible_login_screen": false,
+    "initial_registration": "userFreeRegister con UUID aleatorio como contraseña, seguido de userLogin",
+    "device_binding": "adminapp, authCode/QR, SHA-256 condicionado por capability y contraseña dinámica",
+    "oauth": "Password grant con usr/pwd en query GET y tokens JWT; header token, no Bearer",
+    "device_http": "Digest MD5 tras 401 cuando el dispositivo lo soporta",
+    "biometrics": "BiometricPrompt para unlock y F1, con fallback a contraseña",
+    "evidence": [
+      "E004",
+      "E010",
+      "E019",
+      "E031",
+      "E033"
+    ]
+  },
+  "storage": {
+    "database": {
+      "name": "database",
+      "version": 11,
+      "engine": "DBFlow + SQLCipher 4.5.4",
+      "secret": "AES de QvEncryptKeyStoreUtil",
+      "records": [
+        "Device",
+        "AppInfo",
+        "AppTask"
+      ]
+    },
+    "shared_preferences": {
+      "config": "Credenciales, token FCM, servidor y SSID cifrados; ajustes en claro",
+      "oauth": "Access y refresh tokens cifrados con EncryptUtil AES"
+    },
+    "wifi_password_default_save": true,
+    "media_paths": [
+      "SDK <29: almacenamiento externo/WI-BOX",
+      "29: externalFilesDir Pictures/Movies",
+      ">=30: filesDir image/video",
+      "cache: thumbnail, qrcode y record"
+    ],
+    "evidence": [
+      "E043",
+      "E044",
+      "E045",
+      "E046",
+      "E047",
+      "E069"
+    ]
+  },
+  "pairing": {
+    "qr_format": "apName uid authCode model separados por espacios",
+    "share_query_fields": [
+      "InviteCode",
+      "OwnerId",
+      "OemId",
+      "AppVersion",
+      "DeviceId",
+      "From",
+      "AppId"
+    ],
+    "oem_id": "G0021",
+    "flows": [
+      "QR -> reset -> AP -> router -> progreso -> bind",
+      "QR -> reset -> audio -> bind",
+      "Online LAN/manual -> bind",
+      "Invitación -> ShareBind/DADeviceBind"
+    ],
+    "ap_defaults": {
+      "ip": "192.168.111.1",
+      "port": 443,
+      "username": "admin",
+      "password": "admin",
+      "secure_alternative": "adminapp2 + SHA-256(authCode)"
+    },
+    "audio": {
+      "frequencies_hz": "4000 + n*150, n=0..18",
+      "payload": "SSID y últimos 4 UID + contraseña WiFi",
+      "timeout_seconds": 150
+    },
+    "timeouts": {
+      "bind_seconds": 35,
+      "online_poll_seconds": 2,
+      "bind_model_poll_count": 15,
+      "config_countdown_seconds": 150
+    },
+    "evidence": [
+      "E007",
+      "E008",
+      "E009",
+      "E010",
+      "E012",
+      "E014",
+      "E015",
+      "E016",
+      "E017",
+      "E018"
+    ]
+  },
+  "device_features": {
+    "list": "Base local sincronizada con getDevList y estado online/offline P2P",
+    "preview": "Uno o cuatro paneles, canales, modos alta/baja/audio+foto, temporizador 90 s",
+    "actions": [
+      "unlock lock1",
+      "F1",
+      "callGuard",
+      "escucha",
+      "habla",
+      "captura",
+      "grabación",
+      "compartir",
+      "sincronizar hora",
+      "WiFi",
+      "firmware"
+    ],
+    "sharing": "Invitaciones con permisos preview/playback/alarm/unlock/F1/callGuard, límite de 100 grupos en UI",
+    "events": "Llamada 19, atendida 20, movimiento 2, páginas de 15 y foto asociada",
+    "gallery": "Fotos/vídeos locales con PhotoView, FileProvider y edición múltiple",
+    "evidence": [
+      "E019",
+      "E020",
+      "E021",
+      "E023",
+      "E024",
+      "E025",
+      "E051",
+      "E055",
+      "E062"
+    ]
+  },
+  "errors_and_retries": [
+    {
+      "area": "OkHttp",
+      "behavior": "retryOnConnectionFailure=true; timeout base 20 s; auth/alarm 30/35/60 s según cliente",
+      "evidence": [
+        "E027",
+        "E050"
+      ]
+    },
+    {
+      "area": "OAuth",
+      "behavior": "Un retry si había token cacheado, lo borra; 403 corta; otros errores investigan servicio",
+      "evidence": [
+        "E035"
+      ]
+    },
+    {
+      "area": "bind",
+      "behavior": "retry(4) solo errores 100152003/100152005 y modo permitido, espera 5 s; timeout 35 s",
+      "evidence": [
+        "E009",
+        "E010"
+      ]
+    },
+    {
+      "area": "CGI",
+      "behavior": "retry(1) con limpieza de puerto para timeout y caso local",
+      "evidence": [
+        "E009",
+        "E018"
+      ]
+    },
+    {
+      "area": "device status",
+      "behavior": "Timeout 20 s y retry(2) solo TimeoutException en método deprecated",
+      "evidence": [
+        "E018"
+      ]
+    },
+    {
+      "area": "pairing",
+      "behavior": "Cuenta atrás 150 s, polling 2 s, retry manual y pantalla de fallo",
+      "evidence": [
+        "E017",
+        "E018"
+      ]
+    },
+    {
+      "area": "preview",
+      "behavior": "90 s por defecto; reconexión P2P y hasta tres reanudaciones",
+      "evidence": [
+        "E024",
+        "E026"
+      ]
+    },
+    {
+      "area": "unlock",
+      "behavior": "Timeout 15 s; éxito/fallo/timeout/contraseña",
+      "evidence": [
+        "E025"
+      ]
+    },
+    {
+      "area": "push call",
+      "behavior": "Auto-rechazo a 30 s y evento 20 cierra si se atiende en otro terminal",
+      "evidence": [
+        "E056",
+        "E059"
+      ]
+    },
+    {
+      "area": "alarms",
+      "behavior": "Errores 502/XML/código se mapean a fallo de búsqueda; refresh manual",
+      "evidence": [
+        "E052"
+      ]
+    }
+  ],
+  "cryptography": {
+    "device_password": "SHA-256 hexadecimal si la capability lo exige; cadenas >=64 se conservan",
+    "push_signature": "HmacSHA1(clientId-timestamp, clientId)",
+    "device_digest": "MD5 con nc/cnonce fijos en el código",
+    "preferences": "AES/ECB/PKCS7Padding, clave AES-128 generada localmente y envuelta con RSA AndroidKeyStore",
+    "database": "SQLCipher con la misma utilidad de clave; PRAGMA cipher_migrate",
+    "tls": "BKS cliente/servidor en un camino; TrustManager vacío y AllowAllHostnameVerifier en otros",
+    "evidence": [
+      "E028",
+      "E030",
+      "E031",
+      "E045",
+      "E046",
+      "E047",
+      "E048",
+      "E049"
+    ]
+  },
+  "security_findings": [
+    {
+      "id": "SEC-01",
+      "severity": "high",
+      "finding": "Clientes HTTP comunes desactivan validación de hostname y certificado; no hay pinning de app",
+      "evidence": [
+        "E030",
+        "E049"
+      ]
+    },
+    {
+      "id": "SEC-02",
+      "severity": "high",
+      "finding": "Logging BODY activo en release y DEBUG_HTTP/DEV_MODE=true",
+      "evidence": [
+        "E002",
+        "E027"
+      ]
+    },
+    {
+      "id": "SEC-03",
+      "severity": "high",
+      "finding": "Logs incluyen usuario, contraseña, accountId, token FCM, share links, claves y datos WiFi",
+      "evidence": [
+        "E003",
+        "E008",
+        "E016",
+        "E021",
+        "E056",
+        "E057"
+      ]
+    },
+    {
+      "id": "SEC-04",
+      "severity": "high",
+      "finding": "client.txt contiene una clave privada PEM y los BKS usan contraseña embebida; no se copiaron al repo",
+      "evidence": [
+        "E028",
+        "E072"
+      ]
+    },
+    {
+      "id": "SEC-05",
+      "severity": "medium",
+      "finding": "Fallback AP usa admin/admin y el CGI puede formar URLs HTTPS con credenciales userinfo",
+      "evidence": [
+        "E014"
+      ]
+    },
+    {
+      "id": "SEC-06",
+      "severity": "medium",
+      "finding": "AES-ECB para preferencias y Digest MD5 con nc/cnonce constantes",
+      "evidence": [
+        "E031",
+        "E046",
+        "E047"
+      ]
+    },
+    {
+      "id": "SEC-07",
+      "severity": "medium",
+      "finding": "URLs quii contienen contraseña del dispositivo; se pasan al reproductor nativo",
+      "evidence": [
+        "E011"
+      ]
+    },
+    {
+      "id": "SEC-08",
+      "severity": "medium",
+      "finding": "Hay rutas CGI legacy HTTP y una URL de privacidad HTTP, sin Network Security Config ni usesCleartextTraffic explícito; no se prueba conexión en runtime",
+      "evidence": [
+        "E064",
+        "E074"
+      ]
+    },
+    {
+      "id": "SEC-09",
+      "severity": "info",
+      "finding": "Existe Utils.isRooted, pero no se encontró llamada que imponga el bloqueo root",
+      "evidence": [
+        "E071"
+      ]
+    },
+    {
+      "id": "SEC-10",
+      "severity": "medium",
+      "finding": "FileProvider no exportado permite URI grants y declara root-path/external-path amplio; exposición real depende de las URIs generadas",
+      "evidence": [
+        "E075"
+      ]
+    }
+  ],
+  "obfuscation": {
+    "status": "partial_identifier_and_resource_obfuscation",
+    "details": [
+      "Paquetes de una letra y clases renombradas junto a nombres descriptivos com.quvii.ubell",
+      "Recursos APK acortados que JADX reasigna a nombres originales",
+      "No hay mapping de R8/ProGuard en el APK",
+      "No se observa cifrado general de DEX"
+    ],
+    "evidence_files": [
+      "analysis/apk/evidence/decompilation-limits.txt"
+    ]
+  },
+  "libraries": [
+    {
+      "name": "Android Gradle Plugin",
+      "version": "8.6.0"
+    },
+    {
+      "name": "ViewBinding",
+      "version": "8.6.0"
+    },
+    {
+      "name": "AppCompat",
+      "version": "1.2.0"
+    },
+    {
+      "name": "Material Components",
+      "version": "1.4.0"
+    },
+    {
+      "name": "AndroidX Biometric",
+      "version": "1.1.0"
+    },
+    {
+      "name": "Kotlin coroutines",
+      "version": "1.6.1"
+    },
+    {
+      "name": "RxJava 2",
+      "version": "2.1.3"
+    },
+    {
+      "name": "OkHttp",
+      "version": "3.9.0"
+    },
+    {
+      "name": "Retrofit",
+      "version": "no determinada estáticamente"
+    },
+    {
+      "name": "SQLCipher for Android",
+      "version": "4.5.4"
+    },
+    {
+      "name": "Firebase cloud messaging",
+      "version": "17.0.1"
+    },
+    {
+      "name": "Firebase components",
+      "version": "17.1.0"
+    },
+    {
+      "name": "Google Play services basement",
+      "version": "18.1.0"
+    },
+    {
+      "name": "Huawei ScanKit",
+      "version": "scanplus:2.1.0.300"
+    },
+    {
+      "name": "Huawei AGConnect Core",
+      "version": "1.4.0.300"
+    },
+    {
+      "name": "Qualvision Qv SDK",
+      "version": "P2P log declara v3.2; no equivale a versión global del SDK"
+    }
+  ],
+  "native": {
+    "abis": [
+      "arm64-v8a",
+      "armeabi-v7a"
+    ],
+    "libraries": [
+      "libWebrtcAudio.so",
+      "libavcodec.so",
+      "libavfilter.so",
+      "libavformat.so",
+      "libavutil.so",
+      "libeapilrender.so",
+      "liblive_player.so",
+      "libmsoptimize.so (solo arm64)",
+      "libqv-p2p-v2.so",
+      "libscannative.so",
+      "libsqlcipher.so",
+      "libswresample.so",
+      "libswscale.so",
+      "libvoiceRecog.so"
+    ],
+    "hashes_evidence": "analysis/apk/evidence/native-hashes.txt"
+  },
+  "morluto_rea_comparison": {
+    "artifacts_available_in_this_leaf": true,
+    "literal_identifiers_found": false,
+    "command_result": "El APK no contiene identificadores morluto/rea; analysis/rea aporta referencias externas verificadas por su hoja",
+    "secondary_sources": [
+      {
+        "path": "docs/rea-analysis.md",
+        "role": "REA, duhow y blog cmos486, no evidencia directa del APK",
+        "verification": "analysis/rea/verification.txt: REA_ANALYSIS_VERIFIED, exit 0"
+      }
+    ],
+    "confirmed_comparisons": [
+      {
+        "area": "REA",
+        "result": "REA es una herramienta genérica de ingeniería inversa, no un cliente Wibox ni una fuente de endpoints"
+      },
+      {
+        "area": "P2P",
+        "result": "Las notas duhow describen NTS/P2P y el APK contiene P2P nativo, pero no se prueba compatibilidad de protocolo"
+      },
+      {
+        "area": "MQTT",
+        "result": "APK: shadow con OAuth, QoS 1 y endpoints dinámicos. duhow: MQTT local plano 1883 con topics propios. No se deben intercambiar"
+      },
+      {
+        "area": "Media",
+        "result": "APK: quii/P2P nativo. Blog cmos486: WebRTC/RTSP custom. No es evidencia de stock"
+      },
+      {
+        "area": "Acciones",
+        "result": "Unlock, F1, guardia y llamadas comparten dominio, no necesariamente transporte ni payloads"
+      },
+      {
+        "area": "OEM",
+        "result": "G0021 aparece en APK y firmwares duhow B007/B013, sin demostrar compatibilidad cloud universal"
+      }
+    ],
+    "contrast_checklist": [
+      "Signer CN=Qualvision y hash del certificado",
+      "Paquete com.quvii.ubell frente a com.fermax.wibox",
+      "OEM G0021, APP_ID 2021, hosts fermax/matainde.qvcloud.net",
+      "Conjunto libqv-p2p-v2/live_player/WebrtcAudio",
+      "Trust-all, BKS y logging BODY",
+      "Flujo noLogin/freeRegister y credenciales dinámicas",
+      "Paleta #78c9e7 y estructura XML/MVP"
+    ],
+    "warning": "REA no es un cliente Wibox. La compatibilidad NTS/cloud y los payloads no se prueba por analogía"
+  },
+  "evidence_registry": [
+    {
+      "id": "E001",
+      "marker": "app_config",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/common/AppConfig.java:13-40"
+    },
+    {
+      "id": "E002",
+      "marker": "app_release_debug",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/App.java:185-220"
+    },
+    {
+      "id": "E003",
+      "marker": "app_log_account",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/App.java:148-151"
+    },
+    {
+      "id": "E004",
+      "marker": "sdk_user",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/sdk/SdkManager.java:90-111"
+    },
+    {
+      "id": "E005",
+      "marker": "sdk_init",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/sdk/SdkManager.java:283-318"
+    },
+    {
+      "id": "E006",
+      "marker": "loading_timeout",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/main/presenter/LoadingPresenter.java:29-51"
+    },
+    {
+      "id": "E007",
+      "marker": "qr_pairing",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/sdk/DeviceHelper.java:187-210"
+    },
+    {
+      "id": "E008",
+      "marker": "share_parse",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/sdk/DeviceHelper.java:248-287"
+    },
+    {
+      "id": "E009",
+      "marker": "bind_retry",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/sdk/DeviceHelper.java:339-355"
+    },
+    {
+      "id": "E010",
+      "marker": "bind_flow",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/sdk/DeviceHelper.java:685-785"
+    },
+    {
+      "id": "E011",
+      "marker": "preview_urls",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/sdk/DeviceHelper.java:846-915"
+    },
+    {
+      "id": "E012",
+      "marker": "qr_format",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/sdk/DeviceHelper.java:936-945"
+    },
+    {
+      "id": "E013",
+      "marker": "bind_save",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/sdk/DeviceHelper.java:1223-1267"
+    },
+    {
+      "id": "E014",
+      "marker": "wifi_defaults",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/device/add/model/DAWifiSetModel.java:51-100"
+    },
+    {
+      "id": "E015",
+      "marker": "wifi_payload",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/device/add/model/DAWifiSetModel.java:119-139"
+    },
+    {
+      "id": "E016",
+      "marker": "voice_payload",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/device/add/model/DAVoiceSetModel.java:48-81"
+    },
+    {
+      "id": "E017",
+      "marker": "wifi_timeout",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/device/add/presenter/DAWifiSetPresenter.java:156-200"
+    },
+    {
+      "id": "E018",
+      "marker": "wifi_retry",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/device/add/presenter/DAWifiSetPresenter.java:243-294"
+    },
+    {
+      "id": "E019",
+      "marker": "device_actions",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/main/presenter/MainDeviceListPresenter.java:190-258"
+    },
+    {
+      "id": "E020",
+      "marker": "device_list",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/main/presenter/MainDeviceListPresenter.java:283-333"
+    },
+    {
+      "id": "E021",
+      "marker": "preview_start",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/video/model/PreviewModel.java:126-182"
+    },
+    {
+      "id": "E022",
+      "marker": "preview_password",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/video/model/PreviewModel.java:241-272"
+    },
+    {
+      "id": "E023",
+      "marker": "talk_audio",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/video/model/PreviewModel.java:322-379"
+    },
+    {
+      "id": "E024",
+      "marker": "preview_timeout",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/video/presenter/PreviewPresenter.java:513-550"
+    },
+    {
+      "id": "E025",
+      "marker": "unlock_timeout",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/video/presenter/PreviewPresenter.java:673-696"
+    },
+    {
+      "id": "E026",
+      "marker": "preview_retry",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/video/presenter/PreviewPresenter.java:948-965"
+    },
+    {
+      "id": "E027",
+      "marker": "http_logging",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/qvweb/publico/utils/OkHttpUtil.java:67-90"
+    },
+    {
+      "id": "E028",
+      "marker": "http_bks",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/qvweb/publico/utils/OkHttpUtil.java:367-389"
+    },
+    {
+      "id": "E029",
+      "marker": "http_token",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/qvweb/publico/utils/OkHttpUtil.java:406-414"
+    },
+    {
+      "id": "E030",
+      "marker": "http_trust_all",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/qvweb/publico/utils/OkHttpUtil.java:562-588"
+    },
+    {
+      "id": "E031",
+      "marker": "digest_auth",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/qvweb/publico/intercept/DeviceAuthHeaderInterceptor.java:24-44"
+    },
+    {
+      "id": "E032",
+      "marker": "digest_retry",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/qvweb/publico/intercept/DeviceAuthHeaderInterceptor.java:47-93"
+    },
+    {
+      "id": "E033",
+      "marker": "oauth_grant",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/qvweb/oauth/QvOAuthManager.java:74-113"
+    },
+    {
+      "id": "E034",
+      "marker": "oauth_refresh",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/qvweb/oauth/QvOAuthManager.java:151-219"
+    },
+    {
+      "id": "E035",
+      "marker": "oauth_retry",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/qvweb/oauth/QvOAuthManager.java:290-320"
+    },
+    {
+      "id": "E036",
+      "marker": "oauth_storage",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/qvweb/oauth/QvOAuthSpUtil.java:23-47"
+    },
+    {
+      "id": "E037",
+      "marker": "mqtt_connect",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/shadow/mqtt/QvMqttManager.java:170-245"
+    },
+    {
+      "id": "E038",
+      "marker": "mqtt_retry",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/shadow/mqtt/QvMqttManager.java:248-297"
+    },
+    {
+      "id": "E039",
+      "marker": "mqtt_backoff",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/shadow/mqtt/QvMqttManager.java:329-343"
+    },
+    {
+      "id": "E040",
+      "marker": "mqtt_scheme",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/shadow/mqtt/QvMqttManager.java:416-438"
+    },
+    {
+      "id": "E041",
+      "marker": "shadow_api",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/shadow/QvShadowConfig.java:4-18"
+    },
+    {
+      "id": "E042",
+      "marker": "p2p_native",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/p2pv2/QvP2PClientV2.java:249-256"
+    },
+    {
+      "id": "E043",
+      "marker": "prefs_crypto",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/util/SpUtil.java:61-91"
+    },
+    {
+      "id": "E044",
+      "marker": "prefs_passwords",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/util/SpUtil.java:180-214"
+    },
+    {
+      "id": "E045",
+      "marker": "sqlcipher",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/database/SQLCipherHelperImpl.java:15-36"
+    },
+    {
+      "id": "E046",
+      "marker": "keystore",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/qvlib/util/QvEncryptKeyStoreUtil.java:240-251"
+    },
+    {
+      "id": "E047",
+      "marker": "keystore_init",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/qvlib/util/QvEncryptKeyStoreUtil.java:452-498"
+    },
+    {
+      "id": "E048",
+      "marker": "crypto_hashes",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/publico/utils/QvEncrypt.java:15-26"
+    },
+    {
+      "id": "E049",
+      "marker": "update_tls",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/version/AppVersionManager.java:101-126"
+    },
+    {
+      "id": "E050",
+      "marker": "update_endpoint",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/version/AppVersionManager.java:272-313"
+    },
+    {
+      "id": "E051",
+      "marker": "alarm_pagination",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/main/model/MainMessageListModel.java:85-99"
+    },
+    {
+      "id": "E052",
+      "marker": "alarm_errors",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/main/model/MainMessageListModel.java:206-253"
+    },
+    {
+      "id": "E053",
+      "marker": "main_tabs",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/main/view/MainTabActivity.java:161-211"
+    },
+    {
+      "id": "E054",
+      "marker": "device_empty",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/main/view/MainDeviceListFragment.java:149-199"
+    },
+    {
+      "id": "E055",
+      "marker": "shared_config",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/device/manage/view/DMConfigActivity.java:223-235"
+    },
+    {
+      "id": "E056",
+      "marker": "fcm_payload",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/push/fcm/MyFirebaseMessagingService.java:13-55"
+    },
+    {
+      "id": "E057",
+      "marker": "push_flow",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/push/PushHelper.java:55-119"
+    },
+    {
+      "id": "E058",
+      "marker": "push_notifications",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/push/PushHelper.java:227-280"
+    },
+    {
+      "id": "E059",
+      "marker": "push_timeout",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/push/presenter/PushCallPresenter.java:33-49"
+    },
+    {
+      "id": "E060",
+      "marker": "hidden_settings",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/main/view/MainMeFragment.java:127-183"
+    },
+    {
+      "id": "E061",
+      "marker": "about_debug",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/me/view/MeAboutActivity.java:45-56"
+    },
+    {
+      "id": "E062",
+      "marker": "file_provider",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/main/model/MainFileModel.java:111-151"
+    },
+    {
+      "id": "E063",
+      "marker": "sdk_flags",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/publico/common/SDKConfig.java:4-58"
+    },
+    {
+      "id": "E064",
+      "marker": "privacy_url",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/common/AppConst.java:63-70"
+    },
+    {
+      "id": "E065",
+      "marker": "connectivity_probe",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/qvlib/util/QvNetUtil.java:225-240"
+    },
+    {
+      "id": "E066",
+      "marker": "start_guide",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/main/view/StartGuideActivity.java:18-26"
+    },
+    {
+      "id": "E067",
+      "marker": "test_advanced",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/test/view/TestInfoActivity.java:92-100"
+    },
+    {
+      "id": "E068",
+      "marker": "device_ports",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/common/DeviceList.java:47-95"
+    },
+    {
+      "id": "E069",
+      "marker": "app_database",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/database/AppDatabase.java:14-17"
+    },
+    {
+      "id": "E070",
+      "marker": "error_map",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/common/ErrorCode.java:6-16"
+    },
+    {
+      "id": "E071",
+      "marker": "root_detection",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/ubell/publico/util/Utils.java:245-255"
+    },
+    {
+      "id": "E072",
+      "marker": "private_key_asset",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "assets/client.txt; file y sha256sum"
+    },
+    {
+      "id": "E073",
+      "marker": "shadow_gating",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/openapi/QvOpenSDK.java:2160-2163"
+    },
+    {
+      "id": "E074",
+      "marker": "legacy_http_schemes",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "com/quvii/qvweb/publico/utils/RetrofitUtil.java:299-309,433-482"
+    },
+    {
+      "id": "E075",
+      "marker": "file_provider_paths",
+      "path": "analysis/apk/evidence/code-evidence.md",
+      "original": "res/xml/provider_paths.xml:3-17` y `res/xml/permission_file_paths.xml:3-20"
+    }
+  ],
+  "evidence_files": [
+    "analysis/apk/evidence/AndroidManifest.xml",
+    "analysis/apk/evidence/apk-integrity.txt",
+    "analysis/apk/evidence/toolchain.txt",
+    "analysis/apk/evidence/library-versions.txt",
+    "analysis/apk/evidence/native-hashes.txt",
+    "analysis/apk/evidence/decompilation-limits.txt",
+    "analysis/apk/evidence/jadx-decompile.log",
+    "analysis/apk/evidence/code-evidence.md",
+    "analysis/apk/evidence/string-stats.json",
+    "analysis/apk/evidence/asset-hashes.txt",
+    "analysis/apk/evidence/security-search.txt",
+    "analysis/apk/evidence/provider_paths.xml",
+    "analysis/apk/evidence/permission_file_paths.xml"
+  ]
+}

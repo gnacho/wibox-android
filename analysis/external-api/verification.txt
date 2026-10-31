@@ -1,0 +1,140 @@
+# Verificación del diseño de API externa Wibox
+
+Fecha: 2026-10-31
+Directorio de ejecución: `/home/nacho/temp/opencode-work/wibox-external-api-analysis`
+Repo leído en modo solo lectura: `/home/nacho/Documentos/Repos/wibox-kotlin`
+
+## Alcance
+
+Verificación estática de coherencia entre `docs/external-api.md`, `analysis/external-api/api-contract.json`, la matriz actual de providers y los límites del inventario dinámico. No verifica una implementación Android, porque esta hoja no contiene un servicio, AIDL compilado, SDK ni tests Android.
+
+## Primera ejecución y corrección
+
+Comando:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 analysis/external-api/verify_external_api.py --repo /home/nacho/Documentos/Repos/wibox-kotlin
+```
+
+Salida real inicial, exit 1:
+
+```text
+DESIGN_ERROR local_only capability core.capability_negotiation cannot become runtime support
+```
+
+La regla del verificador era demasiado amplia para `core.capability_negotiation`, que está clasificada como infraestructura `contract_local` y no como soporte stock elevado. Se limitó la excepción a `core.lifecycle` y `core.capability_negotiation`. Después se repitió el control completo.
+
+## Segunda pasada de amenazas y compatibilidad
+
+Se revisó de nuevo el diseño antes de la ejecución final. Se añadieron estos requisitos:
+
+1. Capturar UID, identidad y generación del grant durante la transacción Binder y adjuntarlos al trabajo background.
+2. Denegar dispositivos cuando el grant está vacío y prohibir comodines.
+3. Permitir desuscripción y cancelación de operaciones propias tras revocación, sin exponer datos.
+4. Deduplicar request IDs sin volver a ejecutar acciones y devolver `CONFLICT` si cambia el payload.
+5. Prohibir cambios de layout Parcelable dentro de una major y exigir tipos V2.
+6. Mantener referencias fuertes a callbacks hasta completar y no retener callbacks en altas fallidas.
+7. Exigir comprobación de compatibilidad binaria del SDK.
+
+Se añadieron controles negativos para replay por request ID, pérdida de identidad background y cambio de layout Parcelable.
+
+## Ejecución final del verificador
+
+Comando:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 analysis/external-api/verify_external_api.py --repo /home/nacho/Documentos/Repos/wibox-kotlin
+```
+
+Salida real, exit 0:
+
+```text
+POSITIVE_CONTROL_OK docs contract provider-matrix dynamic-limits
+NEGATIVE_CONTROL_REJECTED package_name_only
+NEGATIVE_CONTROL_REJECTED custom_signature_permission
+NEGATIVE_CONTROL_REJECTED elevated_devices_list
+NEGATIVE_CONTROL_REJECTED elevated_action
+NEGATIVE_CONTROL_REJECTED secret_model_field
+NEGATIVE_CONTROL_REJECTED missing_unknown_outcome
+NEGATIVE_CONTROL_REJECTED hidden_demo
+NEGATIVE_CONTROL_REJECTED implicit_binding
+NEGATIVE_CONTROL_REJECTED elevated_media
+NEGATIVE_CONTROL_REJECTED disabled_version_enforcement
+NEGATIVE_CONTROL_REJECTED media_over_binder
+NEGATIVE_CONTROL_REJECTED duplicate_action_replay
+NEGATIVE_CONTROL_REJECTED lost_background_identity
+NEGATIVE_CONTROL_REJECTED parcelable_layout_change
+NEGATIVE_CONTROL_REJECTED documentation_without_uid_check
+WIBOX_EXTERNAL_API_DESIGN_VERIFIED
+```
+
+También se ejecutó la variante por variable de entorno, con la misma salida y exit 0:
+
+```bash
+WIBOX_REPO=/home/nacho/Documentos/Repos/wibox-kotlin PYTHONDONTWRITEBYTECODE=1 python3 analysis/external-api/verify_external_api.py
+```
+
+## Validación JSON
+
+Comando:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 -m json.tool analysis/external-api/api-contract.json >/dev/null
+```
+
+Resultado real: exit 0, sin salida.
+
+## Correspondencia con la matriz actual
+
+Comando:
+
+```bash
+sha256sum /home/nacho/Documentos/Repos/wibox-kotlin/analysis/architecture/provider-matrix.json
+```
+
+Salida real:
+
+```text
+912878dcef3f697cef5d7fc561dc1d1542a241673993343909fbdf4d6dd6a915  /home/nacho/Documentos/Repos/wibox-kotlin/analysis/architecture/provider-matrix.json
+```
+
+Ese mismo hash está registrado en `matrix_source.sha256` del contrato.
+
+Resumen medido del contrato:
+
+```text
+capabilities 64
+api_v1 {'contract_local': 2, 'contract_runtime_gated': 4, 'not_exposed': 38, 'unsupported_now': 20}
+runtime_gated devices.online_status,shadow.get,shadow.multi,app.update_check
+unsupported_media 9
+```
+
+`contract_runtime_gated` no significa disponible hoy. Indica que existe un modelo o método propuesto cuya ejecución exige provider, sesión, autorización y capability runtime. `app.update_check` conserva el nivel de la matriz y solo registra la observación dinámica acotada de request y response HTTP 200 XML.
+
+## Hashes de artefactos
+
+Comando:
+
+```bash
+sha256sum docs/external-api.md analysis/external-api/api-contract.json analysis/external-api/verify_external_api.py
+```
+
+Salida real:
+
+```text
+b263e6913a7feaf37723a828b9a749595d56d38453701eee0bd8e66f3451d535  docs/external-api.md
+93e984174b98f46b783514f901d932aed64f09d072c6a9fa94d59d04bc606ca3  analysis/external-api/api-contract.json
+386d71ddb4db6838734e730637c4921cc16ec600832123ca58b0a19fcf122983  analysis/external-api/verify_external_api.py
+```
+
+## Límites de esta verificación
+
+- No se compiló AIDL ni se ejecutó lint Android.
+- No se ejecutaron tests unitarios ni de instrumentación Android.
+- No existen todavía las dos apps de prueba con firmas distintas.
+- No se probaron UID, certificados, allowlist, callbacks, Binder death, cancelación ni rate limit en runtime.
+- No se ejecutaron acciones, lecturas QVCloud, consultas de actualización ni pruebas de hardware.
+- No se inspeccionaron transacciones Binder reales ni logs de una implementación inexistente.
+- No se usó red, no se instalaron paquetes y no se accedió a dispositivos.
+- No se editó el repo fuente, no se hicieron commits y no se publicó ningún artefacto.
+- El resultado `WIBOX_EXTERNAL_API_DESIGN_VERIFIED` acredita únicamente las comprobaciones estáticas anteriores. No significa que la API esté disponible ni que su seguridad runtime esté probada.

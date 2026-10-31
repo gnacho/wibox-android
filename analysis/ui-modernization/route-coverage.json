@@ -1,0 +1,145 @@
+{
+  "destinations": {
+    "about": {
+      "kind": "visual",
+      "capture": "captures/CAP-about-360-font1-light-demo.png"
+    },
+    "add-type": {
+      "kind": "visual",
+      "capture": "captures/CAP-add-type-360-font1-light-demo.png"
+    },
+    "config": {
+      "kind": "visual",
+      "capture": "captures/CAP-config-360-font1-light-demo.png"
+    },
+    "debug": {
+      "kind": "visual",
+      "capture": "captures/CAP-debug-360-font1-light-demo.png"
+    },
+    "device-bind": {
+      "kind": "visual",
+      "capture": "captures/CAP-device-bind-360-font1-light-demo.png"
+    },
+    "device-info": {
+      "kind": "visual",
+      "capture": "captures/CAP-device-info-360-font1-light-demo.png"
+    },
+    "handle-wifi": {
+      "kind": "visual",
+      "capture": "captures/CAP-handle-wifi-360-font1-light-demo.png"
+    },
+    "image-pager": {
+      "kind": "visual",
+      "capture": "captures/CAP-image-pager-360-font1-light-demo.png"
+    },
+    "main-devices": {
+      "kind": "visual",
+      "capture": "captures/CAP-main-devices-360-font1-light-demo.png"
+    },
+    "main-events": {
+      "kind": "visual",
+      "capture": "captures/CAP-main-events-360-font1-light-demo.png"
+    },
+    "main-gallery": {
+      "kind": "visual",
+      "capture": "captures/CAP-main-gallery-360-font1-light-demo.png"
+    },
+    "main-settings": {
+      "kind": "visual",
+      "capture": "captures/CAP-main-settings-360-font1-light-demo.png"
+    },
+    "online-devices": {
+      "kind": "visual",
+      "capture": "captures/CAP-online-devices-360-font1-light-demo.png"
+    },
+    "online-type": {
+      "kind": "visual",
+      "capture": "captures/CAP-online-type-360-font1-light-demo.png"
+    },
+    "pairing-fail": {
+      "kind": "visual",
+      "capture": "captures/CAP-pairing-fail-360-font1-light-demo.png"
+    },
+    "password-modify": {
+      "kind": "visual",
+      "capture": "captures/CAP-password-modify-360-font1-light-demo.png"
+    },
+    "preview": {
+      "kind": "visual",
+      "capture": "captures/CAP-preview-360-font1-light-demo.png"
+    },
+    "preview-panels": {
+      "kind": "visual",
+      "capture": "captures/CAP-preview-panels-360-font1-light-demo.png"
+    },
+    "product-intro": {
+      "kind": "visual",
+      "capture": "captures/CAP-product-intro-360-font1-light-demo.png"
+    },
+    "push-call-accepted": {
+      "kind": "visual",
+      "capture": "captures/CAP-push-call-accepted-360-font1-light-demo.png"
+    },
+    "push-call-ringing": {
+      "kind": "visual",
+      "capture": "captures/CAP-push-call-ringing-360-font1-light-demo.png"
+    },
+    "router": {
+      "kind": "visual",
+      "capture": "captures/CAP-router-360-font1-light-demo.png"
+    },
+    "scan": {
+      "kind": "visual",
+      "capture": "captures/CAP-scan-360-font1-light-demo.png"
+    },
+    "session-loading": {
+      "kind": "visual",
+      "capture": "captures/CAP-session-loading-360-font1-light-demo.png"
+    },
+    "share-bind": {
+      "kind": "visual",
+      "capture": "captures/CAP-share-bind-360-font1-light-demo.png"
+    },
+    "share-device": {
+      "kind": "visual",
+      "capture": "captures/CAP-share-device-360-font1-light-demo.png"
+    },
+    "share-manage": {
+      "kind": "visual",
+      "capture": "captures/CAP-share-manage-360-font1-light-demo.png"
+    },
+    "unlock-setting": {
+      "kind": "visual",
+      "capture": "captures/CAP-unlock-setting-360-font1-light-demo.png"
+    },
+    "upgrade": {
+      "kind": "visual",
+      "capture": "captures/CAP-upgrade-360-font1-light-demo.png"
+    },
+    "video-player": {
+      "kind": "visual",
+      "capture": "captures/CAP-video-player-360-font1-light-demo.png"
+    },
+    "voice": {
+      "kind": "visual",
+      "capture": "captures/CAP-voice-360-font1-light-demo.png"
+    },
+    "wifi-progress": {
+      "kind": "visual",
+      "capture": "captures/CAP-wifi-progress-360-font1-light-demo.png"
+    },
+    "cache": {
+      "kind": "cache",
+      "capture": null,
+      "cache_transport_relay_covered_by_instrumented_tests": true
+    }
+  },
+  "legacy_omitted": [
+    "guide",
+    "product_choose",
+    "add_method_legacy",
+    "wifi_list_legacy",
+    "wifi_set_legacy"
+  ],
+  "notes": "32 visual surfaces captured on emulator-5554 (API 37, 1080x2400, font 1.0, light theme, demo mode); cache is the transport relay covered by LocalFlowInstrumentedTest end-to-end startup; legacy screens stay out of the main flow per inventory."
+}

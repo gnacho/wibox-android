@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="@color/main_ui_color_white"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <include
+        android:id="@+id/publico_titlebar"
+        layout="@layout/publico_include_title"/>
+    <Button
+        android:id="@+id/bt_add_new"
+        android:layout_marginTop="120dp"
+        android:text="@string/key_device_new"
+        style="@style/option_button"/>
+    <Button
+        android:id="@+id/bt_add_online"
+        android:layout_marginTop="20dp"
+        android:text="@string/key_device_online"
+        style="@style/option_button"/>
+</LinearLayout>

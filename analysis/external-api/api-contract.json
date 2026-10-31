@@ -1,0 +1,2482 @@
+{
+  "schema_version": 1,
+  "contract_id": "dev.nacho.wibox.externalapi",
+  "status": "design-only",
+  "implementation_claimed": false,
+  "service": {
+    "transport": "android_binder_aidl",
+    "binding": "explicit_bound_service",
+    "package": "dev.nacho.wibox",
+    "component": "dev.nacho.wibox.externalapi.WiboxExternalApiService",
+    "intent_action": "dev.nacho.wibox.externalapi.BIND",
+    "interface": "dev.nacho.wibox.externalapi.aidl.IWiboxExternalService",
+    "exported": true,
+    "manifest_permission": null,
+    "http_server": false,
+    "client_internet_permission_required": false,
+    "minimum_external_api_android_sdk": 28,
+    "binder_instance_per_connection": true,
+    "first_method": "handshake",
+    "provider_boundary": "WiboxProvider",
+    "forbidden_boundaries": [
+      "Ktor",
+      "network DTOs",
+      "FakeWiboxCloud as a real cloud",
+      "raw media frames"
+    ]
+  },
+  "versioning": {
+    "wire_major": 1,
+    "wire_minor": 0,
+    "negotiation": "same_major_and_minimum_minor",
+    "different_major_error": "VERSION_UNSUPPORTED",
+    "additive_minor_changes_only": true,
+    "append_only_aidl_methods": true,
+    "versioned_parcelables": true,
+    "unknown_enum_policy": "preserve_as_UNKNOWN",
+    "server_side_version_enforcement": true,
+    "sdk_semver": true,
+    "parcelable_layout_changes_within_major": false,
+    "new_parcelable_fields_require_v2_type": true,
+    "minor_additions": [
+      "methods",
+      "capabilities",
+      "new Parcelable types",
+      "enum values with UNKNOWN fallback"
+    ]
+  },
+  "auth": {
+    "default_policy": "deny",
+    "factors": [
+      "real_uid",
+      "package_name",
+      "current_signing_certificate_set_sha256"
+    ],
+    "uid_source": "Binder.getCallingUid()",
+    "package_source": "PackageManager.getPackagesForUid(uid)",
+    "certificate_source": "PackageManager PackageInfo.signingInfo current signers",
+    "certificate_digest": "SHA-256 lowercase hex without separators, sorted complete signer set",
+    "client_supplied_certificate_trusted": false,
+    "client_supplied_package_trusted_without_check": false,
+    "package_name_only_sufficient": false,
+    "normal_permission_sufficient": false,
+    "custom_signature_permission_for_third_parties": false,
+    "custom_signature_permission_reason": "A signature permission only admits the Wibox signer and cannot authorize differently signed third parties",
+    "allowlist": "user_approved_revocable_scoped_grant",
+    "allowlist_key": [
+      "uid",
+      "packageName",
+      "currentSignerSetSha256"
+    ],
+    "per_call_reauthorization": true,
+    "shared_uid_policy": "deny",
+    "shared_uid_error": "SHARED_UID_UNSUPPORTED",
+    "isolated_uid_policy": "deny",
+    "package_spoof_error": "PACKAGE_UID_MISMATCH",
+    "same_signature_update": "preserve_grant",
+    "signature_rotation": "suspend_and_require_user_reapproval",
+    "signing_history_automatically_trusted": false,
+    "uid_change": "require_user_reapproval",
+    "revocation": "increment_grant_generation_deny_calls_and_remove_callbacks",
+    "approval_location": "Wibox settings only",
+    "third_party_self_approval": false,
+    "scopes_are_not_capability_evidence": true,
+    "background_identity": "captured_at_binder_transaction_and_attached_to_work",
+    "empty_device_grants_mean": "no_devices",
+    "device_id_wildcards_allowed": false,
+    "revocation_cleanup": "unsubscribe_and_cancel_owned_operations_allowed"
+  },
+  "authorization_states": [
+    "NOT_REQUESTED",
+    "PENDING",
+    "AUTHORIZED",
+    "DENIED",
+    "REVOKED",
+    "SIGNATURE_CHANGED",
+    "UID_CHANGED",
+    "SHARED_UID_UNSUPPORTED"
+  ],
+  "scopes": [
+    "provider.read",
+    "capabilities.read",
+    "devices.read",
+    "shadow.read",
+    "events.read",
+    "actions.unlock",
+    "actions.f1",
+    "actions.call_guard",
+    "actions.call_control",
+    "app.upgrade_check"
+  ],
+  "methods": [
+    {
+      "name": "handshake",
+      "kind": "synchronous_local",
+      "request": "ClientHello",
+      "response": "HandshakeResult",
+      "required_scope": null,
+      "capability": "core.lifecycle",
+      "authorization": "identity_is_derived_but_grant_is_not_required",
+      "execution": "no provider I/O",
+      "current_stock_behavior": "design_only_local"
+    },
+    {
+      "name": "requestAuthorization",
+      "kind": "synchronous_local",
+      "request": "AuthorizationRequest",
+      "response": "AuthorizationResult",
+      "required_scope": null,
+      "capability": "core.lifecycle",
+      "authorization": "verified_identity_and_rate_limit_only_never_self_grant",
+      "execution": "persist bounded pending request",
+      "current_stock_behavior": "design_only_local"
+    },
+    {
+      "name": "getAuthorizationState",
+      "kind": "synchronous_local",
+      "request": null,
+      "response": "AuthorizationResult",
+      "required_scope": null,
+      "capability": "core.lifecycle",
+      "authorization": "verified_identity",
+      "execution": "cached grant lookup",
+      "current_stock_behavior": "design_only_local"
+    },
+    {
+      "name": "getProviderSnapshot",
+      "kind": "synchronous_local",
+      "request": null,
+      "response": "ProviderSnapshotResult",
+      "required_scope": "provider.read",
+      "capability": "core.capability_negotiation",
+      "authorization": "active_grant_and_scope",
+      "execution": "cached provider and redacted session summary only",
+      "current_stock_behavior": "design_only_local"
+    },
+    {
+      "name": "getCapabilities",
+      "kind": "synchronous_local",
+      "request": "CapabilityQuery",
+      "response": "CapabilityPageResult",
+      "required_scope": "capabilities.read",
+      "capability": "core.capability_negotiation",
+      "authorization": "active_grant_scope_and_device_scope",
+      "execution": "cached bounded snapshot, never network",
+      "current_stock_behavior": "local_evidence_snapshot_only"
+    },
+    {
+      "name": "listDevices",
+      "kind": "asynchronous_one_shot",
+      "request": "PageRequest",
+      "response": null,
+      "callback": "IDevicePageCallback",
+      "required_scope": "devices.read",
+      "capability": "devices.list",
+      "authorization": "active_grant_scope_device_filter_and_runtime_capability",
+      "execution": "WiboxProvider DevicePort on supervised IO scope",
+      "current_stock_behavior": "UNSUPPORTED",
+      "demo_behavior": "allowed_only_with_simulated_true"
+    },
+    {
+      "name": "getDevice",
+      "kind": "asynchronous_one_shot",
+      "request": "DeviceRequest",
+      "response": null,
+      "callback": "IDeviceCallback",
+      "required_scope": "devices.read",
+      "capability": "devices.list",
+      "authorization": "active_grant_scope_exact_device_and_runtime_capability",
+      "execution": "WiboxProvider DevicePort on supervised IO scope",
+      "current_stock_behavior": "UNSUPPORTED",
+      "demo_behavior": "allowed_only_with_simulated_true"
+    },
+    {
+      "name": "getDeviceShadow",
+      "kind": "asynchronous_one_shot",
+      "request": "ShadowQuery",
+      "response": null,
+      "callback": "IShadowCallback",
+      "required_scope": "shadow.read",
+      "capability": "shadow.get",
+      "authorization": "active_grant_scope_exact_device_session_and_runtime_capability",
+      "execution": "WiboxProvider DevicePort, never direct Ktor",
+      "current_stock_behavior": "contract_offline_runtime_gated",
+      "demo_behavior": "allowed_only_with_simulated_true"
+    },
+    {
+      "name": "getDeviceShadows",
+      "kind": "asynchronous_one_shot",
+      "request": "ShadowBatchQuery",
+      "response": null,
+      "callback": "IShadowBatchCallback",
+      "required_scope": "shadow.read",
+      "capability": "shadow.multi",
+      "authorization": "active_grant_scope_every_device_session_and_runtime_capability",
+      "execution": "WiboxProvider DevicePort with maximum 20 queries",
+      "current_stock_behavior": "contract_offline_runtime_gated",
+      "demo_behavior": "allowed_only_with_simulated_true"
+    },
+    {
+      "name": "subscribeEvents",
+      "kind": "synchronous_setup_asynchronous_delivery",
+      "request": "EventSubscriptionRequest",
+      "response": "EventSubscriptionResult",
+      "callback": "IWiboxEventCallback",
+      "required_scope": "events.read",
+      "capability": "events.realtime",
+      "authorization": "active_grant_scope_every_device_and_runtime_capability",
+      "execution": "WiboxProvider EventPort with bounded queue and death recipient",
+      "current_stock_behavior": "UNSUPPORTED",
+      "demo_behavior": "allowed_only_with_simulated_true_and_gap_support"
+    },
+    {
+      "name": "unsubscribeEvents",
+      "kind": "synchronous_local",
+      "request": "IWiboxEventCallback",
+      "response": null,
+      "required_scope": null,
+      "capability": "events.realtime",
+      "authorization": "same_connection_and_callback_binder_cleanup_allowed_even_after_revocation",
+      "execution": "remove subscription and callback references",
+      "current_stock_behavior": "local_cleanup_only"
+    },
+    {
+      "name": "performAction",
+      "kind": "asynchronous_one_shot",
+      "request": "ActionRequest",
+      "response": null,
+      "callback": "IActionCallback",
+      "required_scope": "action_specific_scope",
+      "capability": "dynamic:actions.unlock|actions.f1|actions.call_guard|actions.call_accept|actions.call_reject",
+      "authorization": "active_grant_action_scope_exact_device_provider_permission_and_runtime_capability",
+      "execution": "WiboxProvider ActionPort, serialized when physical duplication is possible",
+      "current_stock_behavior": "UNSUPPORTED",
+      "demo_behavior": "LOCAL_ACCEPTED_only_with_simulated_true_and_origin_DEMO",
+      "automatic_physical_retry": false
+    },
+    {
+      "name": "cancelOperation",
+      "kind": "synchronous_local",
+      "request": "requestId",
+      "response": "CancellationResult",
+      "required_scope": "owner_operation_scope",
+      "capability": "core.lifecycle",
+      "authorization": "same_uid_package_connection_and_request_owner",
+      "execution": "cancel coroutine if possible, never claim physical rollback",
+      "current_stock_behavior": "design_only_local"
+    },
+    {
+      "name": "getActionOutcome",
+      "kind": "synchronous_local",
+      "request": "requestId",
+      "response": "ActionOutcomeResult",
+      "required_scope": "owner_operation_scope",
+      "capability": "core.lifecycle",
+      "authorization": "same_uid_package_and_request_owner",
+      "execution": "bounded action journal lookup, no replay",
+      "current_stock_behavior": "design_only_local"
+    },
+    {
+      "name": "checkAppUpgrade",
+      "kind": "asynchronous_one_shot",
+      "request": "UpgradeCheckRequest",
+      "response": null,
+      "callback": "IUpgradeCallback",
+      "required_scope": "app.upgrade_check",
+      "capability": "app.update_check",
+      "authorization": "active_grant_scope_and_runtime_capability",
+      "execution": "WiboxProvider MaintenancePort, query only and strict TLS",
+      "current_stock_behavior": "observed_success_contract_only_errors_and_production_tls_open",
+      "install_or_download": false
+    }
+  ],
+  "models": {
+    "ClientHello": {
+      "fields": [
+        {
+          "name": "packageName",
+          "type": "String",
+          "max_utf8_bytes": 128,
+          "required": true
+        },
+        {
+          "name": "clientApiMajor",
+          "type": "int",
+          "required": true
+        },
+        {
+          "name": "clientApiMinor",
+          "type": "int",
+          "required": true
+        },
+        {
+          "name": "clientSdkVersion",
+          "type": "String",
+          "max_utf8_bytes": 32,
+          "required": true
+        }
+      ]
+    },
+    "HandshakeResult": {
+      "fields": [
+        {
+          "name": "serverApiMajor",
+          "type": "int",
+          "required": true
+        },
+        {
+          "name": "serverApiMinor",
+          "type": "int",
+          "required": true
+        },
+        {
+          "name": "negotiatedApiMinor",
+          "type": "int",
+          "required": true
+        },
+        {
+          "name": "authorization",
+          "type": "AuthorizationSnapshot",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "ApiError",
+          "required": false
+        }
+      ],
+      "invariant": "success values or error, never an implied authorization"
+    },
+    "AuthorizationRequest": {
+      "fields": [
+        {
+          "name": "displayName",
+          "type": "String",
+          "max_utf8_bytes": 128,
+          "required": true
+        },
+        {
+          "name": "requestedScopes",
+          "type": "List<String>",
+          "max_items": 10,
+          "required": true
+        },
+        {
+          "name": "requestedDeviceIds",
+          "type": "List<String>",
+          "max_items": 20,
+          "required": true
+        }
+      ]
+    },
+    "AuthorizationSnapshot": {
+      "fields": [
+        {
+          "name": "state",
+          "type": "AuthorizationState",
+          "required": true
+        },
+        {
+          "name": "grantedScopes",
+          "type": "List<String>",
+          "max_items": 10,
+          "required": true
+        },
+        {
+          "name": "grantedDeviceIds",
+          "type": "List<String>",
+          "max_items": 100,
+          "required": true
+        },
+        {
+          "name": "grantGeneration",
+          "type": "long",
+          "required": true
+        }
+      ]
+    },
+    "AuthorizationResult": {
+      "fields": [
+        {
+          "name": "authorization",
+          "type": "AuthorizationSnapshot",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "ApiError",
+          "required": false
+        }
+      ],
+      "invariant": "exactly one payload or error"
+    },
+    "ProviderSnapshot": {
+      "fields": [
+        {
+          "name": "providerId",
+          "type": "String",
+          "max_utf8_bytes": 64,
+          "required": true
+        },
+        {
+          "name": "profileVersion",
+          "type": "String",
+          "max_utf8_bytes": 32,
+          "required": true
+        },
+        {
+          "name": "connectionKind",
+          "type": "ConnectionKind",
+          "required": true
+        },
+        {
+          "name": "preparationState",
+          "type": "PreparationState",
+          "required": true
+        },
+        {
+          "name": "session",
+          "type": "SessionSummary",
+          "required": true
+        },
+        {
+          "name": "simulated",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "observedAtEpochMs",
+          "type": "long",
+          "required": true
+        }
+      ]
+    },
+    "ProviderSnapshotResult": {
+      "fields": [
+        {
+          "name": "snapshot",
+          "type": "ProviderSnapshot",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "ApiError",
+          "required": false
+        }
+      ]
+    },
+    "SessionSummary": {
+      "fields": [
+        {
+          "name": "state",
+          "type": "SessionState",
+          "required": true
+        },
+        {
+          "name": "sessionGeneration",
+          "type": "long",
+          "required": true
+        },
+        {
+          "name": "expiresAtEpochMs",
+          "type": "long",
+          "required": false
+        }
+      ],
+      "explicitly_absent": [
+        "opaque account name",
+        "user name",
+        "password",
+        "access or refresh token",
+        "cookie",
+        "endpoint",
+        "opaque client identifier",
+        "device credential"
+      ]
+    },
+    "CapabilityQuery": {
+      "fields": [
+        {
+          "name": "page",
+          "type": "PageRequest",
+          "required": true
+        },
+        {
+          "name": "deviceId",
+          "type": "String",
+          "max_utf8_bytes": 128,
+          "required": false
+        },
+        {
+          "name": "namespace",
+          "type": "String",
+          "max_utf8_bytes": 128,
+          "required": false
+        }
+      ]
+    },
+    "CapabilitySnapshot": {
+      "fields": [
+        {
+          "name": "key",
+          "type": "String",
+          "max_utf8_bytes": 128,
+          "required": true
+        },
+        {
+          "name": "scope",
+          "type": "CapabilityScope",
+          "required": true
+        },
+        {
+          "name": "support",
+          "type": "Support",
+          "required": true
+        },
+        {
+          "name": "availability",
+          "type": "Availability",
+          "required": true
+        },
+        {
+          "name": "evidence",
+          "type": "String",
+          "max_utf8_bytes": 64,
+          "required": true
+        },
+        {
+          "name": "origin",
+          "type": "String",
+          "max_utf8_bytes": 64,
+          "required": true
+        },
+        {
+          "name": "profileVersion",
+          "type": "String",
+          "max_utf8_bytes": 32,
+          "required": true
+        },
+        {
+          "name": "observedAtEpochMs",
+          "type": "long",
+          "required": true
+        },
+        {
+          "name": "revalidateAfterEpochMs",
+          "type": "long",
+          "required": false
+        },
+        {
+          "name": "limitations",
+          "type": "List<String>",
+          "max_items": 10,
+          "max_utf8_bytes_each": 256,
+          "required": true
+        },
+        {
+          "name": "extensions",
+          "type": "List<ProviderExtension>",
+          "max_items": 20,
+          "required": true
+        }
+      ]
+    },
+    "CapabilityPage": {
+      "fields": [
+        {
+          "name": "items",
+          "type": "List<CapabilitySnapshot>",
+          "max_items": 50,
+          "required": true
+        },
+        {
+          "name": "nextCursor",
+          "type": "PageCursor",
+          "required": false
+        },
+        {
+          "name": "observedAtEpochMs",
+          "type": "long",
+          "required": true
+        }
+      ]
+    },
+    "CapabilityPageResult": {
+      "fields": [
+        {
+          "name": "page",
+          "type": "CapabilityPage",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "ApiError",
+          "required": false
+        }
+      ]
+    },
+    "PageCursor": {
+      "fields": [
+        {
+          "name": "generation",
+          "type": "long",
+          "required": true
+        },
+        {
+          "name": "offset",
+          "type": "int",
+          "required": true
+        }
+      ],
+      "security": "position only, never an authorization artifact"
+    },
+    "PageRequest": {
+      "fields": [
+        {
+          "name": "requestId",
+          "type": "String",
+          "max_utf8_bytes": 64,
+          "required": true
+        },
+        {
+          "name": "cursor",
+          "type": "PageCursor",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "int",
+          "minimum": 1,
+          "maximum": 20,
+          "required": true
+        }
+      ]
+    },
+    "DeviceRef": {
+      "fields": [
+        {
+          "name": "providerId",
+          "type": "String",
+          "max_utf8_bytes": 64,
+          "required": true
+        },
+        {
+          "name": "deviceId",
+          "type": "String",
+          "max_utf8_bytes": 128,
+          "required": true
+        },
+        {
+          "name": "channel",
+          "type": "int",
+          "required": false
+        }
+      ]
+    },
+    "DeviceRequest": {
+      "fields": [
+        {
+          "name": "requestId",
+          "type": "String",
+          "max_utf8_bytes": 64,
+          "required": true
+        },
+        {
+          "name": "device",
+          "type": "DeviceRef",
+          "required": true
+        }
+      ]
+    },
+    "DeviceSnapshot": {
+      "fields": [
+        {
+          "name": "device",
+          "type": "DeviceRef",
+          "required": true
+        },
+        {
+          "name": "displayName",
+          "type": "String",
+          "max_utf8_bytes": 128,
+          "required": false
+        },
+        {
+          "name": "declaredModel",
+          "type": "String",
+          "max_utf8_bytes": 128,
+          "required": false
+        },
+        {
+          "name": "role",
+          "type": "DeviceRole",
+          "required": true
+        },
+        {
+          "name": "presence",
+          "type": "Presence",
+          "required": true
+        },
+        {
+          "name": "lastObservedAtEpochMs",
+          "type": "long",
+          "required": false
+        },
+        {
+          "name": "source",
+          "type": "DataSource",
+          "required": true
+        },
+        {
+          "name": "stale",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "simulated",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "capabilityKeys",
+          "type": "List<String>",
+          "max_items": 100,
+          "required": true
+        }
+      ]
+    },
+    "DevicePage": {
+      "fields": [
+        {
+          "name": "items",
+          "type": "List<DeviceSnapshot>",
+          "max_items": 20,
+          "required": true
+        },
+        {
+          "name": "nextCursor",
+          "type": "PageCursor",
+          "required": false
+        },
+        {
+          "name": "source",
+          "type": "DataSource",
+          "required": true
+        },
+        {
+          "name": "observedAtEpochMs",
+          "type": "long",
+          "required": true
+        }
+      ],
+      "invariant": "errors never become a successful empty page"
+    },
+    "ShadowQuery": {
+      "fields": [
+        {
+          "name": "requestId",
+          "type": "String",
+          "max_utf8_bytes": 64,
+          "required": true
+        },
+        {
+          "name": "device",
+          "type": "DeviceRef",
+          "required": true
+        },
+        {
+          "name": "fieldNames",
+          "type": "List<String>",
+          "max_items": 32,
+          "max_utf8_bytes_each": 128,
+          "required": true
+        },
+        {
+          "name": "freshness",
+          "type": "Freshness",
+          "required": true
+        }
+      ]
+    },
+    "ShadowBatchQuery": {
+      "fields": [
+        {
+          "name": "requestId",
+          "type": "String",
+          "max_utf8_bytes": 64,
+          "required": true
+        },
+        {
+          "name": "queries",
+          "type": "List<ShadowQuery>",
+          "max_items": 20,
+          "required": true
+        }
+      ]
+    },
+    "StockShadowFields": {
+      "fields": [
+        {
+          "name": "deviceState",
+          "type": "Integer",
+          "required": false
+        },
+        {
+          "name": "f1State",
+          "type": "Integer",
+          "required": false
+        },
+        {
+          "name": "switchState",
+          "type": "Integer",
+          "required": false
+        },
+        {
+          "name": "privateModeState",
+          "type": "Integer",
+          "required": false
+        },
+        {
+          "name": "fisheyeChannelState",
+          "type": "Integer",
+          "required": false
+        },
+        {
+          "name": "lockState",
+          "type": "Integer",
+          "required": false
+        },
+        {
+          "name": "alarmZoneMode",
+          "type": "Integer",
+          "required": false
+        },
+        {
+          "name": "smartRelay",
+          "type": "Integer",
+          "required": false
+        }
+      ],
+      "semantic_rule": "preserve raw integers without inventing online, offline or physical state"
+    },
+    "UnknownFieldDescriptor": {
+      "fields": [
+        {
+          "name": "name",
+          "type": "String",
+          "max_utf8_bytes": 128,
+          "required": true
+        },
+        {
+          "name": "observedType",
+          "type": "String",
+          "max_utf8_bytes": 32,
+          "required": true
+        }
+      ],
+      "raw_value_exposed": false
+    },
+    "ShadowSnapshot": {
+      "fields": [
+        {
+          "name": "device",
+          "type": "DeviceRef",
+          "required": true
+        },
+        {
+          "name": "stockFields",
+          "type": "StockShadowFields",
+          "required": false
+        },
+        {
+          "name": "logicalPath",
+          "type": "String",
+          "max_utf8_bytes": 128,
+          "required": false
+        },
+        {
+          "name": "timestampEpochMs",
+          "type": "long",
+          "required": false
+        },
+        {
+          "name": "sequence",
+          "type": "long",
+          "required": false
+        },
+        {
+          "name": "source",
+          "type": "DataSource",
+          "required": true
+        },
+        {
+          "name": "stale",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "simulated",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "extensions",
+          "type": "List<ProviderExtension>",
+          "max_items": 20,
+          "required": true
+        },
+        {
+          "name": "unknownFields",
+          "type": "List<UnknownFieldDescriptor>",
+          "max_items": 50,
+          "required": true
+        }
+      ]
+    },
+    "ShadowBatch": {
+      "fields": [
+        {
+          "name": "items",
+          "type": "List<ShadowSnapshot>",
+          "max_items": 20,
+          "required": true
+        },
+        {
+          "name": "missingDeviceIds",
+          "type": "List<String>",
+          "max_items": 20,
+          "required": true
+        }
+      ],
+      "invariant": "missing states are not filled with offline or success"
+    },
+    "ProviderExtension": {
+      "fields": [
+        {
+          "name": "namespacedKey",
+          "type": "String",
+          "max_utf8_bytes": 128,
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "ProviderExtensionValue",
+          "required": true
+        }
+      ],
+      "review_required": true
+    },
+    "ProviderExtensionValue": {
+      "fields": [
+        {
+          "name": "type",
+          "type": "ExtensionValueType",
+          "required": true
+        },
+        {
+          "name": "booleanValue",
+          "type": "Boolean",
+          "required": false
+        },
+        {
+          "name": "integerValue",
+          "type": "Long",
+          "required": false
+        },
+        {
+          "name": "decimalValue",
+          "type": "Double",
+          "required": false
+        },
+        {
+          "name": "stringValue",
+          "type": "String",
+          "max_utf8_bytes": 1024,
+          "required": false
+        }
+      ],
+      "invariant": "exactly one value matching type"
+    },
+    "EventCursor": {
+      "fields": [
+        {
+          "name": "streamGeneration",
+          "type": "long",
+          "required": true
+        },
+        {
+          "name": "sequence",
+          "type": "long",
+          "required": true
+        }
+      ],
+      "security": "position only, never a bearer token"
+    },
+    "EventFilter": {
+      "fields": [
+        {
+          "name": "deviceIds",
+          "type": "List<String>",
+          "max_items": 20,
+          "required": true
+        },
+        {
+          "name": "channels",
+          "type": "List<Integer>",
+          "max_items": 20,
+          "required": true
+        },
+        {
+          "name": "eventTypes",
+          "type": "List<EventType>",
+          "max_items": 20,
+          "required": true
+        }
+      ]
+    },
+    "EventSubscriptionRequest": {
+      "fields": [
+        {
+          "name": "after",
+          "type": "EventCursor",
+          "required": false
+        },
+        {
+          "name": "filter",
+          "type": "EventFilter",
+          "required": true
+        },
+        {
+          "name": "maximumBatchSize",
+          "type": "int",
+          "minimum": 1,
+          "maximum": 10,
+          "required": true
+        }
+      ]
+    },
+    "EventSubscriptionSnapshot": {
+      "fields": [
+        {
+          "name": "state",
+          "type": "EventConnectionState",
+          "required": true
+        },
+        {
+          "name": "resumeCursor",
+          "type": "EventCursor",
+          "required": false
+        },
+        {
+          "name": "replayFromCache",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "liveSupported",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    },
+    "EventSubscriptionResult": {
+      "fields": [
+        {
+          "name": "snapshot",
+          "type": "EventSubscriptionSnapshot",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "ApiError",
+          "required": false
+        }
+      ]
+    },
+    "EventEnvelope": {
+      "fields": [
+        {
+          "name": "providerEventId",
+          "type": "String",
+          "max_utf8_bytes": 128,
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "EventType",
+          "required": true
+        },
+        {
+          "name": "device",
+          "type": "DeviceRef",
+          "required": true
+        },
+        {
+          "name": "rawTime",
+          "type": "String",
+          "max_utf8_bytes": 128,
+          "required": false
+        },
+        {
+          "name": "parsedTimeEpochMs",
+          "type": "long",
+          "required": false
+        },
+        {
+          "name": "receivedAtEpochMs",
+          "type": "long",
+          "required": true
+        },
+        {
+          "name": "origin",
+          "type": "ProviderOrigin",
+          "required": true
+        },
+        {
+          "name": "duplicate",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "cursor",
+          "type": "EventCursor",
+          "required": true
+        },
+        {
+          "name": "simulated",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "extensions",
+          "type": "List<ProviderExtension>",
+          "max_items": 20,
+          "required": true
+        },
+        {
+          "name": "attachmentMetadata",
+          "type": "List<AttachmentMetadata>",
+          "max_items": 4,
+          "required": true
+        }
+      ]
+    },
+    "AttachmentMetadata": {
+      "fields": [
+        {
+          "name": "kind",
+          "type": "String",
+          "max_utf8_bytes": 32,
+          "required": true
+        },
+        {
+          "name": "available",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "expiresAtEpochMs",
+          "type": "long",
+          "required": false
+        }
+      ],
+      "content_or_uri_exposed": false
+    },
+    "EventBatch": {
+      "fields": [
+        {
+          "name": "items",
+          "type": "List<EventEnvelope>",
+          "max_items": 10,
+          "required": true
+        },
+        {
+          "name": "latestCursor",
+          "type": "EventCursor",
+          "required": false
+        }
+      ],
+      "max_serialized_bytes": 49152
+    },
+    "EventGap": {
+      "fields": [
+        {
+          "name": "lastValidCursor",
+          "type": "EventCursor",
+          "required": false
+        },
+        {
+          "name": "resumeCursor",
+          "type": "EventCursor",
+          "required": false
+        },
+        {
+          "name": "reason",
+          "type": "GapReason",
+          "required": true
+        },
+        {
+          "name": "detectedAtEpochMs",
+          "type": "long",
+          "required": true
+        },
+        {
+          "name": "resyncRequired",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "recoverability",
+          "type": "GapRecoverability",
+          "required": true
+        }
+      ]
+    },
+    "EventConnectionState": {
+      "fields": [
+        {
+          "name": "state",
+          "type": "EventStreamState",
+          "required": true
+        },
+        {
+          "name": "observedAtEpochMs",
+          "type": "long",
+          "required": true
+        }
+      ]
+    },
+    "ActionRequest": {
+      "fields": [
+        {
+          "name": "requestId",
+          "type": "String",
+          "max_utf8_bytes": 64,
+          "required": true
+        },
+        {
+          "name": "device",
+          "type": "DeviceRef",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "ActionType",
+          "required": true
+        },
+        {
+          "name": "parameters",
+          "type": "List<ProviderExtension>",
+          "max_items": 10,
+          "required": true
+        },
+        {
+          "name": "expiresAtEpochMs",
+          "type": "long",
+          "required": true
+        }
+      ],
+      "request_id_security": "correlation only, never a token or authorization artifact"
+    },
+    "ActionOutcome": {
+      "fields": [
+        {
+          "name": "requestId",
+          "type": "String",
+          "max_utf8_bytes": 64,
+          "required": true
+        },
+        {
+          "name": "actionType",
+          "type": "ActionType",
+          "required": true
+        },
+        {
+          "name": "device",
+          "type": "DeviceRef",
+          "required": true
+        },
+        {
+          "name": "ackLevel",
+          "type": "AckLevel",
+          "required": true
+        },
+        {
+          "name": "origin",
+          "type": "ProviderOrigin",
+          "required": true
+        },
+        {
+          "name": "simulated",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "occurredAtEpochMs",
+          "type": "long",
+          "required": true
+        },
+        {
+          "name": "providerCode",
+          "type": "String",
+          "max_utf8_bytes": 64,
+          "required": false
+        },
+        {
+          "name": "observationEventId",
+          "type": "String",
+          "max_utf8_bytes": 128,
+          "required": false
+        }
+      ],
+      "physical_success_rule": "PHYSICAL_OBSERVED and simulated=false and origin!=DEMO"
+    },
+    "ActionOutcomeResult": {
+      "fields": [
+        {
+          "name": "outcome",
+          "type": "ActionOutcome",
+          "required": false
+        },
+        {
+          "name": "error",
+          "type": "ApiError",
+          "required": false
+        }
+      ]
+    },
+    "CancellationResult": {
+      "fields": [
+        {
+          "name": "requestId",
+          "type": "String",
+          "max_utf8_bytes": 64,
+          "required": true
+        },
+        {
+          "name": "state",
+          "type": "CancellationState",
+          "required": true
+        },
+        {
+          "name": "error",
+          "type": "ApiError",
+          "required": false
+        }
+      ]
+    },
+    "UpgradeCheckRequest": {
+      "fields": [
+        {
+          "name": "requestId",
+          "type": "String",
+          "max_utf8_bytes": 64,
+          "required": true
+        },
+        {
+          "name": "languageTag",
+          "type": "String",
+          "max_utf8_bytes": 35,
+          "required": true
+        }
+      ]
+    },
+    "UpgradeInfo": {
+      "fields": [
+        {
+          "name": "state",
+          "type": "UpgradeState",
+          "required": true
+        },
+        {
+          "name": "currentVersion",
+          "type": "String",
+          "max_utf8_bytes": 64,
+          "required": true
+        },
+        {
+          "name": "availableVersion",
+          "type": "String",
+          "max_utf8_bytes": 64,
+          "required": false
+        },
+        {
+          "name": "priority",
+          "type": "int",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "max_utf8_bytes": 1024,
+          "required": false
+        },
+        {
+          "name": "checkedAtEpochMs",
+          "type": "long",
+          "required": true
+        }
+      ],
+      "query_only": true,
+      "download_or_install_exposed": false
+    },
+    "ApiError": {
+      "fields": [
+        {
+          "name": "code",
+          "type": "ApiErrorCode",
+          "required": true
+        },
+        {
+          "name": "retryPolicy",
+          "type": "RetryPolicy",
+          "required": true
+        },
+        {
+          "name": "capabilityKey",
+          "type": "String",
+          "max_utf8_bytes": 128,
+          "required": false
+        },
+        {
+          "name": "outcome",
+          "type": "AckLevel",
+          "required": false
+        },
+        {
+          "name": "safeMessage",
+          "type": "String",
+          "max_utf8_bytes": 256,
+          "required": false
+        },
+        {
+          "name": "retryAfterMs",
+          "type": "long",
+          "required": false
+        },
+        {
+          "name": "providerCode",
+          "type": "String",
+          "max_utf8_bytes": 64,
+          "required": false
+        }
+      ],
+      "forbidden_content": [
+        "response bodies",
+        "full URLs",
+        "headers",
+        "transport exception messages",
+        "secrets",
+        "raw provider payloads"
+      ]
+    }
+  },
+  "errors": [
+    "NOT_AUTHORIZED",
+    "AUTHORIZATION_PENDING",
+    "AUTHORIZATION_REVOKED",
+    "AUTHORIZATION_DENIED",
+    "PACKAGE_UID_MISMATCH",
+    "SIGNATURE_CHANGED",
+    "UID_CHANGED",
+    "SHARED_UID_UNSUPPORTED",
+    "HANDSHAKE_REQUIRED",
+    "VERSION_UNSUPPORTED",
+    "UNSUPPORTED",
+    "CAPABILITY_UNKNOWN",
+    "SESSION_REQUIRED",
+    "PROVIDER_NOT_READY",
+    "NOT_FOUND",
+    "CONFLICT",
+    "INVALID_INPUT",
+    "PAYLOAD_TOO_LARGE",
+    "RATE_LIMITED",
+    "BUSY",
+    "CANCELLED",
+    "SERVICE_DIED",
+    "CALLBACK_DEAD",
+    "AUTHENTICATION",
+    "PROVIDER_AUTHORIZATION",
+    "NETWORK",
+    "TIMEOUT",
+    "PARSE",
+    "PERSISTENCE",
+    "EVENT_GAP",
+    "OUTCOME_UNKNOWN",
+    "ACTION_REJECTED",
+    "INTERNAL"
+  ],
+  "retry_policies": [
+    "DO_NOT_RETRY",
+    "SAFE_READ_RETRY",
+    "MANUAL_RETRY",
+    "REAUTHENTICATE",
+    "RENEGOTIATE",
+    "RESYNC"
+  ],
+  "ack_levels": [
+    {
+      "id": "LOCAL_ACCEPTED",
+      "meaning": "accepted locally only"
+    },
+    {
+      "id": "PROVIDER_ACCEPTED",
+      "meaning": "cloud accepted, device execution not proven"
+    },
+    {
+      "id": "DEVICE_ACKNOWLEDGED",
+      "meaning": "device acknowledgement within a known contract, physical effect not implied"
+    },
+    {
+      "id": "PHYSICAL_OBSERVED",
+      "meaning": "independent validated observation of the physical effect"
+    },
+    {
+      "id": "UNKNOWN_OUTCOME",
+      "meaning": "ambiguous, neither success nor definitive failure"
+    },
+    {
+      "id": "REJECTED",
+      "meaning": "typed rejection without an invented physical cause"
+    }
+  ],
+  "action_policy": {
+    "authorization_and_capability_checked": true,
+    "success_without_ack": false,
+    "automatic_physical_retries": 0,
+    "ambiguous_retry_policy": "MANUAL_RETRY",
+    "unknown_outcome_is_not_failure_or_success": true,
+    "cancel_after_dispatch_guarantees_rollback": false,
+    "journal_reconciliation_without_replay": true,
+    "physical_observation_requires_independent_event": true,
+    "demo_marks_simulation": true,
+    "demo_origin": "DEMO",
+    "demo_maximum_ack": "LOCAL_ACCEPTED",
+    "demo_presented_as_qvcloud": false,
+    "duplicate_request_id": "return_existing_operation_or_outcome_never_reexecute",
+    "request_id_reuse_with_different_payload": "CONFLICT"
+  },
+  "event_policy": {
+    "gaps_explicit": true,
+    "resync_required_explicit": true,
+    "empty_stream_means_connected": false,
+    "exactly_once_claimed": false,
+    "total_order_claimed": false,
+    "bounded_batches": true,
+    "callback_death_unsubscribes": true,
+    "overflow_policy": "drop_pending_batches_and_emit_single_gap",
+    "unrecoverable_gap_is_explicit": true
+  },
+  "limits": {
+    "request_serialized_bytes": 32768,
+    "response_serialized_bytes": 65536,
+    "device_page_items": 20,
+    "capability_page_items": 50,
+    "shadow_batch_queries": 20,
+    "event_batch_items": 10,
+    "event_batch_serialized_bytes": 49152,
+    "device_id_utf8_bytes": 128,
+    "display_name_utf8_bytes": 128,
+    "extension_string_utf8_bytes": 1024,
+    "pending_one_shot_per_app": 20,
+    "pending_one_shot_global": 100,
+    "event_subscriptions_per_app": 4,
+    "event_queue_items_per_subscription": 100,
+    "event_queue_bytes_per_subscription": 65536,
+    "reads_per_minute_per_uid": 30,
+    "read_burst_per_uid": 10,
+    "actions_per_minute_per_uid": 6,
+    "action_burst_per_uid": 2,
+    "pending_authorization_per_package": 3,
+    "pending_authorization_global": 50,
+    "silent_truncation": false
+  },
+  "lifecycle": {
+    "main_thread_provider_io": false,
+    "blocking_binder_physical_wait": false,
+    "supervised_io_scope": true,
+    "global_scope": false,
+    "sdk_main_safe": true,
+    "sdk_synchronous_calls_dispatcher": "Dispatchers.IO",
+    "sdk_async_adapter": "suspendCancellableCoroutine",
+    "event_adapter": "callbackFlow with awaitClose",
+    "one_shot_callback_removed_in_finally": true,
+    "callbacks_indexed_by_binder": true,
+    "link_to_death": true,
+    "revocation_removes_callbacks": true,
+    "unbind_removes_connection_callbacks": true,
+    "read_cancellation": "cancel_provider_coroutine_and_callback",
+    "action_cancellation_after_dispatch": "UNKNOWN_OUTCOME_possible_no_rollback_claim",
+    "service_death_in_flight_action": "SERVICE_DIED_with_UNKNOWN_OUTCOME_and_MANUAL_RETRY",
+    "automatic_action_replay_on_reconnect": false,
+    "media_over_binder": false,
+    "file_descriptor_media_over_binder": false,
+    "background_work_uses_captured_transaction_identity": true,
+    "failed_subscription_callback_registered": false,
+    "sdk_holds_callback_strong_until_terminal": true
+  },
+  "provider_policy": {
+    "port": "WiboxProvider",
+    "optional_subports": true,
+    "capability_per_provider_account_device_channel": true,
+    "support_is_not_runtime_availability": true,
+    "unknown_is_not_unsupported": true,
+    "typed_provider_extensions": true,
+    "arbitrary_raw_dto_exposure": false,
+    "unknown_field_values_exposed": false,
+    "stock_shadow_extension_namespace": "stock.qvcloud",
+    "demo_fallback_on_stock_failure": false,
+    "demo_connection_kind": "DEMO"
+  },
+  "matrix_source": {
+    "path": "analysis/architecture/provider-matrix.json",
+    "sha256": "912878dcef3f697cef5d7fc561dc1d1542a241673993343909fbdf4d6dd6a915",
+    "expected_capabilities": 64,
+    "evidence_levels_elevated": false
+  },
+  "dynamic_evidence_source": {
+    "path": "analysis/dynamic/inventory.json",
+    "app_upgrade_observation_id": "DYN3-HTTP-UPGRADE-001",
+    "app_upgrade_scope": "request_and_http_200_xml_success_only",
+    "used_to_elevate_provider_matrix": false
+  },
+  "capability_matrix": [
+    {
+      "id": "core.lifecycle",
+      "current": "implemented_contract",
+      "stock_support": "required",
+      "stock_status": "implemented_contract",
+      "api_v1": "contract_local",
+      "methods": [
+        "handshake",
+        "cancelOperation"
+      ],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "core.capability_negotiation",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "contract_local",
+      "methods": [
+        "getCapabilities",
+        "getProviderSnapshot"
+      ],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "auth.opaque_registration",
+      "current": "static_evidence_only",
+      "stock_support": "required",
+      "stock_status": "static_evidence_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "auth.user_login",
+      "current": "static_evidence_only",
+      "stock_support": "required",
+      "stock_status": "static_evidence_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "auth.oauth_password",
+      "current": "implemented_contract",
+      "stock_support": "required",
+      "stock_status": "implemented_contract",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "auth.oauth_refresh",
+      "current": "implemented_contract",
+      "stock_support": "required",
+      "stock_status": "implemented_contract",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "auth.session_restore",
+      "current": "implemented_contract",
+      "stock_support": "required",
+      "stock_status": "implemented_contract",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "auth.logout",
+      "current": "unknown",
+      "stock_support": "unknown",
+      "stock_status": "unknown",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "discovery.regional_services",
+      "current": "unsupported",
+      "stock_support": "required",
+      "stock_status": "unsupported",
+      "api_v1": "unsupported_now",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "devices.list",
+      "current": "unsupported",
+      "stock_support": "required",
+      "stock_status": "unsupported",
+      "api_v1": "unsupported_now",
+      "methods": [
+        "listDevices",
+        "getDevice"
+      ],
+      "demo_simulation_allowed": true,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "devices.dynamic_credentials",
+      "current": "static_evidence_only",
+      "stock_support": "required",
+      "stock_status": "static_evidence_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "devices.local_discovery",
+      "current": "unsupported",
+      "stock_support": "required",
+      "stock_status": "unsupported",
+      "api_v1": "unsupported_now",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "devices.online_status",
+      "current": "static_evidence_only",
+      "stock_support": "required",
+      "stock_status": "static_evidence_only",
+      "api_v1": "contract_runtime_gated",
+      "methods": [
+        "listDevices",
+        "getDevice"
+      ],
+      "demo_simulation_allowed": true,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "pairing.qr",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "pairing.ap_wifi",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "pairing.audio",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "pairing.bind",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "invitations.accept",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "invitations.manage",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "invitations.issue",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "invitations.permissions",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "shadow.get",
+      "current": "implemented_contract",
+      "stock_support": "required",
+      "stock_status": "implemented_contract",
+      "api_v1": "contract_runtime_gated",
+      "methods": [
+        "getDeviceShadow"
+      ],
+      "demo_simulation_allowed": true,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "shadow.multi",
+      "current": "implemented_contract",
+      "stock_support": "required",
+      "stock_status": "implemented_contract",
+      "api_v1": "contract_runtime_gated",
+      "methods": [
+        "getDeviceShadows"
+      ],
+      "demo_simulation_allowed": true,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "shadow.subscribe",
+      "current": "implemented_contract",
+      "stock_support": "required",
+      "stock_status": "implemented_contract",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "shadow.unsubscribe",
+      "current": "implemented_contract",
+      "stock_support": "required",
+      "stock_status": "implemented_contract",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "events.alarm_parser",
+      "current": "implemented_offline",
+      "stock_support": "required",
+      "stock_status": "implemented_offline",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "events.push_registration",
+      "current": "static_evidence_only",
+      "stock_support": "required",
+      "stock_status": "static_evidence_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "events.realtime",
+      "current": "unsupported",
+      "stock_support": "required",
+      "stock_status": "unsupported",
+      "api_v1": "unsupported_now",
+      "methods": [
+        "subscribeEvents",
+        "unsubscribeEvents"
+      ],
+      "demo_simulation_allowed": true,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "events.history",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "events.photo",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "events.delete",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "events.filters",
+      "current": "static_evidence_only",
+      "stock_support": "optional",
+      "stock_status": "static_evidence_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "media.preview_single",
+      "current": "unsupported",
+      "stock_support": "required",
+      "stock_status": "unsupported",
+      "api_v1": "unsupported_now",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "media.preview_multi",
+      "current": "unsupported",
+      "stock_support": "required",
+      "stock_status": "unsupported",
+      "api_v1": "unsupported_now",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "media.stream_controls",
+      "current": "unsupported",
+      "stock_support": "required",
+      "stock_status": "unsupported",
+      "api_v1": "unsupported_now",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "media.listen",
+      "current": "unsupported",
+      "stock_support": "required",
+      "stock_status": "unsupported",
+      "api_v1": "unsupported_now",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "media.talk",
+      "current": "unsupported",
+      "stock_support": "required",
+      "stock_status": "unsupported",
+      "api_v1": "unsupported_now",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "media.snapshot",
+      "current": "unsupported",
+      "stock_support": "required",
+      "stock_status": "unsupported",
+      "api_v1": "unsupported_now",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "media.record",
+      "current": "unsupported",
+      "stock_support": "required",
+      "stock_status": "unsupported",
+      "api_v1": "unsupported_now",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "media.local_gallery",
+      "current": "local_only",
+      "stock_support": "optional",
+      "stock_status": "local_only",
+      "api_v1": "unsupported_now",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "media.local_share_save",
+      "current": "local_only",
+      "stock_support": "optional",
+      "stock_status": "local_only",
+      "api_v1": "unsupported_now",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "actions.unlock",
+      "current": "unsupported",
+      "stock_support": "required",
+      "stock_status": "unsupported",
+      "api_v1": "unsupported_now",
+      "methods": [
+        "performAction"
+      ],
+      "demo_simulation_allowed": true,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "actions.f1",
+      "current": "unsupported",
+      "stock_support": "required",
+      "stock_status": "unsupported",
+      "api_v1": "unsupported_now",
+      "methods": [
+        "performAction"
+      ],
+      "demo_simulation_allowed": true,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "actions.call_guard",
+      "current": "unsupported",
+      "stock_support": "required",
+      "stock_status": "unsupported",
+      "api_v1": "unsupported_now",
+      "methods": [
+        "performAction"
+      ],
+      "demo_simulation_allowed": true,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "actions.call_accept",
+      "current": "unsupported",
+      "stock_support": "required",
+      "stock_status": "unsupported",
+      "api_v1": "unsupported_now",
+      "methods": [
+        "performAction"
+      ],
+      "demo_simulation_allowed": true,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "actions.call_reject",
+      "current": "unsupported",
+      "stock_support": "required",
+      "stock_status": "unsupported",
+      "api_v1": "unsupported_now",
+      "methods": [
+        "performAction"
+      ],
+      "demo_simulation_allowed": true,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "calls.lifecycle",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "unsupported_now",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "config.rename",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "config.passwords",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "config.unlock_security",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "config.alarms",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "config.wifi",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "config.time_sync",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "config.playback_intercom",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "config.delete_device",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "firmware.check",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "firmware.apply",
+      "current": "unsupported",
+      "stock_support": "required",
+      "stock_status": "unsupported",
+      "api_v1": "unsupported_now",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "app.update_check",
+      "current": "static_evidence_only",
+      "stock_support": "optional",
+      "stock_status": "static_evidence_only",
+      "api_v1": "contract_runtime_gated",
+      "methods": [
+        "checkAppUpgrade"
+      ],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true,
+      "dynamic_observation": {
+        "evidence_id": "DYN3-HTTP-UPGRADE-001",
+        "scope": "request_and_http_200_xml_success_only",
+        "raises_evidence_level": false
+      }
+    },
+    {
+      "id": "app.privacy_terms",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "app.deep_link",
+      "current": "static_evidence_only",
+      "stock_support": "optional",
+      "stock_status": "static_evidence_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "app.diagnostics",
+      "current": "local_only",
+      "stock_support": "optional",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "app.sound_vibration",
+      "current": "local_only",
+      "stock_support": "required",
+      "stock_status": "local_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "security.persistence",
+      "current": "design_required",
+      "stock_support": "required",
+      "stock_status": "design_required",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    },
+    {
+      "id": "events.notifications",
+      "current": "static_evidence_only",
+      "stock_support": "required",
+      "stock_status": "static_evidence_only",
+      "api_v1": "not_exposed",
+      "methods": [],
+      "demo_simulation_allowed": false,
+      "evidence_not_elevated": true
+    }
+  ],
+  "sdk": {
+    "artifact": "dev.nacho.wibox:external-api-sdk:1.0.0",
+    "optional_aidl_artifact": "dev.nacho.wibox:external-api-aidl:1.0.0",
+    "package": "dev.nacho.wibox.externalapi.sdk",
+    "language": "Kotlin",
+    "wrapper": "WiboxClient",
+    "factory": "WiboxClientFactory.connect(applicationContext)",
+    "coroutines": true,
+    "flows": true,
+    "explicit_component_binding": true,
+    "immutable_models": true,
+    "unknown_enum_mapping": "UNKNOWN",
+    "typed_exception": "WiboxApiException",
+    "semver": "major_breaking_minor_additive_patch_fixes",
+    "migration": "deprecated_symbols_include_replacement_and_removal_version",
+    "published_now": false,
+    "remote_repository_created": false,
+    "client_interface_consumer_implementation": false,
+    "binary_compatibility_check_required": true
+  },
+  "implementation_phases": [
+    {
+      "id": "E0",
+      "owner": "docs and analysis/external-api",
+      "work": "freeze contract, threat model and capability matrix"
+    },
+    {
+      "id": "E1",
+      "owner": "external-api:aidl",
+      "work": "AIDL, Parcelable models, errors, limits and handshake"
+    },
+    {
+      "id": "E2",
+      "owner": "app/externalapi and core:external-api",
+      "work": "Binder service and lifecycle"
+    },
+    {
+      "id": "E3",
+      "owner": "core:external-auth",
+      "work": "UID package signature allowlist and revocation"
+    },
+    {
+      "id": "E4",
+      "owner": "core:provider-api and providers",
+      "work": "WiboxProvider integration without DTO leakage"
+    },
+    {
+      "id": "E5",
+      "owner": "core:external-api",
+      "work": "reads, events, actions, gaps and journal"
+    },
+    {
+      "id": "E6",
+      "owner": "external-api:sdk",
+      "work": "Kotlin models, coroutines, Flow and sample"
+    },
+    {
+      "id": "E7",
+      "owner": "app/settings",
+      "work": "authorized apps approval and revocation UI"
+    },
+    {
+      "id": "E8",
+      "owner": "external-api:test-client-a and test-client-b",
+      "work": "two-signature instrumentation suite"
+    }
+  ],
+  "future_tests": [
+    {
+      "id": "T01",
+      "area": "unit",
+      "required": "all Parcelable round trips, nulls, unknown enums and exact size limits"
+    },
+    {
+      "id": "T02",
+      "area": "unit",
+      "required": "typed errors, version negotiation, downgrade and migration"
+    },
+    {
+      "id": "T03",
+      "area": "unit",
+      "required": "UID package certificate auth, scopes, device grants, rate limit and revocation"
+    },
+    {
+      "id": "T04",
+      "area": "unit",
+      "required": "package spoof, wrong certificate, multiple signers, shared UID and rotation"
+    },
+    {
+      "id": "T05",
+      "area": "unit",
+      "required": "all ack levels, no ack, no automatic physical retry and cancellation, duplicate request ID with same and different payload"
+    },
+    {
+      "id": "T06",
+      "area": "instrumentation",
+      "required": "two test apps with different signatures, authorized revoked and unauthorized"
+    },
+    {
+      "id": "T07",
+      "area": "instrumentation",
+      "required": "UID change, package spoof, wrong cert, update and signing rotation"
+    },
+    {
+      "id": "T08",
+      "area": "instrumentation",
+      "required": "callbacks, gaps, overflow, Binder death, cancellation and leak detection"
+    },
+    {
+      "id": "T09",
+      "area": "instrumentation",
+      "required": "in-flight action death and UNKNOWN_OUTCOME without replay"
+    },
+    {
+      "id": "T10",
+      "area": "security",
+      "required": "no tokens cookies credentials opaque client IDs or secrets in transactions errors or logs"
+    },
+    {
+      "id": "T11",
+      "area": "compatibility",
+      "required": "older and newer SDK minor against older and newer server"
+    },
+    {
+      "id": "T12",
+      "area": "demo",
+      "required": "simulation always visible and no stock failure activates demo"
+    }
+  ],
+  "tests_executed_now": false,
+  "non_goals": [
+    "HTTP REST WebSocket LAN or remote API",
+    "package-name-only or normal-permission authorization",
+    "custom signature permission for differently signed third parties",
+    "tokens cookies credentials opaque client IDs device secrets or media keys over AIDL or logs",
+    "third-party login pairing invitations password changes or sensitive configuration",
+    "video audio P2P preview recording calls or media frames over Binder",
+    "exactly-once event delivery or total ordering",
+    "automatic retries of ambiguous physical actions",
+    "presenting demo as QVCloud or local_only as stock compatibility",
+    "publishing the SDK or creating a remote repository",
+    "claiming that the external service already exists"
+  ],
+  "second_pass": {
+    "completed": true,
+    "kind": "design_review_only_not_runtime_testing",
+    "topics": [
+      "package spoofing",
+      "shared UID",
+      "signature rotation and updates",
+      "revocation during callbacks and actions",
+      "explicit intent and component confusion",
+      "malicious Parcelable size and rate limiting",
+      "callback leaks and Binder death",
+      "cancellation after dispatch",
+      "version downgrade and unknown enums",
+      "per-device confused deputy",
+      "secret-free transactions and logs",
+      "provider evidence and demo separation"
+    ]
+  }
+}

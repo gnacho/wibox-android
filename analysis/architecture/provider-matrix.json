@@ -1,0 +1,920 @@
+{
+  "schema_version": 1,
+  "description": "Matriz de diseno y evidencia. No es un certificado de compatibilidad.",
+  "compatibility_dimensions": ["api_wire", "behavior", "security", "hardware"],
+  "support_vocabulary": ["required", "optional", "unsupported", "unknown"],
+  "current_vocabulary": [
+    "implemented_contract",
+    "implemented_offline",
+    "local_only",
+    "static_evidence_only",
+    "unsupported",
+    "unknown",
+    "design_required",
+    "not_implemented"
+  ],
+  "providers": {
+    "stock-qvcloud": {
+      "priority": 1,
+      "phase": "active_incremental_migration",
+      "implemented_as_complete_provider": false
+    },
+    "mqtt": {
+      "priority": 2,
+      "phase": "future_not_implemented",
+      "implemented_as_complete_provider": false
+    },
+    "self-hosted": {
+      "priority": 3,
+      "phase": "future_not_implemented",
+      "implemented_as_complete_provider": false
+    }
+  },
+  "capabilities": [
+    {
+      "id": "core.lifecycle",
+      "name": "Ciclo de vida, cierre y cancelacion",
+      "evidence": ["core/cloud/src/main/kotlin/dev/nacho/wibox/core/cloud/WiboxCloud.kt", "docs/protocol.md#7"],
+      "current": "implemented_contract",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "implemented_contract"},
+        "mqtt": {"support": "required", "status": "not_implemented"},
+        "self-hosted": {"support": "required", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "contract_tested", "behavior": "offline_only", "security": "resource_isolation_offline", "hardware": "not_applicable_local"},
+      "acceptance": {"api_wire": "Contrato publico estable y cierre idempotente.", "behavior": "Cancelacion y ausencia de trabajos huerfanos en todos los adaptadores.", "security": "Recursos y secretos no compartidos tras cierre.", "hardware": "No aplica al lifecycle puro."}
+    },
+    {
+      "id": "core.capability_negotiation",
+      "name": "Negociacion de capacidades por proveedor y dispositivo",
+      "evidence": ["core/cloud/src/main/kotlin/dev/nacho/wibox/core/cloud/EventModels.kt", "E020"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "required", "status": "not_implemented"},
+        "self-hosted": {"support": "required", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_capability_set", "behavior": "not_negotiated", "security": "not_reviewed_runtime", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Snapshot con soporte, ambito, origen y evidencia.", "behavior": "Required, optional, unsupported y unknown cambian por cuenta y dispositivo.", "security": "Permisos efectivos sin elevar capacidades por rol.", "hardware": "Comprobar diferencias entre modelos y permisos reales."}
+    },
+    {
+      "id": "auth.opaque_registration",
+      "name": "Registro opaco de cuenta",
+      "evidence": ["E004", "E010", "docs/rea-analysis.md#20"],
+      "current": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "static_evidence_only"},
+        "mqtt": {"support": "unsupported", "status": "not_implemented"},
+        "self-hosted": {"support": "unsupported", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "not_demonstrated", "security": "not_reviewed_runtime", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Request y response completos de userFreeRegister.", "behavior": "Registro, guardado y login posterior con errores y duplicados.", "security": "Credencial generada protegida y sin logs.", "hardware": "Alta autorizada con cuenta desechable y dispositivo cuando el flujo lo requiera."}
+    },
+    {
+      "id": "auth.user_login",
+      "name": "Login de la cuenta opaca",
+      "evidence": ["E004", "E010"],
+      "current": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "static_evidence_only"},
+        "mqtt": {"support": "unsupported", "status": "not_implemented"},
+        "self-hosted": {"support": "unsupported", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "not_demonstrated", "security": "not_reviewed_runtime", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Contrato userLogin y errores.", "behavior": "Login, reutilizacion y expiracion observados.", "security": "Password y cookies cifrados y redactados.", "hardware": "No aplica al login aislado; la integracion usa cuenta autorizada."}
+    },
+    {
+      "id": "auth.oauth_password",
+      "name": "OAuth password grant",
+      "evidence": ["E029", "E033", "P-OAUTH-PASSWORD"],
+      "current": "implemented_contract",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "implemented_contract"},
+        "mqtt": {"support": "unsupported", "status": "not_implemented"},
+        "self-hosted": {"support": "unsupported", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "contract_tested", "behavior": "offline_only", "security": "strict_tls_offline", "hardware": "not_applicable_protocol_only"},
+      "acceptance": {"api_wire": "GET, query, token header y JWT contrastados tambien en runtime.", "behavior": "Errores y expiracion reales sin login visible inventado.", "security": "TLS estricto y secretos sin logs ni URLs persistidas.", "hardware": "No aplica al grant aislado; exige integracion autorizada."}
+    },
+    {
+      "id": "auth.oauth_refresh",
+      "name": "OAuth refresh y single-flight",
+      "evidence": ["E033", "E034", "E035", "P-OAUTH-REFRESH"],
+      "current": "implemented_contract",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "implemented_contract"},
+        "mqtt": {"support": "unsupported", "status": "not_implemented"},
+        "self-hosted": {"support": "unsupported", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "contract_tested", "behavior": "offline_only", "security": "strict_tls_offline", "hardware": "not_applicable_protocol_only"},
+      "acceptance": {"api_wire": "Refresh grant y rotacion reales.", "behavior": "Concurrencia, margen y revocacion observados.", "security": "Un solo almacen atomico y sin password retenido.", "hardware": "No aplica al refresh aislado."}
+    },
+    {
+      "id": "auth.session_restore",
+      "name": "Restauracion de sesion",
+      "evidence": ["E034", "E036", "P-SESSION-RESTORE"],
+      "current": "implemented_contract",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "implemented_contract"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "contract_tested", "behavior": "offline_only", "security": "store_injected_not_android_verified", "hardware": "not_applicable_local"},
+      "acceptance": {"api_wire": "Sesion serializada sin campos publicos secretos.", "behavior": "Restaurar, caducar y borrar tras reinicio de app.", "security": "TokenStore Android cifrado y atomico probado.", "hardware": "No aplica al almacenamiento local; probar en Android real o emulador."}
+    },
+    {
+      "id": "auth.logout",
+      "name": "Cierre y revocacion de sesion",
+      "evidence": ["E036", "E041"],
+      "current": "unknown",
+      "providers": {
+        "stock-qvcloud": {"support": "unknown", "status": "unknown"},
+        "mqtt": {"support": "unknown", "status": "not_implemented"},
+        "self-hosted": {"support": "unknown", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "unknown", "behavior": "unknown", "security": "unknown", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Distinguir borrado local, unsub y revocacion remota.", "behavior": "Efectos sobre cuenta, tokens y dispositivos observados.", "security": "Borrado verificado sin revocacion falsa.", "hardware": "Cuenta autorizada cuando exista efecto remoto."}
+    },
+    {
+      "id": "discovery.regional_services",
+      "name": "Descubrimiento regional QVCloud",
+      "evidence": ["E034", "E040", "U-SERVICE-DISCOVERY", "docs/rea-analysis.md#20"],
+      "current": "unsupported",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "unsupported"},
+        "mqtt": {"support": "unsupported", "status": "not_implemented"},
+        "self-hosted": {"support": "unsupported", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "unsupported_current", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Respuesta QvLocationManager y servicios 4 y 8.", "behavior": "Region, cache, fallo y re-descubrimiento reales.", "security": "Endpoints validados sin IP historica ni trust-all.", "hardware": "Cuenta y entorno autorizados; no requiere efecto fisico."}
+    },
+    {
+      "id": "devices.list",
+      "name": "Lista cloud de dispositivos",
+      "evidence": ["E004", "E010", "E020", "U-DEVICE-LIST"],
+      "current": "unsupported",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "unsupported"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "unsupported_current", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Contrato getDevList completo.", "behavior": "Merge con cache, vacio real, duplicados y permisos.", "security": "Dispositivos limitados a la cuenta autorizada.", "hardware": "Cuenta con dispositivos owner y shared."}
+    },
+    {
+      "id": "devices.dynamic_credentials",
+      "name": "Credenciales dinamicas de dispositivo",
+      "evidence": ["E010", "E013", "E022"],
+      "current": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "static_evidence_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "not_demonstrated", "security": "not_reviewed_runtime", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Respuesta y expiracion de password y dataEncodeKey.", "behavior": "Renovacion sin interrumpir indebidamente media.", "security": "Secretos aislados por dispositivo y nunca en URL o log.", "hardware": "Expiracion y renovacion con dispositivo autorizado."}
+    },
+    {
+      "id": "devices.local_discovery",
+      "name": "Descubrimiento LAN de dispositivos",
+      "evidence": ["E014", "E017", "E018"],
+      "current": "unsupported",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "unsupported"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "local_demo_only", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Datagramas o callbacks y esquema de respuesta.", "behavior": "Timeout, refresh, vacio, duplicados y permisos Android.", "security": "Sin credenciales derivadas expuestas ni red no autorizada.", "hardware": "Busqueda y seleccion de dispositivo LAN real."}
+    },
+    {
+      "id": "devices.online_status",
+      "name": "Presencia online y offline",
+      "evidence": ["E020", "E041", "E063"],
+      "current": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "static_evidence_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "shadow_contract_partial", "behavior": "semantics_unknown", "security": "strict_tls_offline", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Campos P2P y Shadow con significado confirmado.", "behavior": "Transiciones, frescura, ausencia y unknown.", "security": "No elevar offline a exito ni filtrar identificadores.", "hardware": "Conectar, desconectar y reconectar dispositivo autorizado."}
+    },
+    {
+      "id": "pairing.qr",
+      "name": "QR de dispositivo",
+      "evidence": ["E007", "E012"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "parser_local_only", "behavior": "offline_parser_only", "security": "no_real_secret_fixtures", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Campos apName, uid, authCode y model con variantes reales.", "behavior": "Camara, galeria, invalido y reintento.", "security": "AuthCode sin logs ni capturas persistentes.", "hardware": "Escanear QR fisico autorizado y completar o rechazar alta."}
+    },
+    {
+      "id": "pairing.ap_wifi",
+      "name": "Provisioning AP WiFi",
+      "evidence": ["E014", "E015", "E017", "E018"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "local_demo_only", "security": "no_real_wifi", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Secuencia CGI/AP y payloads reales.", "behavior": "Conexion, espera, cancelacion y recuperacion con red cambiante.", "security": "WiFi protegida, sin admin por defecto anadido ni Base64 tratado como cifrado.", "hardware": "Alta AP completa con rollback documentado."}
+    },
+    {
+      "id": "pairing.audio",
+      "name": "Provisioning por audio",
+      "evidence": ["E016", "E017", "E018"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "local_demo_only", "security": "no_audio_emitted", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Frecuencias y payload verificados.", "behavior": "Volumen bajo, espera, fallo y retry real.", "security": "No registrar SSID, UID completo ni password.", "hardware": "Emision y alta con dispositivo autorizado."}
+    },
+    {
+      "id": "pairing.bind",
+      "name": "Bind manual y posterior al provisioning",
+      "evidence": ["E009", "E010", "E013"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "local_demo_only", "security": "local_validation_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Bind, respuesta y codigos 100152003/100152005.", "behavior": "Timeout 35 s, retry solo permitido y duplicados.", "security": "AuthCode y credenciales dinamicas protegidas.", "hardware": "Bind real y reconciliacion tras respuesta ambigua."}
+    },
+    {
+      "id": "invitations.accept",
+      "name": "Aceptar invitacion",
+      "evidence": ["E008", "E010"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "parser_local_only", "behavior": "local_demo_only", "security": "synthetic_links_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "noLoginShareInvitationAccept y respuesta.", "behavior": "Valida, usada, caducada, duplicada y reaceptada.", "security": "Codigo tratado como secreto y OEM validado exactamente.", "hardware": "Invitacion cruzada entre cuentas autorizadas."}
+    },
+    {
+      "id": "invitations.manage",
+      "name": "Gestion de usuarios e invitaciones",
+      "evidence": ["E055", "analysis/apk/ui-inventory.json#share_manage"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "not_implemented", "behavior": "local_demo_only", "security": "local_roles_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Listar, crear, editar y borrar con respuestas reales.", "behavior": "Vacio, refresco, errores y limite 100.", "security": "Solo owner autorizado y sin enlaces en logs.", "hardware": "Dos cuentas y cambios de permisos efectivos."}
+    },
+    {
+      "id": "invitations.issue",
+      "name": "Emitir QR y enlace de invitacion",
+      "evidence": ["E008", "E011", "analysis/apk/ui-inventory.json#share_device"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "not_implemented", "behavior": "synthetic_link_only", "security": "example_invalid_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Campos InviteCode, OwnerId, OemId, AppVersion, DeviceId, From y AppId.", "behavior": "QR escaneable, copia, compartir y caducidad.", "security": "QR y enlace sin exposicion en logs o analytics.", "hardware": "Generar y aceptar en otra instalacion real."}
+    },
+    {
+      "id": "invitations.permissions",
+      "name": "Permisos de invitacion y rol shared",
+      "evidence": ["E019", "E055"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "local_demo_only", "security": "local_roles_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Powers y permisos preview/playback/alarm/unlock/F1/callGuard.", "behavior": "Visibilidad owner/shared y rechazo efectivo por accion.", "security": "Autorizacion en proveedor, no solo boton oculto.", "hardware": "Matriz de permisos con cuenta shared real."}
+    },
+    {
+      "id": "shadow.get",
+      "name": "Shadow individual",
+      "evidence": ["E041", "P-SHADOW-STATUS"],
+      "current": "implemented_contract",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "implemented_contract"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "contract_tested", "behavior": "offline_only", "security": "strict_tls_offline", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "POST, token y respuestas reales por version.", "behavior": "Campos nulos y desconocidos sin semantica inventada.", "security": "Token protegido y datos limitados por cuenta.", "hardware": "Leer campos de dispositivo real y comparar cambios."}
+    },
+    {
+      "id": "shadow.multi",
+      "name": "Shadow multiple",
+      "evidence": ["E041", "P-SHADOW-MULTI"],
+      "current": "implemented_contract",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "implemented_contract"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "contract_tested", "behavior": "offline_only", "security": "strict_tls_offline", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Array request y response real.", "behavior": "Ausencias, duplicados y lotes sin rellenar estados.", "security": "IDs limitados a dispositivos autorizados.", "hardware": "Consulta con mas de un dispositivo real."}
+    },
+    {
+      "id": "shadow.subscribe",
+      "name": "Suscripcion Shadow HTTP",
+      "evidence": ["E041", "P-SHADOW-SUB"],
+      "current": "implemented_contract",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "implemented_contract"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "contract_tested", "behavior": "ack_offline_only", "security": "strict_tls_offline", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Body y ack reales code 0.", "behavior": "Determinar canal posterior, duplicados y caducidad.", "security": "Suscripcion solo a recursos permitidos.", "hardware": "Cambio real que pruebe o refute entrega posterior."}
+    },
+    {
+      "id": "shadow.unsubscribe",
+      "name": "Desuscripcion Shadow HTTP",
+      "evidence": ["E041", "P-SHADOW-UNSUB"],
+      "current": "implemented_contract",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "implemented_contract"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "contract_tested", "behavior": "ack_offline_only", "security": "strict_tls_offline", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "doType 1 y 2 y ack reales.", "behavior": "Efectos diferenciados de logout y unbind.", "security": "No revocacion ni desvinculacion falsa.", "hardware": "Observar efecto real sin asumir efectos fisicos."}
+    },
+    {
+      "id": "events.alarm_parser",
+      "name": "Parser offline de alarmas FCM",
+      "evidence": ["E056", "E057", "P-ALARM-FCM"],
+      "current": "implemented_offline",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "implemented_offline"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "offline_fixtures", "behavior": "parser_tested", "security": "synthetic_fixtures", "hardware": "not_applicable_parser"},
+      "acceptance": {"api_wire": "Campos y tipos 2, 19 y 20 con fixtures reales sanitizados.", "behavior": "Invalidos, desconocidos y fecha sin zona inventada.", "security": "Payload sensible redactado.", "hardware": "No aplica al parser puro; la entrega se prueba aparte."}
+    },
+    {
+      "id": "events.push_registration",
+      "name": "Registro y rotacion de token push",
+      "evidence": ["E048", "E056", "E057"],
+      "current": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "static_evidence_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "not_demonstrated", "security": "not_reviewed_runtime", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Rutas push, HMAC y respuesta reales.", "behavior": "Nuevo token, igual token, fallo y reintento seguro.", "security": "Token FCM cifrado y fuera de logs.", "hardware": "Instalacion Android que reciba una llamada autorizada."}
+    },
+    {
+      "id": "events.realtime",
+      "name": "Eventos realtime y resincronizacion",
+      "evidence": ["E037", "E038", "E039", "E040", "E063", "E073", "U-REALTIME"],
+      "current": "unsupported",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "unsupported"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "mqtt_static_disabled", "behavior": "unsupported_current", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Canal activo, topics tdk/client_api, QoS 1, heartbeat 300 s y payloads observados.", "behavior": "Duplicados, huecos, replay, cursor, resync y reconexion 0 a 10 s cuando aplique.", "security": "TLS, OAuth como password si stock lo confirma y autorizacion por topic o canal.", "hardware": "Eventos reales con reconexion y perdida controlada."}
+    },
+    {
+      "id": "events.history",
+      "name": "Historial y paginacion de alarmas",
+      "evidence": ["E051", "E052"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "local_demo_only", "security": "local_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "UserAlarm/DeviceAlarm y XML completo.", "behavior": "Paginas de 15, refresh, load more, 502 y errores.", "security": "Historial limitado por permiso y sin payload en logs.", "hardware": "Cuenta con eventos reales y varias paginas."}
+    },
+    {
+      "id": "events.photo",
+      "name": "Foto asociada a evento",
+      "evidence": ["E051", "E052", "analysis/apk/ui-inventory.json#tab_events"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "not_implemented", "behavior": "synthetic_markers_only", "security": "no_real_media", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Referencia y descarga de foto reales.", "behavior": "Ausencia, caducidad, error y aviso de firmware.", "security": "Acceso autorizado y cache sin URIs amplias.", "hardware": "Evento real con imagen verificable."}
+    },
+    {
+      "id": "events.delete",
+      "name": "Borrado de eventos",
+      "evidence": ["E051", "analysis/apk/ui-inventory.json#tab_events"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "not_implemented", "behavior": "local_demo_only", "security": "local_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Borrado individual y total real.", "behavior": "Seleccion, confirmacion, error y refresco.", "security": "Autorizacion server side y sin borrado optimista falso.", "hardware": "Borrado en cuenta desechable y comprobacion posterior."}
+    },
+    {
+      "id": "events.filters",
+      "name": "Filtros All, RINGS y MOTION",
+      "evidence": ["E051", "analysis/apk/ui-inventory.json#tab_events"],
+      "current": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {"support": "optional", "status": "static_evidence_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "hidden_in_reference", "security": "not_reviewed_runtime", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Parametros de filtro si se habilitan.", "behavior": "Visibilidad actual y filtrado correcto por tipo.", "security": "No revelar eventos excluidos por permiso.", "hardware": "Datos reales de cada tipo si el filtro se expone."}
+    },
+    {
+      "id": "media.preview_single",
+      "name": "Preview P2P de un panel",
+      "evidence": ["E011", "E021", "E042", "U-MEDIA"],
+      "current": "unsupported",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "unsupported"},
+        "mqtt": {"support": "unknown", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "native_static_only", "behavior": "unsupported_current", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Tunel, negociacion y media FOSS verificados.", "behavior": "Connecting, playing, buffering, stopped, offline y cierre.", "security": "Credenciales y claves fuera de URL, logs y UI.", "hardware": "Video real por modelo y firmware sin binario original."}
+    },
+    {
+      "id": "media.preview_multi",
+      "name": "Preview de cuatro paneles",
+      "evidence": ["E021", "E023", "analysis/apk/ui-inventory.json#preview"],
+      "current": "unsupported",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "unsupported"},
+        "mqtt": {"support": "unknown", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "not_implemented", "behavior": "unsupported_current", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Canales y sesiones simultaneas reales.", "behavior": "Foco, uno/cuatro paneles, rotacion y recursos.", "security": "Sesiones aisladas sin secretos compartidos.", "hardware": "Cuatro flujos o maximo real soportado y rendimiento medido."}
+    },
+    {
+      "id": "media.stream_controls",
+      "name": "Canal, calidad, timeout y reconexion",
+      "evidence": ["E021", "E024", "E026"],
+      "current": "unsupported",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "unsupported"},
+        "mqtt": {"support": "unknown", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "unsupported_current", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Parametros de canal y stream reales.", "behavior": "Alta/baja/audio+foto, 90 s y hasta tres resumes.", "security": "Controles limitados por permiso.", "hardware": "Cambios y reconexiones observados con dispositivo."}
+    },
+    {
+      "id": "media.listen",
+      "name": "Escucha de audio",
+      "evidence": ["E023"],
+      "current": "unsupported",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "unsupported"},
+        "mqtt": {"support": "unknown", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "native_static_only", "behavior": "unsupported_current", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Inicio y fin de listening reales.", "behavior": "Estado, espera de player, error y cierre.", "security": "Sin captura o reproduccion tras cancelar.", "hardware": "Audio entrante y latencia con dispositivo."}
+    },
+    {
+      "id": "media.talk",
+      "name": "Habla bidireccional",
+      "evidence": ["E011", "E023"],
+      "current": "unsupported",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "unsupported"},
+        "mqtt": {"support": "unknown", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "native_static_only", "behavior": "unsupported_current", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Talk URL y canal sustituidos por implementacion verificada.", "behavior": "Microfono, half/full duplex, interrupcion y cierre.", "security": "Permiso y datos de microfono limitados a sesion activa.", "hardware": "Audio en ambos sentidos con dispositivo."}
+    },
+    {
+      "id": "media.snapshot",
+      "name": "Captura de fotograma",
+      "evidence": ["E021", "analysis/apk/ui-inventory.json#preview"],
+      "current": "unsupported",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "unsupported"},
+        "mqtt": {"support": "unknown", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "not_implemented", "behavior": "metadata_demo_only", "security": "no_real_media", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Captura del decoder real.", "behavior": "Archivo, galeria, error y confirmacion.", "security": "Destino y URI minimos, sin fotos falsas.", "hardware": "Imagen real comparada con el stream."}
+    },
+    {
+      "id": "media.record",
+      "name": "Grabacion de video",
+      "evidence": ["E021", "analysis/apk/ui-inventory.json#preview"],
+      "current": "unsupported",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "unsupported"},
+        "mqtt": {"support": "unknown", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "not_implemented", "behavior": "metadata_demo_only", "security": "no_real_media", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Grabacion y finalizacion reales.", "behavior": "Tiempo, stop, interrupcion, error y archivo.", "security": "Almacenamiento acotado y sin contenido sintetico presentado como real.", "hardware": "Reproducir archivo grabado de dispositivo real."}
+    },
+    {
+      "id": "media.local_gallery",
+      "name": "Galeria local de fotos y videos",
+      "evidence": ["E062", "analysis/apk/ui-inventory.json#tab_gallery"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "optional", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "local_metadata_only", "behavior": "local_demo_only", "security": "no_real_media", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Archivos reales y metadatos coherentes.", "behavior": "Grid, fechas, pager, video, seleccion y borrado.", "security": "Permisos minimos y URIs restringidas.", "hardware": "Prueba Android con fotos y videos de fixture reales."}
+    },
+    {
+      "id": "media.local_share_save",
+      "name": "Compartir y guardar media local",
+      "evidence": ["E062", "E075"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "optional", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "local_partial", "behavior": "share_export_unsupported", "security": "fileprovider_review_required", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "SEND/SEND_MULTIPLE y almacenamiento real.", "behavior": "Guardar, compartir, ausencia de handler y errores.", "security": "URI grants minimos y sin root-path amplio injustificado.", "hardware": "Compartir archivos reales con otra app de prueba."}
+    },
+    {
+      "id": "actions.unlock",
+      "name": "Apertura lock1",
+      "evidence": ["E019", "E023", "E025", "U-ACTIONS"],
+      "current": "unsupported",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "unsupported"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "unsupported_current", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Comando y respuesta reales.", "behavior": "Password/biometria local, timeout 15 s y reconciliacion.", "security": "Autorizacion y ausencia de retry ambiguo.", "hardware": "Comando, ack y efecto fisico diferenciados en cerradura autorizada."}
+    },
+    {
+      "id": "actions.f1",
+      "name": "Accion F1",
+      "evidence": ["E019", "E023", "U-ACTIONS"],
+      "current": "unsupported",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "unsupported"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "unsupported_current", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Comando F1 y parametros reales.", "behavior": "Pulso, duracion, ack, timeout y cancelacion.", "security": "Permiso F1 y no repeticion ambigua.", "hardware": "Rele F1 observado con duracion y efecto."}
+    },
+    {
+      "id": "actions.call_guard",
+      "name": "Llamada a conserjeria",
+      "evidence": ["E019", "E054", "U-ACTIONS"],
+      "current": "unsupported",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "unsupported"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "unsupported_current", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Comando callGuard real.", "behavior": "Envio, respuesta, ocupado y cierre.", "security": "Permiso callGuard verificado.", "hardware": "Llamada real a destino de prueba autorizado."}
+    },
+    {
+      "id": "actions.call_accept",
+      "name": "Aceptar llamada entrante",
+      "evidence": ["E057", "E058", "E059", "U-ACTIONS"],
+      "current": "unsupported",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "unsupported"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "local_demo_only", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Aceptacion y correlacion real.", "behavior": "Abrir media, duplicados y llamada ya finalizada.", "security": "Solo dispositivo y llamada autorizados.", "hardware": "Llamada real aceptada con audio/video o error explicito."}
+    },
+    {
+      "id": "actions.call_reject",
+      "name": "Rechazar llamada entrante",
+      "evidence": ["E057", "E058", "E059", "U-ACTIONS"],
+      "current": "unsupported",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "unsupported"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "local_demo_only", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Rechazo y respuesta reales.", "behavior": "Foreground/background y cierre sin llamada zombie.", "security": "No cancelar otra llamada por ID incorrecto.", "hardware": "Rechazo real y estado en placa y otros terminales."}
+    },
+    {
+      "id": "calls.lifecycle",
+      "name": "Ciclo de llamada, timeout y atendida en otro terminal",
+      "evidence": ["E056", "E057", "E059"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "unknown", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "local_demo_only", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Eventos 19 y 20 correlacionados.", "behavior": "Auto-rechazo 30 s, answered elsewhere y background.", "security": "IDs y notificaciones sin datos sensibles.", "hardware": "Dos terminales y placa real en escenarios autorizados."}
+    },
+    {
+      "id": "config.rename",
+      "name": "Editar nombre de dispositivo",
+      "evidence": ["analysis/apk/ui-inventory.json#device_info"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "not_implemented", "behavior": "local_demo_only", "security": "local_validation_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Modificacion local/remota real.", "behavior": "Read only, edicion, duplicado, exito y fallo.", "security": "UID inmutable y permiso de edicion.", "hardware": "Cambio persistido y sincronizado en cuenta real."}
+    },
+    {
+      "id": "config.passwords",
+      "name": "Modificar contraseñas",
+      "evidence": ["E031", "E048", "analysis/apk/ui-inventory.json#password_modify"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "local_validation_only", "security": "not_reviewed_runtime", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Modos device/admin/unlock e init.", "behavior": "Antigua, nueva, mismatch, rotacion y errores.", "security": "Hash requerido por capability y secretos nunca persistidos en claro.", "hardware": "Cambio y posterior autenticacion con dispositivo autorizado."}
+    },
+    {
+      "id": "config.unlock_security",
+      "name": "Quick unlock y biometria",
+      "evidence": ["E019", "analysis/apk/ui-inventory.json#unlock_setting"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "local_settings_only", "behavior": "biometric_unavailable_demo", "security": "local_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Preferencias y BiometricPrompt real.", "behavior": "Quick on/off, bio on/off, unavailable, warning y fallback.", "security": "Biometria solo autoriza localmente y no sustituye permiso cloud.", "hardware": "Dispositivo Android con y sin biometria; apertura Wibox aparte."}
+    },
+    {
+      "id": "config.alarms",
+      "name": "Configurar llamada y movimiento",
+      "evidence": ["E051", "E055", "analysis/apk/ui-inventory.json#config"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "local_demo_only", "security": "local_roles_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Lectura y escritura de alarmas reales.", "behavior": "On/off, carga, error y shared oculto.", "security": "Solo owner y sincronizacion confirmada.", "hardware": "Cambiar ajustes y provocar evento autorizado."}
+    },
+    {
+      "id": "config.wifi",
+      "name": "Cambiar WiFi del dispositivo",
+      "evidence": ["E014", "E015", "analysis/apk/ui-inventory.json#router"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "local_demo_only", "security": "no_real_wifi", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Cambio y respuesta reales.", "behavior": "Modify mode, cuenta atras, error y reconexion.", "security": "Password no guardada por defecto en el nuevo diseno.", "hardware": "Cambio WiFi y retorno de gestion con dispositivo autorizado."}
+    },
+    {
+      "id": "config.time_sync",
+      "name": "Sincronizar hora",
+      "evidence": ["E055", "analysis/apk/ui-inventory.json#config"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "not_implemented", "behavior": "local_demo_only", "security": "local_roles_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Comando y respuesta reales con zona horaria.", "behavior": "Exito, error y shared sin acceso.", "security": "Solo owner y sin comando generico reutilizado.", "hardware": "Hora y zona comprobadas en dispositivo."}
+    },
+    {
+      "id": "config.playback_intercom",
+      "name": "FPS, calidad, intercom, F1 y lock number",
+      "evidence": ["analysis/apk/ui-inventory.json#config", "E021", "E023"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "not_implemented", "behavior": "local_demo_only", "security": "local_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Lectura y escritura de cada ajuste.", "behavior": "FPS, modos de audio, F1 y locks efectivos por modelo.", "security": "Capacidades por dispositivo y cambios autorizados.", "hardware": "Verificar efecto de cada ajuste en el modelo compatible."}
+    },
+    {
+      "id": "config.delete_device",
+      "name": "Borrar o desvincular dispositivo",
+      "evidence": ["E041", "E055", "analysis/apk/ui-inventory.json#config"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "not_implemented", "behavior": "local_demo_only", "security": "local_roles_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Unbind y efectos remotos reales.", "behavior": "Confirmacion, error, cache, invitaciones y unsub.", "security": "Solo owner, sin borrado optimista ni revocacion falsa.", "hardware": "Desvincular y comprobar acceso anterior y posterior."}
+    },
+    {
+      "id": "firmware.check",
+      "name": "Consultar firmware actual y disponible",
+      "evidence": ["analysis/apk/ui-inventory.json#upgrade"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "not_implemented", "behavior": "up_to_date_stub", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Consulta real y versiones tipadas.", "behavior": "Query, up to date, available y error.", "security": "Respuesta autentica y sin instalar por consulta.", "hardware": "Leer version del dispositivo sin actualizarlo."}
+    },
+    {
+      "id": "firmware.apply",
+      "name": "Aplicar actualizacion de firmware",
+      "evidence": ["analysis/apk/ui-inventory.json#upgrade"],
+      "current": "unsupported",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "unsupported"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "not_implemented", "behavior": "unsupported_current", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Paquete, origen, firma y progreso reales.", "behavior": "Confirmacion, progreso, fallo y estado posterior.", "security": "Autenticidad y rollback documentado antes de cualquier prueba.", "hardware": "Solo prueba expresamente autorizada con recuperacion disponible."}
+    },
+    {
+      "id": "app.update_check",
+      "name": "Consultar actualizacion de la app",
+      "evidence": ["E049", "E050"],
+      "current": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {"support": "optional", "status": "static_evidence_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "not_demonstrated", "security": "strict_tls_required_not_original", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "GET, query, Accept-Language y respuesta real.", "behavior": "Cache, intervalo, error y aviso sin autoapply.", "security": "TLS estricto aunque el APK use trust-all.", "hardware": "Emulador o Android real sin instalar actualizacion en la prueba de consulta."}
+    },
+    {
+      "id": "app.privacy_terms",
+      "name": "Privacidad y terminos locales",
+      "evidence": ["E064", "analysis/apk/ui-inventory.json#about"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "required", "status": "not_implemented"},
+        "self-hosted": {"support": "required", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "local_content", "behavior": "local_only", "security": "no_remote_policy", "hardware": "not_applicable_local"},
+      "acceptance": {"api_wire": "Recurso local por idioma, sin URL HTTP legacy.", "behavior": "Dialogo accesible y estado de aceptacion si se exige.", "security": "Contenido revisado y sin trackers.", "hardware": "No aplica al contenido local; probar Android para accesibilidad."}
+    },
+    {
+      "id": "app.deep_link",
+      "name": "Deep link y relay push",
+      "evidence": ["E006", "E057", "analysis/apk/ui-inventory.json#loading", "analysis/apk/ui-inventory.json#cache"],
+      "current": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {"support": "optional", "status": "static_evidence_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "manifest_static_only", "behavior": "not_demonstrated", "security": "not_reviewed_runtime", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Intent y extras reales sin inventar parametros wibox://.", "behavior": "Cache relay, Loading, llamada, preview y back stack.", "security": "Validar origen, IDs y ausencia de secretos en Intent.", "hardware": "Notificacion real en foreground/background/locked."}
+    },
+    {
+      "id": "app.diagnostics",
+      "name": "Diagnostico y debug",
+      "evidence": ["E061", "E067"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "optional", "status": "local_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "local_only", "behavior": "local_demo_only", "security": "token_not_displayed_demo", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Diagnostico tipado y acotado por build.", "behavior": "Toggle, forwarding, conexion, servicio y logs sin efectos ocultos.", "security": "Nunca mostrar token ni credenciales; exportacion saneada.", "hardware": "Solo si se habilita contra una cuenta desechable."}
+    },
+    {
+      "id": "app.sound_vibration",
+      "name": "Sonido y vibracion",
+      "evidence": ["E058", "E060"],
+      "current": "local_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "local_only"},
+        "mqtt": {"support": "required", "status": "not_implemented"},
+        "self-hosted": {"support": "required", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "local_preferences", "behavior": "local_demo_only", "security": "local_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Preferencias reales y canales Android.", "behavior": "On/off persistentes y respeto al modo del sistema.", "security": "Sin vibracion o tono despues de cancelar.", "hardware": "Dispositivo Android con llamada de prueba."}
+    },
+    {
+      "id": "security.persistence",
+      "name": "Persistencia segura y aislamiento de secretos",
+      "evidence": ["E036", "E043", "E044", "E045", "E046", "E047", "core/cloud/src/main/kotlin/dev/nacho/wibox/core/cloud/CloudModels.kt"],
+      "current": "design_required",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "design_required"},
+        "mqtt": {"support": "required", "status": "not_implemented"},
+        "self-hosted": {"support": "required", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "token_store_abstraction", "behavior": "android_store_not_verified", "security": "design_required", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "Almacenes separados y versionados por cuenta/proveedor.", "behavior": "Guardar, restaurar, migrar, borrar y recuperar corrupcion sin demo fallback.", "security": "Keystore, cifrado, atomicidad, backup y logs sin secretos verificados.", "hardware": "Reinicio y restauracion en Android real o emulador."}
+    },
+    {
+      "id": "events.notifications",
+      "name": "Notificaciones de llamada y movimiento",
+      "evidence": ["E056", "E057", "E058", "E059"],
+      "current": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {"support": "required", "status": "static_evidence_only"},
+        "mqtt": {"support": "optional", "status": "not_implemented"},
+        "self-hosted": {"support": "optional", "status": "not_implemented"}
+      },
+      "compatibility_now": {"api_wire": "static_only", "behavior": "not_demonstrated", "security": "strict_design_only", "hardware": "not_tested"},
+      "acceptance": {"api_wire": "FCM y acciones de notificacion reales.", "behavior": "Foreground, background, locked, full-screen, aceptar y rechazar.", "security": "Permisos Android y contenido minimo en pantalla bloqueada.", "hardware": "Llamada y movimiento reales en instalacion autorizada."}
+    }
+  ],
+  "ui_screens": [
+    {"id": "loading", "reachability": "entry", "destination": "modernized", "required_evidence": "Arranque real/demo, permisos, timeout y push redirect en emulador."},
+    {"id": "cache", "reachability": "linked", "destination": "relay_modernized", "required_evidence": "Test de relay y back stack; no tiene captura por no tener UI."},
+    {"id": "main_tab", "reachability": "root", "destination": "modernized", "required_evidence": "Cuatro tabs, terminos, aviso y edicion en Compose."},
+    {"id": "add_type", "reachability": "linked", "destination": "modernized", "required_evidence": "Navegacion nueva/online y captura."},
+    {"id": "preview", "reachability": "linked", "destination": "modernized", "required_evidence": "Todos los estados y controles, unsupported real sin falsa reproduccion."},
+    {"id": "online_type", "reachability": "linked", "destination": "modernized", "required_evidence": "Buscar/manual y navegacion."},
+    {"id": "product_choose", "reachability": "legacy_no_inbound", "destination": "legacy_documented", "required_evidence": "Mantener especificacion legacy; no activar sin decision y prueba."},
+    {"id": "product_intro", "reachability": "linked", "destination": "modernized", "required_evidence": "Instrucciones, permisos y errores QR/AP."},
+    {"id": "handle_wifi", "reachability": "linked", "destination": "modernized", "required_evidence": "Copiar, AP mismatch y AP connected."},
+    {"id": "wifi_list_legacy", "reachability": "legacy_no_inbound", "destination": "legacy_documented", "required_evidence": "Mantener especificacion legacy fuera del grafo principal."},
+    {"id": "wifi_set_legacy", "reachability": "legacy_no_inbound", "destination": "legacy_documented", "required_evidence": "Mantener especificacion legacy fuera del grafo principal."},
+    {"id": "device_bind", "reachability": "linked", "destination": "modernized", "required_evidence": "Manual/QR/share, validacion, bind, exito e invitacion invalida."},
+    {"id": "online_devices", "reachability": "linked", "destination": "modernized", "required_evidence": "Refreshing, resultados, vacio y error con discovery real o demo etiquetado."},
+    {"id": "scan", "reachability": "linked", "destination": "modernized", "required_evidence": "Camara/galeria, permisos, invalido y tres destinos."},
+    {"id": "config", "reachability": "linked", "destination": "modernized", "required_evidence": "Owner/shared, alarmas, upgrade, borrado y bind required."},
+    {"id": "password_modify", "reachability": "linked", "destination": "modernized", "required_evidence": "Cuatro modos y validaciones sin persistir secretos en UI."},
+    {"id": "unlock_setting", "reachability": "linked", "destination": "modernized", "required_evidence": "Quick/biometria, unavailable, warning y guardado."},
+    {"id": "device_info", "reachability": "linked", "destination": "modernized", "required_evidence": "Read only, edicion, duplicado, exito y fallo."},
+    {"id": "about", "reachability": "linked", "destination": "modernized", "required_evidence": "Version, privacidad y gesto debug."},
+    {"id": "image_pager", "reachability": "linked", "destination": "modernized", "required_evidence": "Media real de prueba, modos, pager, compartir, borrar y guardar."},
+    {"id": "video_player", "reachability": "linked", "destination": "modernized", "required_evidence": "Video real, controles, seek, mute y rotacion."},
+    {"id": "push_call", "reachability": "linked", "destination": "modernized", "required_evidence": "Ringing, aceptar, rechazar, timeout y answered elsewhere."},
+    {"id": "debug", "reachability": "hidden_gesture", "destination": "modernized_restricted", "required_evidence": "Acceso, toggles y exportacion saneada sin secretos."},
+    {"id": "upgrade", "reachability": "linked", "destination": "modernized", "required_evidence": "Query y estados; apply solo con autorizacion y hardware separado."},
+    {"id": "guide", "reachability": "legacy_no_inbound", "destination": "legacy_documented", "required_evidence": "Mantener especificacion legacy sin afirmar entrada actual."},
+    {"id": "add_method_legacy", "reachability": "legacy_no_inbound", "destination": "legacy_documented", "required_evidence": "Mantener especificacion legacy fuera del grafo principal."},
+    {"id": "router", "reachability": "linked", "destination": "modernized", "required_evidence": "Lista, SSID, passwords, guardado opt in y modos nuevo/modificar."},
+    {"id": "voice", "reachability": "linked", "destination": "modernized", "required_evidence": "Sending, waiting, volumen, fallo y exito real o demo etiquetado."},
+    {"id": "wifi_progress", "reachability": "linked", "destination": "modernized", "required_evidence": "Connecting, sending, waiting, red, retry, fallo y exito."},
+    {"id": "share_device", "reachability": "linked", "destination": "modernized", "required_evidence": "QR real, enlace, caducidad, copia, guardado y chooser."},
+    {"id": "pairing_fail", "reachability": "linked", "destination": "modernized", "required_evidence": "Error y retorno a main sin back ambiguo."},
+    {"id": "share_manage", "reachability": "linked", "destination": "modernized", "required_evidence": "Loading, vacio, lista, CRUD, limite y error."},
+    {"id": "share_bind", "reachability": "linked", "destination": "modernized", "required_evidence": "Formulario, validacion, aceptar, exito e invalida."},
+    {"id": "tab_devices", "reachability": "main_tab", "destination": "modernized", "required_evidence": "Vacio, lista, refresh, offline, proteccion y acciones por ack."},
+    {"id": "tab_events", "reachability": "main_tab", "destination": "modernized", "required_evidence": "Carga, vacio, lista, filtros ocultos, warning, edicion, borrado e imagen."},
+    {"id": "tab_event_list", "reachability": "nested_fragment", "destination": "modernized", "required_evidence": "Tres vacios, refresh, paginas de 15 y edicion."},
+    {"id": "tab_gallery", "reachability": "main_tab", "destination": "modernized", "required_evidence": "Vacio, grid, edicion, seleccion, compartir, guardar y borrar."},
+    {"id": "tab_settings", "reachability": "main_tab", "destination": "modernized", "required_evidence": "Sonido, vibracion, about, salida y opciones ocultas documentadas."}
+  ],
+  "totals": {
+    "capabilities": 64,
+    "screens": 38,
+    "non_legacy_screens": 33,
+    "legacy_screens": 5
+  },
+  "global_limits": [
+    "No hay evidencia de hardware en esta hoja.",
+    "MQTT y self-hosted no estan implementados.",
+    "Un fake o una demo no certifica compatibilidad stock.",
+    "Media, llamadas y acciones fisicas siguen bloqueadas por protocolo, implementacion FOSS y prueba de hardware.",
+    "No se emite una afirmacion global de compatibilidad completa."
+  ]
+}

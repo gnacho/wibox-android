@@ -1,0 +1,187 @@
+Verificacion de leaf-1.2.3 y leaf-1.2.5
+Fecha: 2026-10-31
+Estado: tres intentos conservados, captura dinamica parcial y response de upgrade completa
+
+1. Identidad del APK
+
+Comando: sha256sum del APK original
+Exit: 0
+Salida: 08d78731fe79481b60b4250e736f653cd7af91932844a612b0b5c5a989aac7ce
+
+aapt y ZipFile/ELF, exit 0:
+package: name='com.fermax.wibox' versionCode='18' versionName='v2.2'
+native-code: 'arm64-v8a' 'armeabi-v7a'
+ABI=arm64-v8a COUNT=14 E_MACHINE=183
+ABI=armeabi-v7a COUNT=13 E_MACHINE=40
+ABI=x86_64 COUNT=0
+
+2. Intento 1 conservado
+
+AVD: wibox-stock-capture, serial emulator-5556.
+Imagen: system-images;android-37.0;default;arm64-v8a, revision 6.
+Resultado: emulador exit 1 antes de Android, APK no instalado, AVD eliminado.
+Error:
+Avd's CPU Architecture 'arm64' is not supported by the QEMU2 emulator on x86_64 host. System image must match the host architecture.
+
+3. Intento 2 conservado
+
+AVD: wibox-stock-arm, serial emulator-5558.
+Imagen: system-images;android-30;google_apis;x86_64, revision 16.
+ABI verificada: x86_64,x86,arm64-v8a,armeabi-v7a,armeabi.
+ABI64: x86_64,arm64-v8a.
+ro.dalvik.vm.isa.arm64=x86_64.
+APK instalado con Success y arranque COLD. MainTabActivity alcanzada.
+Logcat: Initialized NDK translation (aarch64), version 0.2.2.
+
+Request attempt2:
+GET https://matainde.qvcloud.net:1443/webs/version/app/version_check.jsp
+Query: os=android, appid=2021, version=18, clientid=<redacted>
+Response: no observada. Certificate verify failed: certificate has expired.
+
+Sockets: fermax.qvcloud.net:443 y TCP 1884 confirmados, payload no decodificado.
+No hubo registro, login, OAuth, Shadow ni dispositivos.
+
+4. Intento 3, QR ficticio y registro
+
+Se creo un AVD Android 30 nuevo con el mismo nombre y serial explicito emulator-5558. Nunca se uso wibox-test.
+
+ABI verificada antes de instalar:
+ro.product.cpu.abilist=x86_64,x86,arm64-v8a,armeabi-v7a,armeabi
+ro.product.cpu.abilist64=x86_64,arm64-v8a
+ro.dalvik.vm.isa.arm64=x86_64
+
+Comando: adb -s emulator-5558 install --no-incremental <original-apk>
+Exit: 0
+Salida: Success
+
+QR generado localmente con qrencode:
+apName=<fictitious-ap-name> uid=<fictitious-uid> authCode=<fictitious-auth-code> model=TESTMODEL
+
+El UID esta reservado como inexistente y authCode es ficticio. No proceden del usuario ni de un dispositivo.
+El QR se selecciono mediante DocumentsUI con DPAD/ENTER, sin camara real, Add Online ni LAN.
+DADeviceBindActivity quedo con UID y password ficticios. Save se pulso una vez. No se confirmo bind final.
+
+Resultado:
+- queryDeviceOnlineState se inicio y genero conexiones directas de consulta.
+- userFreeRegister no se activo.
+- userLogin no se activo.
+- No hubo cuenta opaca, tokens OAuth ni bind.
+- No se decodifico un rechazo del servidor. El flujo no supero la fase online previa.
+- Se ejecuto adb -s emulator-5558 shell am force-stop com.fermax.wibox para cortar las consultas.
+
+Sockets attempt3:
+47.254.155.166:443 y 47.254.141.132:1884, payload y tamanos no resueltos.
+
+5. Intento 3, request y response de upgrade
+
+MITM de laboratorio con ssl_insecure=true solo en el proxy para leer upstream caducado. No se instalo CA ni se modifico TLS del cliente Kotlin.
+
+Request:
+GET https://matainde.qvcloud.net:1443/webs/version/app/version_check.jsp
+Query: os=android, appid=2021, version=18, clientid=<redacted>
+Headers: Accept-Language en-US, Host, Connection Keep-Alive, Accept-Encoding gzip, User-Agent okhttp/3.9.0
+Body: ninguno
+
+Response:
+HTTP 200, 308 bytes
+Content-Type: text/xml;charset=UTF-8
+Transfer-Encoding: chunked
+Set-Cookie presente, valor <redacted>
+
+Esquema XML:
+envelope/header/flag=tdkcloud
+envelope/header/result=0
+envelope/content/priority=0
+envelope/content/version=5.1.11
+envelope/content/url=vacio
+envelope/content/description=vacio
+envelope/content/config/version=0
+envelope/content/config/url=vacio
+envelope/content/config/picture=vacio
+
+app_upgrade_check tiene request y response de exito observados y es la unica operacion en unsupported_updates, limitada a ese caso.
+No se afirma compatibilidad cloud completa.
+
+6. Verificadores
+
+Comando: ast.parse sobre los dos scripts y json.load sobre inventory.json
+Exit: 0
+Resultado: AST y JSON validos, schema_version 3, tres intentos, dos requests y una operacion candidata.
+
+Comando: python3 analysis/dynamic/verify_dynamic.py
+Exit: 0
+Salida unica:
+WIBOX_DYNAMIC_ANALYSIS_VERIFIED
+
+Controles integrados: 2 positivos y 15 negativos, incluidos registro falso, response attempt3 ausente, QR real, bind, Unsupported, secuencia, limpieza y correspondencia.
+
+Comando: python3 analysis/dynamic/verify_sanitized.py
+Exit: 0
+Salida unica:
+WIBOX_DYNAMIC_SANITIZED_VERIFIED
+
+Controles integrados: 2 positivos y 14 negativos para secretos, cookies, IDs, IPs privadas, formatos raw y guiones prohibidos.
+
+7. Limpieza final
+
+Comandos ejecutados con serial explicito:
+adb -s emulator-5558 shell settings put global http_proxy :0
+adb -s emulator-5558 emu kill
+
+mitmdump detenido. avdmanager delete avd -n wibox-stock-arm, exit 0.
+
+Comprobaciones finales, exit 0:
+TEMP_AVD_PROCESS_COUNT=0
+ATTEMPT3_CLEANUP_VERIFIED
+BOTH_AVD_FILES_ABSENT si se comprueba tambien attempt1
+
+emulator -list-avds:
+revela_test
+wibox-test
+
+wibox-test permanece activo y sin modificaciones.
+
+8. Raw fuera del repo
+
+Intento 1:
+79d0947ba2b9ae532abf9b7cdd3536b3fdcd71a3eba46bbe3fcd38a376164e25  emulator-console.log  373 bytes
+251e551ac388fea08b945bcd6eb9196bb486453abe53fa2863f9dbaf66d54ab9  raw-report.txt  1875 bytes
+
+Intento 2:
+dc8f171adad9a9c6dd4ae5f391075114763f3e5a1d804ad3f46ce4e22d335e38  attempt2/raw-manifest.json  10839 bytes, 66 archivos raw
+
+Intento 3, bajo /home/nacho/temp/opencode-work/wibox-dynamic-raw/attempt3:
+1072339bddf5e98f0cfd7ed5b770f8b1b0977f2f4ceb453696c23650140a239f  raw-manifest.json  8930 bytes, 55 archivos raw
+2d7c25d779c881c7a8c55077c213505f95d36f5e5a28cfecbcb59139bc2ee2f3  raw-report.txt  3193 bytes
+a35d7e8e4e51af6fe2f7d57cf329f7edea1a57d980496781d34072597ffa70d7  fictitious-qr-content.txt  53 bytes
+e4eceec188d618c367372ad327784656ed8b9bf1388849257d14fee025fb3a80  fictitious-qr.png  646 bytes
+a9caa8941638493f7db9316dfc88be539359d17bb7665e108d3b8ff507a95f8c  getprop-full.txt  17462 bytes
+781a31c82430c97897af612ece5e0ca2205e301cb5ff121ce2660541ea5182c7  install-result.txt  36 bytes
+8c75827390871fc540d38976841755b98b2e336422b7331755c069ca2c3c07f0  am-start.txt  222 bytes
+df86af41cba8caa7ebec2bd948f9f501fead0a8f91fdf24be44a4dc2d0fa3e3d  after-picker-keyboard-ui.xml  10107 bytes
+8d8418b8d48354dea3e10472a394427dc1a0bec14ada936591a362b3e7fad043  logcat-full.log  5222224 bytes
+9230e4d89f793c79322c8294598e297336ec29f41ddbfa0af0d3aef664891692  mitm-flows.mitm  7976 bytes
+6cd15c0e57a07a11fe758d09c9230ab28cc574aae6491428d2ecc9aabdadc910  mitmdump-console.log  120053 bytes
+cec15f81c404c3bb2abcd1254e727ab06041859461eb113ea6c6e9acaeb27ce7  proc-net-after-save.txt  5041 bytes
+74082cefab98ee79c6c7dadd746659719235809937dff501f0683371b23625ae  proc-net-final.txt  4413 bytes
+
+mitm-config contiene CA y material privado local. Flows contienen clientid y Set-Cookie reales. Nunca copiarlos al workspace.
+
+9. Hashes y tamanos del workspace sanitizado
+
+APK original:
+08d78731fe79481b60b4250e736f653cd7af91932844a612b0b5c5a989aac7ce  45816991 bytes
+
+Artefactos:
+2b7efc28e3987785153e8472ae678e729bf3b0e9837a73092674cdf7925b0160  docs/dynamic-analysis.md  23045 bytes
+f31824799489b4e89712be985c611efc80f6502a830fd513e74c540bb9523ea6  analysis/dynamic/inventory.json  50500 bytes
+93db6ec213e5ed771bdf6657840a488bd5c5d86fa25d82c019cae8d1e65ca8f9  analysis/dynamic/verify_dynamic.py  28586 bytes
+e713f6e834589baff165290b0900781891aa1928d5a7e3a48b809e0e4a468258  analysis/dynamic/verify_sanitized.py  7053 bytes
+
+verification.txt no incluye su propio hash para evitar referencia recursiva.
+
+10. Decision final de soporte
+
+Solo app_upgrade_check puede avanzar, limitado a GET y response HTTP 200 XML de exito.
+userFreeRegister, userLogin, OAuth, discovery regional, lista, realtime, Shadow, media, auth y acciones fisicas siguen Unsupported.
+No hubo tokens OAuth, bind ni compatibilidad total demostrada.

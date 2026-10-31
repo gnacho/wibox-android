@@ -1,0 +1,198 @@
+# Verificacion de arquitectura de proveedores y UI
+
+Fecha: 2026-10-31
+Hoja: leaf-1.2.4
+Directorio: /home/nacho/Documentos/Repos/wibox-kotlin
+
+## 1. Alcance ejecutado
+
+Se han revisado estaticamente los entregables y sus fuentes. No se ha usado red, hardware, emulador, credenciales ni una cuenta QVCloud. No se ha modificado app, core/cloud, .unlazy, analisis dinamico ni otros documentos. No se ha compilado un APK en esta hoja y no se han generado capturas nuevas.
+
+## 2. Recuentos medidos
+
+- Proveedores: 3, exactamente stock-qvcloud, mqtt y self-hosted.
+- Capacidades: 64 unicas.
+- Pantallas o representaciones: 38 unicas.
+- No legacy: 33.
+- Legacy sin entrada estatica: 5.
+- Superficies visuales no legacy esperadas: 32, porque cache es un relay sin UI.
+- Estados del inventario original comprobados fila por fila: 231.
+- Aristas del inventario original: 71.
+- Controles positivos incorporados y superados: 9.
+- Controles negativos incorporados y superados: 10.
+
+Estado actual de las 64 capacidades:
+
+| Estado | Recuento | Significado |
+|---|---:|---|
+| implemented_contract | 8 | Implementacion y prueba offline de contrato, no runtime stock |
+| implemented_offline | 1 | Parser local probado, sin entrega push demostrada |
+| local_only | 27 | Solo demo, validacion o persistencia local |
+| static_evidence_only | 9 | Evidencia estatica sin implementacion suficiente |
+| unsupported | 17 | No soportado por el cliente real actual |
+| unknown | 1 | Contrato o comportamiento desconocido |
+| design_required | 1 | Persistencia segura todavia por completar |
+| Total | 64 | Sin certificacion global |
+
+Soporte de diseno por proveedor:
+
+| Proveedor | required | optional | unsupported | unknown |
+|---|---:|---:|---:|---:|
+| stock-qvcloud | 57 | 6 | 0 | 1 |
+| mqtt | 5 | 45 | 5 | 9 |
+| self-hosted | 5 | 53 | 5 | 1 |
+
+El soporte de diseno no es evidencia de implementacion. En mqtt y self-hosted todas las capacidades tienen estado not_implemented.
+
+Estado hardware actual:
+
+- not_tested: 58 capacidades.
+- not_applicable_local: 3.
+- not_applicable_parser: 1.
+- not_applicable_protocol_only: 2.
+- Ninguna capacidad tiene hardware_verified o runtime_verified.
+
+## 3. Cuatro pasadas realizadas
+
+### Pasada 1: completitud de inventario
+
+Se leyeron integration-contract.json, los informes REA/APK/UI/protocolo, los dos inventarios JSON, E001-E075, la API publica real y los acoplamientos de app. Se escribieron 64 capacidades y 38 filas UI. La primera ejecucion del verificador termino con exit 0 y confirmo 64/38/33/5, 231 estados, 71 aristas, 9 controles positivos y 9 negativos.
+
+### Pasada 2: revision de arquitectura de protocolo
+
+Se revisaron fronteras, sesion opaca, Shadow, eventos, pairing, invitaciones, acciones, media, ack, discovery, lifecycle, compatibilidad binaria/source y migracion. Se corrigieron tres rutas de evidencia abreviadas que no existian literalmente y se documento router como destino compartido con argumento modify.
+
+Al activar la validacion de evidencias, una ejecucion termino con exit 1 porque U-SERVICE-DISCOVERY, U-DEVICE-LIST, U-REALTIME, U-MEDIA y U-ACTIONS no estaban reconocidos por el nuevo oráculo. Se comprobo que existen en docs/protocol.md y se amplio el validador para aceptar P-* y U-*. La repeticion termino con exit 0 y 10 controles negativos.
+
+### Pasada 3: falsos claims, omisiones y acoplamientos
+
+Se hicieron explicitos apName/uid/authCode/model, AppVersion en invitaciones, los topics/QoS/heartbeat del shadow MQTT de stock y la imposibilidad de sustituir P2P por SIP/WebSocket/WebRTC sin evidencia. Se reforzo la prueba de permisos de loading.
+
+La auditoria de guiones prohibidos, placeholders y claims absolutos encontro dos matches, ambos intencionados dentro de verify_provider_architecture.py: la expresion regular del detector y la mutacion negativa con un falso claim. No hubo matches en provider-architecture.md, ui-modernization.md ni provider-matrix.json.
+
+### Pasada 4: pulido y verificacion final
+
+Se parseo el script con ast, se valido JSON, se repitio la verificacion con informe y se ejecuto el modo normal. Todos los comandos finales descritos abajo terminaron con exit 0.
+
+## 4. Controles del verificador
+
+Controles positivos:
+
+1. source_inventory.
+2. matrix_shape.
+3. capability_coverage.
+4. screen_coverage.
+5. state_coverage.
+6. navigation_coverage.
+7. provider_rules.
+8. migration_and_tests.
+9. claim_guards.
+
+Controles negativos, cada uno debe producir fallo ante su mutacion en memoria:
+
+1. missing_provider.
+2. missing_capability.
+3. missing_screen_state.
+4. missing_navigation_target.
+5. false_100_percent_claim.
+6. missing_migration_strategy.
+7. future_provider_marked_implemented.
+8. unverified_hardware_marked_verified.
+9. legacy_screen_silently_activated.
+10. invalid_evidence_reference.
+
+El verificador tambien comprueba que cada referencia E### exista en evidence_registry, que cada referencia P-*/U-* exista en docs/protocol.md y que cada ruta de evidencia exista en disco. Las mutaciones negativas no modifican los entregables.
+
+## 5. Comandos y resultados reales
+
+### 5.1 Sintaxis Python
+
+Comando:
+
+```bash
+python3 -c 'import ast, pathlib; p=pathlib.Path("analysis/architecture/verify_provider_architecture.py"); ast.parse(p.read_text(encoding="utf-8")); print("PYTHON_AST_OK")'
+```
+
+Exit: 0
+Salida:
+
+```text
+PYTHON_AST_OK
+```
+
+### 5.2 JSON y recuentos basicos
+
+Comando:
+
+```bash
+python3 -c 'import json, pathlib; d=json.loads(pathlib.Path("analysis/architecture/provider-matrix.json").read_text(encoding="utf-8")); print("JSON_VALID", d["schema_version"], len(d["capabilities"]), len(d["ui_screens"]))'
+```
+
+Exit: 0
+Salida:
+
+```text
+JSON_VALID 1 64 38
+```
+
+### 5.3 Verificacion completa con informe
+
+Comando:
+
+```bash
+python3 analysis/architecture/verify_provider_architecture.py --report
+```
+
+Exit: 0
+Salida final:
+
+```text
+{"capabilities": 64, "legacy_screens": 5, "negative_controls": 10, "non_legacy_screens": 33, "positive_controls": 9, "providers": ["mqtt", "self-hosted", "stock-qvcloud"], "screens": 38, "source_navigation_edges": 71, "source_states": 231}
+WIBOX_PROVIDER_ARCHITECTURE_VERIFIED
+```
+
+### 5.4 Verificacion en modo normal
+
+Comando:
+
+```bash
+python3 analysis/architecture/verify_provider_architecture.py
+```
+
+Exit: 0
+Salida completa:
+
+```text
+WIBOX_PROVIDER_ARCHITECTURE_VERIFIED
+```
+
+### 5.5 Resumen independiente de estados
+
+Comando ejecutado:
+
+```bash
+python3 -c 'import json, collections, pathlib; d=json.loads(pathlib.Path("analysis/architecture/provider-matrix.json").read_text()); print("current", dict(sorted(collections.Counter(c["current"] for c in d["capabilities"]).items()))); [print(p, dict(sorted(collections.Counter(c["providers"][p]["support"] for c in d["capabilities"]).items()))) for p in sorted(d["providers"])]; print("hardware_now", dict(sorted(collections.Counter(c["compatibility_now"]["hardware"] for c in d["capabilities"]).items())))'
+```
+
+Exit: 0
+Salida:
+
+```text
+current {'design_required': 1, 'implemented_contract': 8, 'implemented_offline': 1, 'local_only': 27, 'static_evidence_only': 9, 'unknown': 1, 'unsupported': 17}
+mqtt {'optional': 45, 'required': 5, 'unknown': 9, 'unsupported': 5}
+self-hosted {'optional': 53, 'required': 5, 'unknown': 1, 'unsupported': 5}
+stock-qvcloud {'optional': 6, 'required': 57, 'unknown': 1}
+hardware_now {'not_applicable_local': 3, 'not_applicable_parser': 1, 'not_applicable_protocol_only': 2, 'not_tested': 58}
+```
+
+## 6. Limitaciones que permanecen
+
+- La evidencia disponible no certifica runtime stock completo. OAuth y Shadow tienen contrato offline, no una validacion real de extremo a extremo en esta hoja.
+- Service discovery, registro/login opaco, lista de dispositivos y credenciales dinamicas bloquean la preparacion real de una instalacion.
+- Realtime, FCM, media P2P, llamadas y acciones fisicas no tienen prueba de hardware. No se puede certificar preview, apertura, F1, conserjeria ni llamada real.
+- La suscripcion Shadow HTTP no demuestra entrega posterior de eventos.
+- El MQTT de stock esta presente pero desactivado por defecto y no se confunde con el proveedor mqtt futuro.
+- mqtt y self-hosted son contratos de diseno futuros, sin implementacion.
+- La persistencia Android segura y aislada sigue como design_required hasta disponer de implementacion y pruebas.
+- Las capturas enumeradas en ui-modernization.md son requisitos futuros. No existen como material nuevo de esta hoja.
+- El APK final y su instalacion en emulador son una puerta posterior. Esta hoja no afirma haberlos producido.

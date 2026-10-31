@@ -1,0 +1,14 @@
+f47ddeac905f8bf78f1c4155bfb405a7f4f99d9cb1827905c7d12d1a1d294b70  /home/nacho/temp/opencode-work/wibox-jadx/resources/lib/arm64-v8a/libavcodec.so
+2c525db9bb9f5974443f333d59ae37e97e7636bed4bd7f4354029bac0c5af021  /home/nacho/temp/opencode-work/wibox-jadx/resources/lib/arm64-v8a/libavfilter.so
+8e6107ee8096a0b337dd1d6d3bc9ff5707c7762e9c570ae7205f2af67ce6f60f  /home/nacho/temp/opencode-work/wibox-jadx/resources/lib/arm64-v8a/libavformat.so
+257b81115e1a1e4c1a0ef20b91a82628d10191ecb82a695c2908bf71dcce4be2  /home/nacho/temp/opencode-work/wibox-jadx/resources/lib/arm64-v8a/libavutil.so
+ef4d44008acc03a62b1df89aa3708d80ac25884e651c1adc1efda9a2aa6c33d3  /home/nacho/temp/opencode-work/wibox-jadx/resources/lib/arm64-v8a/libeapilrender.so
+166c9ff53a6e7b5bb9cc6bf704cf359ccc6972e0c68b85b85e9bf76284ee4d67  /home/nacho/temp/opencode-work/wibox-jadx/resources/lib/arm64-v8a/liblive_player.so
+8a52d9855200fa81d9b2bba3ed60f6f08310d160ba60a296154d7e6df09cc900  /home/nacho/temp/opencode-work/wibox-jadx/resources/lib/arm64-v8a/libmsoptimize.so
+fc219f2627b5256e5dc8e815c5e8672dbcf0e3a14eae86e13f0fc9339d5d3b69  /home/nacho/temp/opencode-work/wibox-jadx/resources/lib/arm64-v8a/libqv-p2p-v2.so
+8fa1126c4ec8b3edfb609a46e5fcec4d9e19c5e8c4c49dc7c64f7e6749b0b4a0  /home/nacho/temp/opencode-work/wibox-jadx/resources/lib/arm64-v8a/libscannative.so
+7305d841243ed125a3018b4203f20cef940f142d858ecab148635162651116bc  /home/nacho/temp/opencode-work/wibox-jadx/resources/lib/arm64-v8a/libsqlcipher.so
+d5a853678604f84e4bd91cdeb28a86e46c94ec08cc6936287c7d7a6d9a65571a  /home/nacho/temp/opencode-work/wibox-jadx/resources/lib/arm64-v8a/libswresample.so
+2b2c6522f87c9accb18d6c83cdfcdc2e6bde1606f1c1c0dc382ad5f5e78d8077  /home/nacho/temp/opencode-work/wibox-jadx/resources/lib/arm64-v8a/libswscale.so
+06ee0c3fdbf17bba72ba3e4567d1804919ec87a89cb351b3ba556c69258cf89e  /home/nacho/temp/opencode-work/wibox-jadx/resources/lib/arm64-v8a/libvoiceRecog.so
+cf23172432758e906fed8164087f533ec0ee4d00ecb24d17dc1681630006b880  /home/nacho/temp/opencode-work/wibox-jadx/resources/lib/arm64-v8a/libWebrtcAudio.so

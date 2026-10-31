@@ -1,0 +1,68 @@
+{
+  "core": {
+    "tests": 45,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 7,
+    "sources": [
+      "core/cloud/build/test-results/testDebugUnitTest/TEST-dev.nacho.wibox.core.cloud.ErrorAndSafetyTest.xml",
+      "core/cloud/build/test-results/testDebugUnitTest/TEST-dev.nacho.wibox.core.cloud.EventAndUnsupportedTest.xml",
+      "core/cloud/build/test-results/testDebugUnitTest/TEST-dev.nacho.wibox.core.cloud.OAuthContractTest.xml",
+      "core/cloud/build/test-results/testDebugUnitTest/TEST-dev.nacho.wibox.core.cloud.ProviderContractTest.xml",
+      "core/cloud/build/test-results/testDebugUnitTest/TEST-dev.nacho.wibox.core.cloud.SessionBehaviorTest.xml",
+      "core/cloud/build/test-results/testDebugUnitTest/TEST-dev.nacho.wibox.core.cloud.ShadowContractTest.xml",
+      "core/cloud/build/test-results/testDebugUnitTest/TEST-dev.nacho.wibox.core.cloud.UpgradeContractTest.xml"
+    ]
+  },
+  "app_unit": {
+    "tests": 22,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 3,
+    "sources": [
+      "app/build/test-results/testDebugUnitTest/TEST-dev.nacho.wibox.data.DeviceCodeParserTest.xml",
+      "app/build/test-results/testDebugUnitTest/TEST-dev.nacho.wibox.ui.RoutesTest.xml",
+      "app/build/test-results/testDebugUnitTest/TEST-dev.nacho.wibox.ui.ViewModelsTest.xml"
+    ]
+  },
+  "app_instrumented": {
+    "tests": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 6,
+    "sources": [
+      "app/build/outputs/androidTest-results/connected/debug/TEST-wibox-test(AVD) - 17.xml"
+    ]
+  },
+  "external_api_unit": {
+    "tests": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 2,
+    "sources": [
+      "external-api/build/test-results/testDebugUnitTest/TEST-dev.nacho.wibox.externalapi.server.AuthorizationEngineTest.xml",
+      "external-api/build/test-results/testDebugUnitTest/TEST-dev.nacho.wibox.externalapi.server.SignerSetHashTest.xml"
+    ]
+  },
+  "external_api_instrumented": {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 1,
+    "sources": [
+      "app/build/outputs/androidTest-results/connected/debug/TEST-wibox-test(AVD) - 17.xml"
+    ]
+  },
+  "totals": {
+    "tests": 118,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": 19
+  }
+}

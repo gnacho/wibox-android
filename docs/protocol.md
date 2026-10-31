@@ -1,0 +1,232 @@
+# Protocolo cloud de Wibox
+
+## 1. Alcance y nivel de certeza
+
+Este documento describe el contrato implementado en `core:cloud` a partir del APK Wibox Fermax v2.2, paquete `com.fermax.wibox`, versión 18 y SHA-256 registrado en `analysis/apk/inventory.json`. La evidencia estática se complementa con la captura autorizada attempt3 de `analysis/dynamic/inventory.json`. La implementación y sus tests no han contactado con servicios y no se afirma compatibilidad cloud completa.
+
+La API pública está en `core/cloud/src/main/kotlin/dev/nacho/wibox/core/cloud/WiboxCloud.kt`. Los consumidores usan `WiboxCloudFactory.create`, modelos del package `dev.nacho.wibox.core.cloud`, `TokenStore` y `CloudClock`. Ningún tipo público pertenece a Ktor. Transporte, DTO y parsers están en `dev.nacho.wibox.core.cloud.internal`.
+
+Las pruebas usan `MockEngine`, reloj y almacenamiento inyectados, fixtures ficticios y el host reservado `unit.test`. No realizan red.
+
+## 2. Matriz de evidencia, implementación y límites
+
+| ID | Evidencia | Operación | Estado implementado | Prueba principal | Limitación |
+|---|---|---|---|---|---|
+| P-OAUTH-PASSWORD | E029, E033, `OAuthApi.java`, `GetTokenResp.java` | `authenticate` | Implementado con GET y password grant | `OAuthContractTest.passwordGrantUsesExactWireContractAndPersistsSession` | Requiere credenciales opacas ya obtenidas. No crea una cuenta ni una pantalla de login |
+| P-OAUTH-REFRESH | E033 a E036, `QvOAuthManager.java` | `refreshSession` y refresh previo a Shadow | Implementado con refresh grant y margen de cinco minutos | `OAuthContractTest.refreshGrantUsesOnlyRefreshQueryAndAccessTokenHeader`, `SessionBehaviorTest.concurrentRefreshUsesSingleFlightAndOnePersistenceWrite` | Sin credenciales retenidas no hay fallback implícito a password |
+| P-SESSION-RESTORE | E034, E036 | `restoreSession`, caché y persistencia | Implementado mediante `TokenStore` | `SessionBehaviorTest.restoresOnceAndUsesFreshCachedAccessToken` | El cifrado y la atomicidad persistente dependen de la implementación de `TokenStore` |
+| P-SHADOW-STATUS | E041, `QvShadowApi.java`, `QvShadowHttpManager.java`, entidades Shadow | `getDeviceShadow` | Implementado | `ShadowContractTest.statusUsesPostTokenHeaderAndTypedBody` | Los enteros de estado se conservan sin traducir semántica no probada |
+| P-SHADOW-MULTI | E041, `QvShadowApi.java`, entidades Shadow | `getDeviceShadows` | Implementado | `ShadowContractTest.multiStatusUsesArrayBodyAndPreservesMissingState` | No deduce dispositivos ausentes ni paginación |
+| P-SHADOW-SUB | E041, `QvShadowApi.java`, `QvShadowSubscribeRequest.java` | `subscribeDeviceShadows` | Implementado solo para `Device_state` | `ShadowContractTest.subscribeUsesDeviceStateSubscriptionAndReturnsAck` | El ack HTTP no abre MQTT ni prueba entrega posterior |
+| P-SHADOW-UNSUB | E041, `QvShadowApi.java`, `QvShadowUnsubscribeRequest.java` | `unsubscribeDeviceShadows` | Implementado con motivos 1 y 2 | `ShadowContractTest.unsubscribeUsesReasonAndEmptyFieldsAndReturnsAck` | No revoca la sesión ni desvincula físicamente el dispositivo |
+| P-ALARM-FCM | E056, E057, `AlarmMessageInfo.java` | `parseAlarmEvent` | Parser offline para movimiento, llamada y llamada atendida | `EventAndUnsupportedTest.parsesDocumentedAlarmTypesAndPreservesUnknownFields` | No registra FCM ni interpreta el formato de fecha |
+| P-APP-UPGRADE | E050 y `DYN3-HTTP-UPGRADE-001` en attempt3 | `checkAppUpgrade` | Implementado solo para GET y HTTP 200 XML de éxito observados | `UpgradeContractTest.requestMatchesAttempt3AndParsesEveryObservedField` | Sin decisión update-available, contrato de error ni compatibilidad cloud total |
+| P-ERROR-HTTP | E035 y comportamiento HTTP observado estáticamente | Errores 401, 403 y resto | Errores tipados y sin reintento automático | `ErrorAndSafetyTest.mapsHttpErrorsWithoutRetryOrSecretLeakage` | No se inventa un envelope de error del proveedor |
+| P-ERROR-WIRE | DTO de OAuth y Shadow | Red, timeout, parseo y respuesta incompleta | Errores tipados sin falso estado | `ErrorAndSafetyTest` | No hay reintentos ni recuperación ambigua |
+| U-SERVICE-DISCOVERY | E034, E040 y `QvLocationManager` | `discoverServices` | `Unsupported` | `EventAndUnsupportedTest.capabilitiesAndUnsupportedOperationsNeverClaimRuntimeSupport` | El descubrimiento dinámico no está resuelto |
+| U-DEVICE-LIST | E004, E010, E020 | `listDevices` | `Unsupported` | `EventAndUnsupportedTest.capabilitiesAndUnsupportedOperationsNeverClaimRuntimeSupport` | Falta el contrato HTTP/XML completo de `getDevList` |
+| U-REALTIME | E037 a E041, E063, E073 | `observeEvents` | `Unsupported` | El mismo test de capacidades | MQTT está presente pero desactivado por defecto y sin prueba dinámica |
+| U-ACTIONS | E019, E023, E025 | `performAction` | `Unsupported` | El mismo test de capacidades | No hay wire cloud completo ni ack físico verificado |
+| U-REGISTER | E004, E010 | Registro opaco y `userLogin` | No expuesto como operación | Control estático de API y documentación | `userFreeRegister` y login no tienen un request/response suficientemente cerrado |
+| U-MEDIA | E011, E021, E023, E042 | Audio y vídeo | No implementado | Revisión de capacidades | P2P nativo no reimplementado y binarios originales prohibidos |
+
+`CloudCapabilities` solo anuncia OAuth password, OAuth refresh, Shadow HTTP, parser offline de alarmas y app upgrade check. Las demás capacidades quedan fuera del conjunto soportado.
+
+## 3. Configuración y descubrimiento de servicio
+
+`WiboxCloudConfig.baseUrl` es obligatorio y no tiene valor por defecto. Debe ser HTTPS, tener host, y no incluir userinfo, query ni fragmento. La fábrica no contiene un endpoint de producción ni uno de pruebas reales. El llamador debe aportar una base ya resuelta para OAuth y Shadow.
+
+`discoverServices` devuelve `CloudError.Unsupported`. Las URLs regionales dependen de `QvLocationManager` y P2P según E034 y E040. El análisis no ha resuelto la respuesta dinámica que asigna los servicios 4 y 8, por lo que no se sustituye por el host bootstrap ni por una IP histórica.
+
+Los timeouts de request, conexión y socket son configurables y positivos. Las redirecciones y el retry de conexión del motor están desactivados. TLS usa la validación normal de certificado y hostname de la plataforma, sin trust store propio ni excepciones.
+
+## 4. OAuth
+
+### 4.1 Password grant
+
+Request:
+
+```text
+GET /qvoauthv2/token
+token: <access token previo o cadena vacía>
+```
+
+Query en este orden:
+
+```text
+grant_type=password
+client_id=<config>
+client_type=<config>
+oemid=<config>
+appid=<config>
+usr=<cuenta opaca>
+pwd=<secreto de esa cuenta>
+region_id=<config>
+client_flag=<config>
+```
+
+Los valores se codifican como query URL. No se usa `Authorization` ni el esquema Bearer. El header `token` se envía siempre. En una autenticación inicial es una cadena vacía, y si existe sesión restaurada contiene su access token previo. Esta regla local evita ausencia del header exigido por el contrato de integración sin convertir el password grant en una autorización Bearer.
+
+Response soportada:
+
+```json
+{
+  "access_token": "<JWT>",
+  "refresh_token": "<JWT>"
+}
+```
+
+Se toleran campos JSON adicionales. Los dos tokens son obligatorios. Cada uno debe tener tres segmentos, payload Base64URL JSON y `exp` numérico positivo. Solo se decodifica la caducidad para gestionar la sesión. La validación de identidad y autorización corresponde al servidor y al canal TLS, no a una verificación local inventada de firma.
+
+### 4.2 Refresh grant
+
+```text
+GET /qvoauthv2/token?grant_type=refresh_token&refresh_token=<token>
+token: <access token actual>
+```
+
+La respuesta exige access y refresh token completos y sustituye ambos de forma atómica respecto a `TokenStore`. Una respuesta válida sin refresh token es `CloudError.Parse` y no pisa la sesión anterior.
+
+### 4.3 Margen, single-flight y persistencia
+
+Un token es utilizable solo si `exp - reloj > 300000 ms`. En el límite exacto de cinco minutos se renueva. Si el access token está dentro del margen pero el refresh token es utilizable, una operación Shadow comparte una única renovación en vuelo. Los llamadores concurrentes reciben el mismo resultado y hay un solo request y un solo `save`.
+
+`refreshSession` fuerza refresh, mientras que las operaciones Shadow reutilizan un access token fresco. No se guardan usuario ni password para una segunda autenticación oculta. Si ambos tokens dejan de ser utilizables se produce `CloudError.MissingToken` antes de red.
+
+`TokenStore` define `load`, `save` y `clear` suspending. La app debe proporcionar almacenamiento cifrado y escritura atómica. La librería no ofrece un almacén persistente inseguro. `CloudSession.toString` y `CloudCredentials.toString` redactan secretos, y los errores no incorporan cuerpos, URLs ni mensajes de transporte potencialmente sensibles.
+
+## 5. Shadow HTTP
+
+Las cuatro operaciones usan POST, JSON, header `token` con el access token y ningún parámetro query. Una respuesta de negocio solo se acepta con `code=0`. Un código distinto produce `CloudError.Provider` con el código numérico, sin copiar mensajes del servidor.
+
+### 5.1 Estado individual
+
+Ruta `/openapi-tdk/device/status`.
+
+```json
+{
+  "thingId": "fixture-device-001",
+  "fieldNames": ["Device_state"]
+}
+```
+
+La respuesta exige `data.thingId` y `data.fields`. `Device_state` puede ser null. Los campos tipados son `F1_state`, `Switch_state`, `Private_mode_state`, `Fisheye_chn_state`, `Lock_state`, `Alarm_zone_mode` y `Smart_relay`. Los modelos públicos usan nombres Kotlin y conservan los enteros originales. Los campos desconocidos de estado, switches, locks, relés y `fields` se conservan como JSON en `unknownFields`. Los desconocidos del envelope se conservan en `responseUnknownFields`.
+
+### 5.2 Estado múltiple
+
+Ruta `/openapi-tdk/device/status/multi`. El body es un array de objetos `thingId` y `fieldNames`. La respuesta `data` es un array en el mismo modelo. No se rellenan estados ausentes ni se convierte `Device_state=null` en online, offline o éxito de acción.
+
+### 5.3 Suscripción
+
+Ruta `/openapi-tdk/device/status/sub`.
+
+```json
+{
+  "appId": "2021",
+  "clientId": "fixture-client",
+  "subData": [
+    {"thingId": "fixture-device-001", "fieldNames": ["Device_state"]}
+  ]
+}
+```
+
+Solo se solicita `Device_state`, el campo visto en el productor. El ack exige `code=0`, `path` y `timestamp`, conserva `data` opcional y campos desconocidos del envelope. No implica que exista un canal activo de eventos.
+
+### 5.4 Desuscripción
+
+Ruta `/openapi-tdk/device/status/unsub`. Usa el mismo envelope con `subData`. Cada entrada lleva `fieldNames=[]` y `doType`: 1 para `ACCOUNT_LOGOUT`, 2 para `DEVICE_UNBIND`. Son los valores presentes en las entidades del APK. No se les añade semántica de revocación OAuth o desvinculación física.
+
+## 6. Eventos y alarmas
+
+`parseAlarmEvent` procesa un `Map<String, String>` ya recibido por el llamador. Reconoce `AlarmEvent=2` como movimiento, 19 como llamada entrante y 20 como llamada atendida. Modela `AlarmId`, `DevUmid`, `SensorChNo`, `CameraName`, `NotReadCount`, `AlarmEvent` y `AlarmTime` según E056 y `AlarmMessageInfo`.
+
+`AlarmEvent` y `NotReadCount` deben ser enteros. Un `SensorChNo` ausente o no numérico se representa como -1, igual que el parser estático. La fecha se conserva como texto porque no se ha fijado zona ni formato completo. Otros campos se conservan. Un código de alarma desconocido produce `Unsupported`, y un entero obligatorio inválido produce `Parse`.
+
+`observeEvents` no es un flujo vacío ni un éxito simulado: al recolectarlo produce `CloudError.Unsupported`.
+
+## 7. Errores y reintentos
+
+| Error | Condición |
+|---|---|
+| `MissingToken` | No hay sesión o access y refresh no superan el margen |
+| `Authentication` | HTTP 401 |
+| `Authorization` | HTTP 403 |
+| `Http` | Otro estado no 2xx |
+| `Provider` | Respuesta Shadow con `code` distinto de 0 |
+| `Network` | Fallo de transporte no temporal |
+| `Timeout` | Timeout de request o socket |
+| `Parse` | JSON inválido, JWT inválido o campos obligatorios incompletos |
+| `Persistence` | Fallo de `TokenStore.load` o `save` |
+| `InvalidInput` | Configuración, credenciales o IDs inválidos |
+| `Unsupported` | Operación o evento sin contrato implementado |
+| `Closed` | Operación posterior al cierre |
+
+No se instala retry de Ktor y el motor no reintenta fallos de conexión. En particular, 401, 403, JSON inválido y errores de red generan un solo request. Las acciones físicas no llegan a red, por lo que una acción ambigua nunca se repite. No se informa éxito de una acción sin ack, y el ack de suscripción no se presenta como confirmación física.
+
+`close` cancela el ámbito propio y cierra el cliente HTTP. Es idempotente y no borra ni revoca tokens.
+
+## 8. Service discovery dinámico no resuelto
+
+La selección regional y la obtención de servicios OAuth, Shadow y MQTT requieren el resultado dinámico de `QvLocationManager`. Falta el esquema de esa respuesta y su correlación runtime. Por eso no existe un bootstrap oculto ni un fallback a hosts históricos. La base URL inyectada es deliberada y visible en la configuración. Esta separación permite probar las operaciones conocidas sin afirmar que el aprovisionamiento del endpoint está terminado.
+
+## 9. MQTT desactivado
+
+El APK contiene Paho, topics, QoS 1, heartbeat y reconexión, pero `SUPPORT_DEVICE_SHADOW=false` impide la inicialización por defecto según E063 y E073. Las clases Paho no están completas en la salida JADX. No se implementa cliente MQTT, conexión, heartbeat ni replay. La suscripción HTTP no activa MQTT y `observeEvents` devuelve `Unsupported`.
+
+## 10. P2P nativo no reimplementado
+
+El vídeo y audio de stock dependen de túneles P2P nativos, puertos mapeados y URLs con credenciales. No se incluyen bibliotecas originales, URLs `quii`, SIP, WebSocket, WebRTC ni un reproductor falso. `MEDIA_P2P` no está soportado y las acciones físicas devuelven `Unsupported`.
+
+## 11. Diferencias con duhow y cmos486
+
+duhow documenta UART, CGI local y MQTT de firmware parcheado. Sus topics, comandos y respuestas no se mezclan con OAuth o Shadow del APK. El ack CGI o un publish local tampoco demuestra apertura física. Este módulo no adopta credenciales por defecto, canales planos ni secuencias temporizadas de ese firmware.
+
+cmos486 describe otro firmware custom con RTSP, WebRTC y MQTT. Esas funciones no prueban el transporte de stock y no se reutilizan como contrato cloud. Tampoco se copian configuraciones, secretos o componentes nativos. REA se usa solo como herramienta de análisis, nunca como referencia de protocolo.
+
+## 12. Evidencia que requiere captura autorizada
+
+- Respuesta dinámica de service discovery y asociación de servicios regionales.
+- Requests y responses runtime de OAuth, incluidos errores del proveedor y rotación real.
+- Respuestas Shadow por versión y semántica de cada entero de estado.
+- Confirmación de que suscribir por HTTP produce eventos y de qué canal, orden, duplicados y huecos.
+- Contrato completo de `userFreeRegister`, `userLogin`, lista de dispositivos y credenciales dinámicas.
+- Formato y zona de `AlarmTime`, deduplicación FCM y comportamiento en segundo plano.
+- Comandos físicos, correlación y ack que distinga envío aceptado de efecto físico.
+- Wire format P2P y alternativa FOSS de media sin cargar binarios originales.
+- Respuestas no 200 de upgrade, errores del proveedor, semántica de decisión de actualización y comportamiento TLS estricto de producción.
+
+Hasta disponer de esas capturas, las operaciones correspondientes permanecen no expuestas o devolverán `Unsupported`.
+
+## 13. App upgrade check observado en attempt3
+
+`DYN3-HTTP-UPGRADE-001` aporta request y HTTP 200 XML de éxito. El host y puerto observados permanecen en el inventario de evidencia y no se copian como default del cliente. `AppUpgradeRequest.baseUrl` es obligatorio y pasa la misma validación HTTPS estricta que el resto del cliente. `currentVersion` y `clientId` son explícitos. El appid stock es 2021 y el path es `/webs/version/app/version_check.jsp`.
+
+```text
+GET <upgrade-base>/webs/version/app/version_check.jsp
+Accept-Language: en-US
+
+os=android&appid=2021&version=<currentVersion>&clientid=<clientId>
+```
+
+No se envían `token`, `Authorization`, body ni cookies. Los valores query se codifican por URL. Solo se acepta HTTP 200 y `Content-Type: text/xml;charset=UTF-8`, normalizando espacios y mayúsculas. Otro Content-Type produce `CloudError.Parse` y otro estado produce el error HTTP tipado existente. No se afirma un contrato de error no observado.
+
+`AppUpgradeInfo` contiene `flag`, `result`, `priority`, `version`, `url`, `description`, `configVersion`, `configUrl` y `configPicture`. No contiene una decisión `updateAvailable`. Las URLs y descripciones vacías se devuelven como cadenas vacías. Un `result` distinto de 0 produce `CloudError.Unsupported`, nunca un éxito parcial.
+
+El parser usa DOM del JDK disponible en Android, sin una dependencia nueva. Limita el documento a 64 KiB, rechaza DOCTYPE, declaraciones de entidades y XInclude, desactiva expansión de entidades y acceso externo a DTD y esquemas, y valida todos los elementos requeridos y enteros. Los fallos producen `CloudError.Parse` sin incluir el XML ni estados parciales.
+
+Las cabeceras `Set-Cookie` se ignoran. No se instala almacén de cookies, no se reenvían en llamadas posteriores y esta operación no lee ni escribe `TokenStore`. `AppUpgradeRequest.toString` redacta clientId y base URL, y no existe logging BODY.
+
+La excepción `ssl_insecure` de attempt3 perteneció exclusivamente al proxy MITM de laboratorio por un upstream caducado. No se ha copiado al cliente. TLS conserva validación de certificado y hostname.
+
+Registro, login, bind, lista de dispositivos, media y acciones físicas siguen sin request y response suficientes y permanecen no expuestos o `Unsupported`. OAuth y Shadow conservan su alcance estático, sin validación runtime afirmada.
+
+## 14. Verificación
+
+```bash
+python3 core/cloud/verify_upgrade_contract.py
+python3 core/cloud/verify_protocol.py
+python3 core/cloud/verify_no_secrets.py
+./gradlew :core:cloud:test
+```
+
+Los resultados medidos, el recuento de tests y las limitaciones se registran en `core/cloud/verification.txt`.

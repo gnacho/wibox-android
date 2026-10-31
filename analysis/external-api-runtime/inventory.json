@@ -1,0 +1,135 @@
+{
+  "status": "implemented",
+  "generated_at_utc": "2026-10-31T13:37:20Z",
+  "contract_source": "analysis/external-api/api-contract.json",
+  "service": {
+    "manifest_name": ".externalapi.WiboxExternalApiService",
+    "component": "dev.nacho.wibox.externalapi.WiboxExternalApiService",
+    "intent_action": "dev.nacho.wibox.externalapi.BIND",
+    "interface": "dev.nacho.wibox.externalapi.aidl.IWiboxExternalService",
+    "exported": true,
+    "manifest_permission": null,
+    "manifest_path": "app/src/main/AndroidManifest.xml"
+  },
+  "methods": [
+    "handshake",
+    "requestAuthorization",
+    "getAuthorizationState",
+    "getProviderSnapshot",
+    "getCapabilities",
+    "listDevices",
+    "getDevice",
+    "getDeviceShadow",
+    "getDeviceShadows",
+    "subscribeEvents",
+    "unsubscribeEvents",
+    "performAction",
+    "cancelOperation",
+    "getActionOutcome",
+    "checkAppUpgrade"
+  ],
+  "method_count": 15,
+  "parcelable_count": 43,
+  "sdk_files": [
+    "Enums.kt",
+    "ExternalApiTransport.kt",
+    "ModelMappers.kt",
+    "Models.kt",
+    "WiboxClient.kt",
+    "WiboxEventUpdate.kt",
+    "WiboxExternalApi.kt"
+  ],
+  "server_sources": [
+    "app/src/main/kotlin/dev/nacho/wibox/externalapi/WiboxExternalApiService.kt",
+    "app/src/main/kotlin/dev/nacho/wibox/externalapi/ExternalApiRuntime.kt",
+    "app/src/main/kotlin/dev/nacho/wibox/externalapi/ExternalApiMappers.kt",
+    "app/src/main/kotlin/dev/nacho/wibox/externalapi/SharedPreferencesAuthorizationStore.kt",
+    "app/src/main/kotlin/dev/nacho/wibox/externalapi/AndroidIdentitySources.kt",
+    "external-api/src/main/kotlin/dev/nacho/wibox/externalapi/server/SignerSetHash.kt",
+    "external-api/src/main/kotlin/dev/nacho/wibox/externalapi/server/CallerIdentity.kt",
+    "external-api/src/main/kotlin/dev/nacho/wibox/externalapi/server/AuthorizationStore.kt",
+    "external-api/src/main/kotlin/dev/nacho/wibox/externalapi/server/AuthorizationEngine.kt",
+    "external-api/src/main/kotlin/dev/nacho/wibox/externalapi/server/TokenBucket.kt"
+  ],
+  "authorization": {
+    "uid_source": "Binder.getCallingUid() inside the Binder transaction",
+    "package_source": "PackageManager.getPackagesForUid(uid), exactly one package required",
+    "signer_digest": "sha256 of the sorted per-certificate sha256 hex set, lowercase without separators, from PackageInfo.signingInfo.apkContentsSigners",
+    "allowlist": "user approved, revocable, scoped grant persisted in SharedPreferences schema v1",
+    "default_policy": "deny",
+    "shared_uid_policy": "deny",
+    "package_mismatch_policy": "deny with PACKAGE_UID_MISMATCH",
+    "signature_rotation_policy": "SIGNATURE_CHANGED, re-approval required",
+    "revocation": "state REVOKED with grant generation increment; enforced per call",
+    "handshake_required": true,
+    "isolated_or_non_application_uid_policy": "deny"
+  },
+  "tests": {
+    "unit": {
+      "command": "./gradlew :external-api:testDebugUnitTest :app:testDebugUnitTest :app:lintDebug :app:assembleDebug",
+      "exit_code": 0,
+      "external_api_unit_tests": 24,
+      "external_api_unit_failures": 0,
+      "app_unit_tests": 22,
+      "app_unit_failures": 0,
+      "lint_errors": 0,
+      "lint_warnings": 58,
+      "two_signature_tests_passed": true,
+      "signatures": 2,
+      "two_signature_test_class": "external-api/src/test/kotlin/dev/nacho/wibox/externalapi/server/AuthorizationEngineTest.kt"
+    },
+    "instrumented": {
+      "command": "ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest",
+      "exit_code": 0,
+      "tests": 24,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "deny_by_default_test_class": "dev.nacho.wibox.externalapi.ExternalApiDenyByDefaultTest",
+      "deny_by_default_methods": [
+        "handshakeSucceedsWithoutAGrantAndReportsNotRequested",
+        "denyByDefaultForReadsActionsAndAuthorizationState",
+        "everyCallWithoutHandshakeReturnsHandshakeRequired"
+      ]
+    }
+  },
+  "limits_enforced": {
+    "request_serialized_bytes": "32 KiB by BoundedParcelable on requests",
+    "response_serialized_bytes": "64 KiB by BoundedParcelable on responses",
+    "event_batch": "10 items and 48 KiB by EventBatch parcelable budget",
+    "device_page_items": "20 by DevicePage parcelable and PAGE_LIMIT",
+    "capability_page_items": "page limit bounded to 20 per request by PageRequest parcelable",
+    "shadow_batch_queries": "20 by ShadowBatchQuery parcelable",
+    "device_id_utf8_bytes": "128 by parcelable validation",
+    "pending_one_shot_per_app": 20,
+    "pending_one_shot_global": 100,
+    "event_subscriptions_per_app": 4,
+    "reads_per_minute_per_uid": 30,
+    "read_burst_per_uid": 10,
+    "actions_per_minute_per_uid": 6,
+    "action_burst_per_uid": 2,
+    "pending_authorization_per_package": 3,
+    "pending_authorization_global": 50,
+    "silent_truncation": false
+  },
+  "unsupported": {
+    "events_realtime": "subscribeEvents consults the provider capability gate and returns UNSUPPORTED (or CAPABILITY_UNKNOWN without a catalog row); it never returns a fake connected stream",
+    "app_upgrade_demo": "checkAppUpgrade delegates to the repository, which supplies its own configuration or throws ProviderError.Unsupported mapped to UNSUPPORTED",
+    "devices_list_stock": "device reads delegate to the provider DevicePort; a provider without the operation throws ProviderError.Unsupported mapped to UNSUPPORTED, and demo results carry simulated=true",
+    "events_subscription_limit_note": "the 4 subscriptions per app limit is enforced on the registration path; unreachable today because realtime is unsupported"
+  },
+  "secrets_scan": {
+    "patterns": [
+      "clientId",
+      "dataEncodeKey",
+      "Cookie",
+      "Bearer",
+      "apiKey",
+      "accessToken",
+      "refreshToken",
+      "password"
+    ],
+    "matches": 0,
+    "note": "scan runs over the new runtime sources with comments stripped"
+  }
+}

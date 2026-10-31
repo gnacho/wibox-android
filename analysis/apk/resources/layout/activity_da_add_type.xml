@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="@color/main_ui_color_white"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <include
+        android:id="@+id/publico_titlebar"
+        layout="@layout/publico_include_title"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+    <Button
+        android:textSize="@dimen/text_normal_size"
+        android:id="@+id/bt_add_ap"
+        android:background="@drawable/publico_selector_btn_bg"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/btn_height"
+        android:layout_marginBottom="40dp"
+        android:text="@string/key_add_type_ap"/>
+    <Button
+        android:textSize="@dimen/text_normal_size"
+        android:id="@+id/bt_add_voice"
+        android:background="@drawable/publico_selector_btn_bg"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/btn_height"
+        android:layout_marginBottom="40dp"
+        android:text="@string/key_add_type_voice"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+</LinearLayout>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <files-path
+        name="hm_private_cache"
+        path="logs_out"/>
+    <external-path
+        name="external_files"
+        path="."/>
+    <files-path
+        name="hm_private_images_files"
+        path="images"/>
+    <files-path
+        name="hm_private_movies_files"
+        path="Movies"/>
+    <root-path
+        name="root_path"
+        path=""/>
+</paths>

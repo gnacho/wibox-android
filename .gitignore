@@ -1,0 +1,18 @@
+.gradle/
+.kotlin/
+**/build/
+.unlazy/
+local.properties
+.idea/
+*.iml
+*.apk
+*.aab
+*.keystore
+*.jks
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Distribución local
+dist/
+*.idsig

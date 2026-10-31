@@ -1,0 +1,162 @@
+WIBOX RESEARCH SUPPLEMENT VERIFICATION
+Fecha: 2026-10-31
+Hoja: leaf-1.2.11
+Modo: solo investigación pública estática, sin hardware ni ejecución de los proyectos fuente
+
+1. WORKSPACE Y PRESERVACIÓN
+
+El directorio /home/nacho/Documentos/Repos/wibox-kotlin no expone metadatos .git. El comando `git status --short` devolvió `fatal: no es un repositorio git` con exit 128. No se inventa un commit del workspace.
+
+Hashes medidos antes de crear los artefactos y repetidos al terminar, sin cambios:
+
+19bce697e5e1b5482cfd3249a953cb9e32d2761086b97d60f3b5f8bf1d8338c7  docs/rea-analysis.md
+675b059d23499ec551115966026e2bb352dbf1b3183b775fdca64a23ba403a63  docs/provider-architecture.md
+2b7efc28e3987785153e8472ae678e729bf3b0e9837a73092674cdf7925b0160  docs/dynamic-analysis.md
+912878dcef3f697cef5d7fc561dc1d1542a241673993343909fbdf4d6dd6a915  analysis/architecture/provider-matrix.json
+f31824799489b4e89712be985c611efc80f6502a830fd513e74c540bb9523ea6  analysis/dynamic/inventory.json
+
+Solo se crearon o editaron:
+- docs/research-supplement.md
+- analysis/research-supplement/source-matrix.json
+- analysis/research-supplement/findings.json
+- analysis/research-supplement/verify_research.py
+- analysis/research-supplement/verification.txt
+
+2. REVISIONES DE CÓDIGO FIJADAS
+
+Clones públicos bajo /home/nacho/temp/opencode-work/wibox-research-supplement. No se ejecutó su contenido.
+
+| Fuente | Rama | Commit | Fecha del commit | git describe | Licencia verificada |
+|---|---|---|---|---|---|
+| duhow/wibox | main | d8502d780f1d4ac3f2ec1a8425a98588fd7f53a7 | 2026-10-18T15:52:35+02:00 | d8502d7 | GPL-3.0, LICENSE:1-2 |
+| cmos486/wibox-media | custom | 090854bef1085679fb3f42e431e9ffa2d1ad958c | 2026-09-11T20:59:10+02:00 | v0.18.15-4-g090854b | GPL-3.0, LICENSE:1-2 |
+| cmos486/wibox-intercom-video-card | main | a0d24354f1daf1cff02ce0cf9381b72d8c90fc14 | 2026-09-01T17:18:26+02:00 | v1.0.1-1-ga0d2435 | Apache-2.0, LICENSE:1-2 |
+| segator/wibox-media | main | a64530bb5a17d7b1ce512bf065ccba90ae2d0027 | 2026-10-22T19:22:01+02:00 | v0.18.1-1-ga64530b | GPL-3.0, LICENSE:1-2 |
+| h0r4ci0/Control-Remoto-de-Portero-FERMAX | main | cb21e44ce0820975dfeff47a53ec915e0976099c | 2024-01-01T18:29:26+01:00 | cb21e44 | GPL-3.0, LICENSE:1-2 |
+
+`git status --short` no mostró cambios en los clones al revisar los commits. Después se obtuvo segator/main dentro del clone cmos486 únicamente para calcular la divergencia. Esa operación quedó fuera del workspace.
+
+En cmos486 y segator, el comando:
+
+git ls-files '*LICENSE*' '*COPYING*' '*NOTICE*'
+
+devolvió únicamente `LICENSE` en cada uno. No se afirma cobertura de licencias de blobs o SDK propietarios. FORK.md:124-136 documenta una dependencia de build privada.
+
+3. DESCARGA WEB Y HASHES
+
+Comando:
+
+python3 fetch_sources.py
+
+Salida:
+
+{
+  "sources": 25,
+  "http_200": 25,
+  "failures": [],
+  "manifest": "/home/nacho/temp/opencode-work/wibox-research-supplement/web-manifest.json"
+}
+
+SHA-256 del manifiesto:
+
+f5de99fd60498490396e2f21e2ea17f0a530014c95c9b138f905f25bccafdd8d  /home/nacho/temp/opencode-work/wibox-research-supplement/web-manifest.json
+
+Comprobación posterior:
+
+WEB_MANIFEST_OK 25/25 HTTP_200 hashes=25
+
+Las respuestas HTML/JSON quedaron fuera del workspace. Las URLs completas y los hashes individuales están en el manifiesto temporal. No hubo fuentes inaccesibles en esta pasada curl.
+
+Limitación específica: `webfetch` de https://nvd.nist.gov/vuln/detail/CVE-2026-86585 no devolvió texto útil. La página sí respondió HTTP 200 con curl. Se usó https://services.nvd.nist.gov/rest/json/cves/2.0?cveId=CVE-2026-86585 para el contraste legible, además del registro oficial https://cveawg.mitre.org/api/cve/CVE-2026-86585.
+
+4. DIVERGENCIA CMOS486/SEGATOR
+
+Comandos dentro del clone cmos486:
+
+git fetch https://github.com/segator/wibox-media.git main
+git merge-base HEAD FETCH_HEAD
+git rev-list --left-right --count HEAD...FETCH_HEAD
+git diff --shortstat HEAD...FETCH_HEAD
+git diff --shortstat FETCH_HEAD...HEAD
+
+Salidas:
+
+a55b8de9b19b954238a3c160e283a2c1867e8ce6
+29	3
+ 16 files changed, 110 insertions(+), 10 deletions(-)
+ 39 files changed, 2843 insertions(+), 227 deletions(-)
+
+La API GitHub confirma `cmos486/wibox-media` como fork con parent `segator/wibox-media`. La misma API marca `segator/wibox-media` como `fork=false`. El linaje conceptual con duhow se limita a los créditos del propio proyecto.
+
+Diferencia revisada en segunda pasada: cmos486 registra y continúa si `SSL_set1_host` falla (`src/firmware_update.c:471-475`). Segator HEAD libera y aborta (`src/firmware_update.c:471-478`, commit eed32e1). No se probó explotación ni se asignó un CVE a esa diferencia.
+
+5. CONTRASTE OFICIAL CVE
+
+Se compararon los JSON CNA y NVD descargados con findings.json. Aserciones ejecutadas: ID, asignador FERMAX, estado PUBLISHED, CWE-347, producto, cinco plataformas, rango, estado NVD Deferred y ausencia literal de F03266 en ambos registros.
+
+Salida:
+
+OFFICIAL_CVE_CROSSCHECK_OK cna+nvd platforms=5 wibox_listed=false
+
+Resultado: CVE-2026-86585 confirmado para DUOX PLUS monitor firmware antes de 01.48.001. F03266 queda como no listado y sin evidencia de aplicabilidad, no como certificado libre de toda vulnerabilidad.
+
+6. SINTAXIS Y SANITIZACIÓN
+
+Comando corregido:
+
+python3 -c "import ast,json,pathlib; root=pathlib.Path('.'); [json.loads((root/p).read_text()) for p in ['analysis/research-supplement/source-matrix.json','analysis/research-supplement/findings.json']]; ast.parse((root/'analysis/research-supplement/verify_research.py').read_text()); print('JSON_AND_PYTHON_SYNTAX_OK')"
+
+Salida:
+
+JSON_AND_PYTHON_SYNTAX_OK
+
+Búsqueda de guiones em/en y patrones de secretos en los artefactos: sin coincidencias para guiones prohibidos, contraseñas de los blogs, tokens pegados, claves privadas o IP privadas de ejemplos. La palabra genérica `tokens` aparece solo en una limitación, sin valores.
+
+7. VERIFICADOR PRINCIPAL
+
+Comando ejecutado desde la raíz del workspace:
+
+python3 analysis/research-supplement/verify_research.py
+
+Salida final:
+
+POSITIVE_CONTROL_OK sources=20 urls=25 conclusions=15
+NEGATIVE_CONTROL_OK stock_custom_mix
+NEGATIVE_CONTROL_OK cve_applied_to_f03266
+NEGATIVE_CONTROL_OK claim_without_source
+NEGATIVE_CONTROL_OK unknown_source_reference
+NEGATIVE_CONTROL_OK provider_matrix_elevation
+NEGATIVE_CONTROL_OK cve_applied_to_qvcloud
+WIBOX_RESEARCH_SUPPLEMENT_VERIFIED
+
+Los controles negativos mutan copias en memoria, nunca los artefactos. Cubren mezcla stock/custom, CVE aplicado a F03266, claim sin fuente, referencia desconocida, elevación de actions.unlock y CVE aplicado a QVCloud.
+
+8. SEGUNDA PASADA CRÍTICA
+
+- Se revisaron las diferencias entre WebRTC nativo y la cadena RTSP ONVIF -> go2rtc -> WebRTC.
+- Se comprobó que duhow puede ejecutar Sofia temporalmente para inicialización y que eso no equivale a nube stock activa.
+- Se conservó la diferencia WayFi/Hi3518EV200 frente a Wi-Box/GK7102S y no se transfirieron hardware ni servicios.
+- Se verificó el matiz OTA: el valor empaquetado cmos486 apunta a segator y FORK.md documenta cambiarlo en el dispositivo.
+- Se contrastó la discrepancia entre el texto VEO/VEO-XS y las plataformas estructuradas CNA/NVD, que también incluyen VEO-XL.
+- Se verificó que el post /7 del foro es el relato de avería y que el anuncio custom está en /8.
+- Se revisó la ficha oficial F03266, que está marcada como descatalogada y no publica protocolos.
+- Se corrigió una expectativa del propio control negativo: la primera ejecución se detuvo porque el control de elevación esperaba un cambio de hash y el verificador rechazó antes por `actions.unlock`. Se ajustó la expectativa al fallo específico y las dos ejecuciones posteriores completaron todos los controles.
+- Un comando auxiliar de sintaxis falló por llamar al módulo `pathlib` en vez de `pathlib.Path`. Se corrigió el comando y produjo `JSON_AND_PYTHON_SYNTAX_OK`. No era un fallo de los artefactos.
+
+9. HASHES FINALES DE ENTREGABLES
+
+02465ecd42ba50a91f8261acf31797e8b2d0edbd2e6da6e37ad332c1e0146d52  docs/research-supplement.md
+7c842f04fdb4f1f2ec2d8050270638acef49b2bb2c451a0ee7117465716054b7  analysis/research-supplement/source-matrix.json
+a2fe32594abd2bb0262021bd3c67d0e30d9531337481c19174aedaf81e102191  analysis/research-supplement/findings.json
+b02c7d0534008d24dabf82d14c33872f28ff6b243165d90c289c0285f6be518e  analysis/research-supplement/verify_research.py
+
+10. LIMITACIONES
+
+- No se ejecutaron scripts, builds, tests o binarios de duhow, cmos486, segator, la tarjeta o ESP32.
+- No se contactó con QVCloud, dispositivos, brokers, SIP, RTSP, WebRTC, OTA o Home Assistant.
+- No se flasheó, reinició, abrió, emparejó ni actualizó hardware. No se ejecutó apertura.
+- No se reprodujeron bancos de pruebas, logs, coexistencia VDS, llamadas, snapshots, jitter o métricas.
+- No se revisaron PCAP originales de WayFi, slides o vídeos de Recon/TROOPERS.
+- No se hizo auditoría legal, de blobs, de seguridad exhaustiva ni de releases binarias.
+- Las observaciones web y Git están limitadas a la fecha y commits indicados.
+- Ninguna capacidad custom se declara implementada en la app Kotlin o compatible con stock QVCloud.

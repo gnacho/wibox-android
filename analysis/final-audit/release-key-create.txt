@@ -1,0 +1,2 @@
+Generando par de claves RSA de 4.096 bits para certificado autofirmado (SHA384withRSA) con una validez de 10.000 días
+	para: CN=Wibox Kotlin, OU=Local Release, O=Personal, C=ES

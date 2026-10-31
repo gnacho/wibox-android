@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- The external-api module requires API 28 for SigningInfo; this app keeps
+         minSdk 26 and the API service answers UNSUPPORTED below API 28. -->
+    <uses-sdk tools:overrideLibrary="dev.nacho.wibox.externalapi" />
+    <application
+        android:name=".WiboxApplication"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:icon="@drawable/ico_logo"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Wibox">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="wibox" android:host="app" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".externalapi.WiboxExternalApiService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="dev.nacho.wibox.externalapi.BIND" />
+            </intent-filter>
+        </service>
+    </application>
+</manifest>

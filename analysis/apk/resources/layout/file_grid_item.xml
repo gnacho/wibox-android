@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+    <com.quvii.ubell.publico.view.MyImageView
+        android:id="@+id/grid_item"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:scaleType="fitXY"/>
+    <ImageView
+        android:id="@+id/iv_item_select"
+        android:background="@null"
+        android:clickable="false"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:src="@drawable/btn_checkbox_pre"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="3dp"
+        android:layout_alignParentEnd="true"/>
+    <ImageView
+        android:id="@+id/iv_video_bg"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/file_mangement_icon_video"
+        android:layout_centerInParent="true"/>
+</RelativeLayout>

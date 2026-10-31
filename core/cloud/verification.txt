@@ -1,0 +1,82 @@
+Verificación de core:cloud y protocolo Wibox
+Fecha: 2026-10-31
+Hoja actual: leaf-1.2.7
+
+Entorno medido:
+- OpenJDK 17.0.20.1.
+- Gradle wrapper 9.8.1.
+- SDK Android resuelto mediante el local.properties existente.
+- Sin red, credenciales, servicios reales, emuladores ni dispositivos durante esta hoja.
+
+Comandos y resultados reales:
+
+$ python3 core/cloud/verify_provider_port.py
+Exit 0
+WIBOX_PROVIDER_PORT_VERIFIED
+
+$ python3 core/cloud/verify_upgrade_contract.py
+Exit 0
+WIBOX_UPGRADE_CONTRACT_VERIFIED
+
+$ python3 core/cloud/verify_protocol.py
+Exit 0
+WIBOX_PROTOCOL_VERIFIED
+
+$ python3 core/cloud/verify_no_secrets.py
+Exit 0
+WIBOX_NO_SECRETS_VERIFIED
+
+$ ./gradlew :core:cloud:test --rerun-tasks --console=plain
+Exit 0
+BUILD SUCCESSFUL
+15 tareas ejecutadas, incluida testDebugUnitTest.
+
+$ ./gradlew :app:compileDebugKotlin --console=plain
+Exit 0
+BUILD SUCCESSFUL
+Compatibilidad de compilación de la app con la API legacy y el nuevo puerto.
+
+Recuento leído de los XML JUnit de core/cloud/build/test-results/testDebugUnitTest:
+- 7 suites.
+- 45 tests.
+- 0 fallos.
+- 0 errores.
+- 0 omitidos.
+
+Suites:
+- ErrorAndSafetyTest: 7.
+- EventAndUnsupportedTest: 3.
+- OAuthContractTest: 3.
+- ProviderContractTest: 11.
+- SessionBehaviorTest: 5.
+- ShadowContractTest: 5.
+- UpgradeContractTest: 11.
+
+Alcance verificado de leaf-1.2.7:
+- Nuevo WiboxProvider provider-neutral sin Ktor ni DTOs en API pública.
+- ProviderDescriptor, CapabilitySnapshot, SessionHandle, DeviceSnapshot, ShadowSnapshot, EventEnvelope/gaps, ActionOutcome y ProviderError.
+- Catálogo completo de 64 capacidades con soporte, evidencia, referencias y limitaciones de provider-matrix.
+- Separación entre capacidad declarativa F0, operación F1 y evidencia de operación.
+- Adaptador stock-qvcloud sobre WiboxCloud, sin reimplementar HTTP, XML, OAuth, Shadow ni TLS.
+- checkAppUpgrade delega exactamente una vez en cloud.checkAppUpgrade(request).
+- Registro/login/discovery/lista/realtime/acciones/media permanecen Unsupported.
+- Acciones físicas sin ejecución ni retries ambiguos y sin ack de dispositivo u observación física inventados.
+- Cierre idempotente con ownership configurable y carrera prepare/close cubierta.
+- IDs mqtt/self-hosted solo como diseño, sin adaptadores ni soporte anunciado.
+- Documentación de migración UI y futura proyección Binder en docs/provider-implementation.md.
+- No queda bytecode Python en core/cloud.
+
+Revisiones realizadas:
+1. Implementación completa del puerto, catálogo, adaptador, errores, modelos y documentación.
+2. Revisión de evidencia F0/F1 y correspondencia exacta de las 64 capacidades.
+3. Revisión de concurrencia, cierre, cancelación, secretos y compatibilidad legacy.
+4. Revisión de falsos soportes, ack físico, futuros proveedores, verificadores y repetición de gates.
+
+Limitaciones vigentes:
+- No se afirma compatibilidad cloud completa ni verificación hardware.
+- OAuth y Shadow conservan alcance de contrato offline, sin elevarlos a comportamiento runtime.
+- App upgrade solo cubre la respuesta de éxito observada, sin decisión update-available ni contrato de error.
+- Registro opaco, userLogin, discovery, lista, pairing, invitaciones y credenciales dinámicas siguen sin contrato completo.
+- MQTT, WebSocket y realtime no implementados. observeEvents devuelve Unsupported.
+- Acciones físicas sin transporte y ack verificados. ActionPort devuelve Unsupported antes de ejecutar.
+- P2P, SIP, WebRTC y media nativa no reimplementados.

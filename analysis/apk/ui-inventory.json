@@ -1,0 +1,3264 @@
+{
+  "schema_version": 1,
+  "analysis_date": "2026-10-31",
+  "source": {
+    "package": "com.fermax.wibox",
+    "version_name": "v2.2",
+    "version_code": 18,
+    "sha256": "08d78731fe79481b60b4250e736f653cd7af91932844a612b0b5c5a989aac7ce",
+    "mode": "static_resources_only"
+  },
+  "captures": {
+    "real_runtime_screenshots": false,
+    "statement": "No hay capturas reales de ejecución. start.png y guide_display*.png son recursos ilustrativos, no se presentan como capturas."
+  },
+  "technology": {
+    "views_xml": true,
+    "compose": false,
+    "view_binding": true,
+    "app_compat_theme": "Theme.AppCompat.Light.NoActionBar",
+    "portrait_activities": true,
+    "preview_rotation": true
+  },
+  "screens": [
+    {
+      "id": "loading",
+      "kind": "activity",
+      "class": "com.quvii.ubell.main.view.LoadingActivity",
+      "title": {
+        "en": "WI-BOX",
+        "es": "WI-BOX"
+      },
+      "layout": "analysis/apk/resources/layout/activity_loading.xml",
+      "states": [
+        {
+          "id": "splash",
+          "description": "Fondo start a pantalla completa"
+        },
+        {
+          "id": "storage_permission",
+          "description": "Diálogo de almacenamiento y ajustes"
+        },
+        {
+          "id": "phone_permission",
+          "description": "Resultado READ_PHONE_STATE no bloquea el arranque"
+        },
+        {
+          "id": "startup_wait",
+          "description": "Espera de login o timeout de 10 s"
+        },
+        {
+          "id": "push_redirect",
+          "description": "Redirige evento 19 a llamada o preview"
+        }
+      ],
+      "navigation": [
+        "main_tab",
+        "push_call",
+        "preview"
+      ],
+      "reachability": "entry",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#loading",
+        "layout": "analysis/apk/resources/layout/activity_loading.xml"
+      },
+      "widgets": [
+        "ll_background"
+      ],
+      "resources": [
+        "drawable/start"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_loading.xml",
+        "sha256": "d6187e29b775e8b126cf30ec2f1f24c63f166def528daf4133e41a1fdde4aad5",
+        "bytes": 324
+      }
+    },
+    {
+      "id": "cache",
+      "kind": "activity",
+      "class": "com.quvii.ubell.push.view.CacheActivity",
+      "title": {
+        "en": "Push relay",
+        "es": "Relay push"
+      },
+      "layout": null,
+      "states": [
+        {
+          "id": "relay",
+          "description": "Copia extras a LoadingActivity"
+        },
+        {
+          "id": "finish",
+          "description": "Finaliza sin UI propia"
+        }
+      ],
+      "navigation": [
+        "loading"
+      ],
+      "reachability": "linked",
+      "note": "Actividad sin layout, excluida de recientes",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#cache",
+        "layout": null
+      },
+      "widgets": [],
+      "resources": []
+    },
+    {
+      "id": "main_tab",
+      "kind": "activity",
+      "class": "com.quvii.ubell.main.view.MainTabActivity",
+      "title": {
+        "en": "Main tabs",
+        "es": "Pestañas principales"
+      },
+      "layout": "analysis/apk/resources/layout/activity_main_tab.xml",
+      "states": [
+        {
+          "id": "devices_selected",
+          "description": "Pestaña Dispositivo activa por defecto"
+        },
+        {
+          "id": "events_selected",
+          "description": "Pestaña Eventos"
+        },
+        {
+          "id": "gallery_selected",
+          "description": "Pestaña Galería"
+        },
+        {
+          "id": "settings_selected",
+          "description": "Pestaña Ajustes"
+        },
+        {
+          "id": "terms",
+          "description": "Diálogo de términos no cancelable"
+        },
+        {
+          "id": "android_hint",
+          "description": "Aviso Android 10 con no mostrar más"
+        },
+        {
+          "id": "edit_mode",
+          "description": "Barra inferior oculta en edición"
+        }
+      ],
+      "navigation": [
+        "tab_devices",
+        "tab_events",
+        "tab_gallery",
+        "tab_settings"
+      ],
+      "reachability": "root",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#main_tab",
+        "layout": "analysis/apk/resources/layout/activity_main_tab.xml"
+      },
+      "widgets": [
+        "et_test",
+        "ll_tab_menu",
+        "main_content",
+        "main_iv_callLog",
+        "main_iv_device",
+        "main_iv_file",
+        "main_iv_me"
+      ],
+      "resources": [
+        "color/app_main_tab_bg",
+        "color/color_bottom_tab_text",
+        "color/color_bottom_tab_text_normal",
+        "color/main_ui_color_white",
+        "dimen/bottom_text_size",
+        "dimen/main_bottom_height",
+        "dimen/table_btn_paddingBottom",
+        "dimen/table_btn_paddingTop",
+        "drawable/main_btn_call_log",
+        "drawable/main_btn_device",
+        "drawable/main_btn_file",
+        "drawable/main_btn_setting",
+        "string/key_album",
+        "string/key_call_logs",
+        "string/key_device",
+        "string/key_setting"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_main_tab.xml",
+        "sha256": "c41960d087a4963bbd8ed059e0a736e67f7a1422f017cd59a3e7d426cf721824",
+        "bytes": 3505
+      }
+    },
+    {
+      "id": "add_type",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.add.view.DANewTypeChooseActivity",
+      "title": {
+        "en": "Add Device",
+        "es": "Añadir Dispositivo"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_type_choose.xml",
+      "states": [
+        {
+          "id": "new_device",
+          "description": "Opción nuevo dispositivo"
+        },
+        {
+          "id": "online_device",
+          "description": "Opción añadir por red"
+        }
+      ],
+      "navigation": [
+        "product_intro",
+        "online_type"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#add_type",
+        "layout": "analysis/apk/resources/layout/activity_da_type_choose.xml"
+      },
+      "widgets": [
+        "bt_add_new",
+        "bt_add_online",
+        "publico_titlebar"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "string/key_device_new",
+        "string/key_device_online",
+        "style/option_button"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_da_type_choose.xml",
+        "sha256": "3952f8c9de234674768ce49de91f45ea2a1393b254ffdf8270f117d77c87c069",
+        "bytes": 809
+      }
+    },
+    {
+      "id": "preview",
+      "kind": "activity",
+      "class": "com.quvii.ubell.video.view.PreviewActivity",
+      "title": {
+        "en": "Preview",
+        "es": "Autoencendido"
+      },
+      "layout": "analysis/apk/resources/layout/activity_preview.xml",
+      "states": [
+        {
+          "id": "empty",
+          "description": "Hueco para añadir dispositivo"
+        },
+        {
+          "id": "connecting",
+          "description": "Conectando o buffering"
+        },
+        {
+          "id": "playing",
+          "description": "Reproduciendo con controles"
+        },
+        {
+          "id": "stopped",
+          "description": "Detenido"
+        },
+        {
+          "id": "refresh",
+          "description": "Error y botón reintentar"
+        },
+        {
+          "id": "password_error",
+          "description": "Credencial rechazada"
+        },
+        {
+          "id": "offline",
+          "description": "Dispositivo o canal offline"
+        },
+        {
+          "id": "one_window",
+          "description": "Un panel"
+        },
+        {
+          "id": "four_windows",
+          "description": "Cuatro paneles"
+        },
+        {
+          "id": "portrait",
+          "description": "Controles verticales"
+        },
+        {
+          "id": "landscape",
+          "description": "Controles horizontales"
+        },
+        {
+          "id": "listening",
+          "description": "Audio entrante activo"
+        },
+        {
+          "id": "talking",
+          "description": "Micrófono activo"
+        },
+        {
+          "id": "recording",
+          "description": "Grabación y tiempo visible"
+        },
+        {
+          "id": "snapshot",
+          "description": "Confirmación de captura"
+        },
+        {
+          "id": "unlock_progress",
+          "description": "Abriendo"
+        },
+        {
+          "id": "unlock_success",
+          "description": "Apertura correcta"
+        },
+        {
+          "id": "unlock_failure",
+          "description": "Fallo o timeout de apertura"
+        },
+        {
+          "id": "f1",
+          "description": "Estados F1 enviando/éxito/fallo"
+        },
+        {
+          "id": "timeout",
+          "description": "Fin del tiempo de preview"
+        },
+        {
+          "id": "no_permission",
+          "description": "Función no permitida"
+        }
+      ],
+      "navigation": [
+        "config",
+        "password_modify"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#preview",
+        "layout": "analysis/apk/resources/layout/activity_preview.xml"
+      },
+      "widgets": [
+        "ch_record",
+        "custom_layout",
+        "full",
+        "grid",
+        "iv_accept",
+        "iv_channel",
+        "iv_channel_cut_line",
+        "iv_f1",
+        "iv_f1_cut_line",
+        "iv_play",
+        "iv_record",
+        "iv_refuse",
+        "iv_snapshot",
+        "iv_talk",
+        "iv_talk_cut_line",
+        "iv_unlock",
+        "iv_video_fps",
+        "iv_voice",
+        "ll_middle",
+        "ll_operator_layout",
+        "ll_preview_time",
+        "ll_recording_time",
+        "publico_titlebar",
+        "pvUnlock",
+        "tv_debug_info",
+        "tv_preview_time",
+        "v_talk_middle",
+        "v_unlock_middle"
+      ],
+      "resources": [
+        "color/icon_black",
+        "color/main_ui_color_white",
+        "color/preview_item_bg",
+        "color/white",
+        "dimen/talk_record_text_size",
+        "drawable/bg_tip",
+        "drawable/btn_preview_mode_normal",
+        "drawable/icon_cut_line",
+        "drawable/icon_tip_recording",
+        "drawable/play_unlock_selector",
+        "drawable/selector_accept",
+        "drawable/selector_channel_switch",
+        "drawable/selector_preview_f1",
+        "drawable/selector_preview_talk",
+        "drawable/selector_refuse",
+        "drawable/vertical_preview_mute_selector",
+        "drawable/vertical_preview_play_selector",
+        "drawable/vertical_preview_video_recording_selector",
+        "drawable/vertical_screenshot_selector",
+        "style/PreviewMiddleButton",
+        "style/PreviewMiddleCutLine"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_preview.xml",
+        "sha256": "79971da168f1a8706f1b79d47933346fb96359077d04908bb401133bddf9cc47",
+        "bytes": 8401
+      }
+    },
+    {
+      "id": "online_type",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.add.view.DAOnlineTypeChooseActivity",
+      "title": {
+        "en": "Add Online",
+        "es": "Añadir por Red"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_online_type_choose.xml",
+      "states": [
+        {
+          "id": "scan_online",
+          "description": "Buscar dispositivos online"
+        },
+        {
+          "id": "manual",
+          "description": "Alta manual"
+        }
+      ],
+      "navigation": [
+        "online_devices",
+        "device_bind"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#online_type",
+        "layout": "analysis/apk/resources/layout/activity_da_online_type_choose.xml"
+      },
+      "widgets": [
+        "bt_add_online",
+        "btn_add_manual",
+        "publico_titlebar"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "string/key_device_add_manual",
+        "string/key_online_device",
+        "style/option_button"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_da_online_type_choose.xml",
+        "sha256": "27b713625871eb3f73cce05d5626e67d4d0f93d6ef16d795a13fc57b4a2fbc99",
+        "bytes": 820
+      }
+    },
+    {
+      "id": "product_choose",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.add.view.DANewProduceChooseActivity",
+      "title": {
+        "en": "Setup Wizard",
+        "es": "Setup Wizard"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_new_produce_choose.xml",
+      "states": [
+        {
+          "id": "doorbell",
+          "description": "Wi-Fi Doorbell tipo 7410"
+        },
+        {
+          "id": "monitor",
+          "description": "Wi-Fi Monitor tipo 9440"
+        }
+      ],
+      "navigation": [
+        "product_intro"
+      ],
+      "reachability": "legacy_no_inbound",
+      "note": "No se encontró referencia de entrada en el código actual",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#product_choose",
+        "layout": "analysis/apk/resources/layout/activity_da_new_produce_choose.xml"
+      },
+      "widgets": [
+        "ll_type_7410",
+        "ll_type_9440",
+        "publico_titlebar"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/margin_large",
+        "dimen/margin_normal",
+        "dimen/standard_width",
+        "dimen/text_normal_size",
+        "drawable/device_type_7410",
+        "drawable/device_type_9440",
+        "drawable/publico_selector_bg_round",
+        "string/key_doorbell",
+        "string/key_monitor",
+        "string/key_product_choose_hint",
+        "style/CustomTextView",
+        "style/new_device_setup_title"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_da_new_produce_choose.xml",
+        "sha256": "9186bec564b4e9bc6751e0b106dd49cb8a0905d2ef805c9d3e0d015dcc9dc575",
+        "bytes": 2873
+      }
+    },
+    {
+      "id": "product_intro",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.add.view.DANewProduceIntroduceActivity",
+      "title": {
+        "en": "Wi-Fi Setup",
+        "es": "Ajustes Wi-Fi"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_new_produce_introduce.xml",
+      "states": [
+        {
+          "id": "reset_instructions",
+          "description": "Instrucciones e imagen de reset"
+        },
+        {
+          "id": "location_permission",
+          "description": "Localización desactivada o denegada"
+        },
+        {
+          "id": "camera_permission",
+          "description": "Solicitud de cámara"
+        },
+        {
+          "id": "scan_error",
+          "description": "QR inválido"
+        },
+        {
+          "id": "wifi_switch_error",
+          "description": "Paso manual al AP"
+        }
+      ],
+      "navigation": [
+        "scan",
+        "router",
+        "handle_wifi"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#product_intro",
+        "layout": "analysis/apk/resources/layout/activity_da_new_produce_introduce.xml"
+      },
+      "widgets": [
+        "bt_continue",
+        "publico_titlebar",
+        "tv_note"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/text_nomal_size",
+        "drawable/reset_device_img",
+        "string/key_next",
+        "string/key_reset_device_prompt",
+        "string/key_reset_device_prompt2",
+        "style/CustomTextView",
+        "style/option_button"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_da_new_produce_introduce.xml",
+        "sha256": "332fb11ee1ee9d293f757333ca00dc96867fbc3130c67e7be473e4960eff9c0e",
+        "bytes": 1929
+      }
+    },
+    {
+      "id": "handle_wifi",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.add.view.DANewHandleWifiActivity",
+      "title": {
+        "en": "Wi-Fi Setup",
+        "es": "Ajustes Wi-Fi"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_new_handle_wifi.xml",
+      "states": [
+        {
+          "id": "instructions",
+          "description": "SSID y contraseña visibles con copiar"
+        },
+        {
+          "id": "copied",
+          "description": "Confirmación de copiado"
+        },
+        {
+          "id": "ap_mismatch",
+          "description": "Snackbar para abrir ajustes WiFi"
+        },
+        {
+          "id": "ap_connected",
+          "description": "Continúa a router o progreso"
+        }
+      ],
+      "navigation": [
+        "router",
+        "wifi_progress"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#handle_wifi",
+        "layout": "analysis/apk/resources/layout/activity_da_new_handle_wifi.xml"
+      },
+      "widgets": [
+        "bt_next",
+        "iv_copy",
+        "lvSetupTwo",
+        "publico_titlebar",
+        "tvSetupTwo",
+        "tv_hint_name",
+        "tv_hint_password"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "color/new_line_color",
+        "dimen/btn_height",
+        "dimen/margin_large",
+        "dimen/text_normal_size",
+        "drawable/icon_copy",
+        "drawable/prompt_setup_wifi",
+        "drawable/publico_selector_btn_bg",
+        "string/key_handle_wifi_hint1",
+        "string/key_next",
+        "string/key_password",
+        "string/key_switch_wifi_hint"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_da_new_handle_wifi.xml",
+        "sha256": "a448072a9ef90a4d164683637509d522e398ac64028ff5d0ba937ba619335ca4",
+        "bytes": 4248
+      }
+    },
+    {
+      "id": "wifi_list_legacy",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.manage.view.DMWifiListActivity",
+      "title": {
+        "en": "Wi-Fi Setup",
+        "es": "Ajustes Wi-Fi"
+      },
+      "layout": "analysis/apk/resources/layout/activity_dm_wifi_list.xml",
+      "states": [
+        {
+          "id": "loading",
+          "description": "Refresco de redes"
+        },
+        {
+          "id": "list",
+          "description": "Lista de SSID"
+        },
+        {
+          "id": "error",
+          "description": "Aviso sin lista"
+        },
+        {
+          "id": "password",
+          "description": "Diálogo de contraseña"
+        },
+        {
+          "id": "connect_failure",
+          "description": "Error de conexión y ajustes"
+        },
+        {
+          "id": "success",
+          "description": "Finaliza al conectar"
+        }
+      ],
+      "navigation": [
+        "wifi_set_legacy"
+      ],
+      "reachability": "legacy_no_inbound",
+      "note": "No se encontró referencia de entrada en el código actual",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#wifi_list_legacy",
+        "layout": "analysis/apk/resources/layout/activity_dm_wifi_list.xml"
+      },
+      "widgets": [
+        "iv_warning",
+        "lv_devices",
+        "publico_titlebar",
+        "srl_main",
+        "tvInfoContent",
+        "tvInfoTitle",
+        "tv_warning"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/standard_width",
+        "dimen/text_normal_size",
+        "drawable/wifi_0",
+        "string/key_wifi_choice_hint1",
+        "string/key_wifi_choice_hint2",
+        "style/new_device_setup_content",
+        "style/new_device_setup_title"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_dm_wifi_list.xml",
+        "sha256": "7ae69c1dcd1ea32d6fdf50a58eb38e6e1d53038849793500d8ea1f6433f00049",
+        "bytes": 2288
+      }
+    },
+    {
+      "id": "wifi_set_legacy",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.manage.view.DMWifiSetActivity",
+      "title": {
+        "en": "Wi-Fi Setup",
+        "es": "Ajustes Wi-Fi"
+      },
+      "layout": "analysis/apk/resources/layout/activity_dm_wifi_set.xml",
+      "states": [
+        {
+          "id": "password_hidden",
+          "description": "Contraseña oculta"
+        },
+        {
+          "id": "password_visible",
+          "description": "Contraseña visible"
+        },
+        {
+          "id": "countdown",
+          "description": "Espera con contador"
+        },
+        {
+          "id": "connect_error",
+          "description": "Diálogo para abrir WiFi"
+        },
+        {
+          "id": "modify_success",
+          "description": "Vuelve a ajustes"
+        },
+        {
+          "id": "set_failure",
+          "description": "Error y posible reinicio de alta"
+        }
+      ],
+      "navigation": [
+        "config",
+        "product_intro"
+      ],
+      "reachability": "legacy_no_inbound",
+      "note": "Solo enlazada desde wifi_list_legacy, que tampoco tiene entrada",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#wifi_set_legacy",
+        "layout": "analysis/apk/resources/layout/activity_dm_wifi_set.xml"
+      },
+      "widgets": [
+        "btn_next",
+        "et_wifi_password",
+        "iv_show_pwd",
+        "publico_titlebar",
+        "tv_wifi_name"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "color/white",
+        "dimen/activity_device_config_wifi_textsize",
+        "dimen/btn_height",
+        "dimen/margin_normal",
+        "dimen/standard_width",
+        "dimen/text_normal_size",
+        "drawable/btn_show_password_big",
+        "drawable/publico_selector_btn_bg",
+        "string/key_enter_wifi_password_hint",
+        "string/key_next",
+        "string/key_wifi_password",
+        "style/addEtStyle",
+        "style/new_device_setup_title",
+        "style/rlStyle"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_dm_wifi_set.xml",
+        "sha256": "c531be4a37179c199897af01d87f74ea828bdae0be24b2f0d95c8e7fd788b294",
+        "bytes": 2246
+      }
+    },
+    {
+      "id": "device_bind",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.add.view.DADeviceBindActivity",
+      "title": {
+        "en": "Add Device",
+        "es": "Añadir Dispositivo"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_device_bind.xml",
+      "states": [
+        {
+          "id": "qr_locked",
+          "description": "UID bloqueado por QR"
+        },
+        {
+          "id": "manual",
+          "description": "UID editable y escáner"
+        },
+        {
+          "id": "password_hidden",
+          "description": "Contraseña oculta"
+        },
+        {
+          "id": "password_visible",
+          "description": "Contraseña visible"
+        },
+        {
+          "id": "share_link",
+          "description": "Enlace compartido desactiva campos incompatibles"
+        },
+        {
+          "id": "validation_error",
+          "description": "Nombre/UID duplicado o vacío"
+        },
+        {
+          "id": "binding",
+          "description": "Progreso no cancelable"
+        },
+        {
+          "id": "success",
+          "description": "Configuración correcta"
+        },
+        {
+          "id": "invitation_error",
+          "description": "Invitación inválida o usada"
+        }
+      ],
+      "navigation": [
+        "main_tab",
+        "scan"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#device_bind",
+        "layout": "analysis/apk/resources/layout/activity_da_device_bind.xml"
+      },
+      "widgets": [
+        "bt_confirm",
+        "et_device_name",
+        "et_device_password",
+        "et_input_share_link",
+        "et_uid",
+        "iv_qr",
+        "iv_show_pwd",
+        "ll_background",
+        "publico_titlebar",
+        "tv_hint",
+        "tv_name",
+        "tv_password",
+        "tv_share_link",
+        "tv_share_link_input_hint",
+        "tv_uid"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/text_normal_size",
+        "drawable/btn_show_password_big",
+        "drawable/qr_code_n",
+        "drawable/selector_shape_rectangle",
+        "string/key_device_online_add_hint",
+        "string/key_input_share_link_hint",
+        "string/key_name",
+        "string/key_pin_code",
+        "string/key_save",
+        "string/key_share_link",
+        "string/key_uid",
+        "style/CustomEdit",
+        "style/CustomTextView",
+        "style/option_button"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_da_device_bind.xml",
+        "sha256": "fa2308b514b52f63f0bc29ab24d200967e07ae8d5f2526ff484d7fd6c47508ce",
+        "bytes": 5213
+      }
+    },
+    {
+      "id": "online_devices",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.add.view.DAOnlineDeviceListActivity",
+      "title": {
+        "en": "Add Online",
+        "es": "Añadir por Red"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_online_device_list.xml",
+      "states": [
+        {
+          "id": "refreshing",
+          "description": "Búsqueda LAN"
+        },
+        {
+          "id": "results",
+          "description": "Lista de dispositivos"
+        },
+        {
+          "id": "empty",
+          "description": "Mensaje no device found"
+        },
+        {
+          "id": "error",
+          "description": "Finaliza refresco sin resultados"
+        }
+      ],
+      "navigation": [
+        "device_bind"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#online_devices",
+        "layout": "analysis/apk/resources/layout/activity_da_online_device_list.xml"
+      },
+      "widgets": [
+        "lv_devices",
+        "publico_titlebar",
+        "srl_main"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/text_nomal_size",
+        "string/key_search_device_prompt",
+        "style/CustomTextView"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_da_online_device_list.xml",
+        "sha256": "9daf0abf636640ea409d262bead657e59dbe7736b0bd02ab1527cee80992cb19",
+        "bytes": 1173
+      }
+    },
+    {
+      "id": "scan",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.add.view.DACaptureActivity",
+      "title": {
+        "en": "Scan QR-Code",
+        "es": "Escanee el código QR"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_capture.xml",
+      "states": [
+        {
+          "id": "scanning",
+          "description": "Visor y marco QR"
+        },
+        {
+          "id": "pick_image",
+          "description": "Escaneo desde galería con progreso"
+        },
+        {
+          "id": "invalid",
+          "description": "Diálogo QR inválido y reintento"
+        },
+        {
+          "id": "result",
+          "description": "Devuelve resultado al llamador"
+        },
+        {
+          "id": "new_device",
+          "description": "Continúa alta nueva"
+        },
+        {
+          "id": "share",
+          "description": "Abre invitación"
+        }
+      ],
+      "navigation": [
+        "product_intro",
+        "device_bind",
+        "share_bind"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#scan",
+        "layout": "analysis/apk/resources/layout/activity_da_capture.xml"
+      },
+      "widgets": [
+        "btn_cancel_scan",
+        "fl_background",
+        "iv_back",
+        "iv_close",
+        "iv_picture",
+        "iv_target"
+      ],
+      "resources": [
+        "color/colorPrimary",
+        "color/main_ui_color_white",
+        "drawable/publico_selector_btn_back",
+        "drawable/publico_selector_btn_cancel",
+        "drawable/publico_shape_dialog_bg",
+        "drawable/qr_scan",
+        "drawable/selector_btn_picutre",
+        "string/key_cancel",
+        "string/key_scan_qr"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_da_capture.xml",
+        "sha256": "bdb81d9dac5c90f494a2dffa18695006d207158e6d6d4bd4361ed895322010da",
+        "bytes": 3737
+      }
+    },
+    {
+      "id": "config",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.manage.view.DMConfigActivity",
+      "title": {
+        "en": "Settings",
+        "es": "Ajustes"
+      },
+      "layout": "analysis/apk/resources/layout/activity_dm_config.xml",
+      "states": [
+        {
+          "id": "owner",
+          "description": "Todas las opciones del propietario"
+        },
+        {
+          "id": "shared",
+          "description": "Oculta contraseña, WiFi, alarmas, usuarios y firmware"
+        },
+        {
+          "id": "loading",
+          "description": "Consulta de info y alarmas"
+        },
+        {
+          "id": "alarm_on",
+          "description": "Llamada/movimiento activado"
+        },
+        {
+          "id": "alarm_off",
+          "description": "Llamada/movimiento desactivado"
+        },
+        {
+          "id": "upgrade_available",
+          "description": "Icono de nueva versión"
+        },
+        {
+          "id": "delete_confirm",
+          "description": "Confirmación de borrado"
+        },
+        {
+          "id": "delete_error",
+          "description": "Error de borrado"
+        },
+        {
+          "id": "bind_required",
+          "description": "Diálogo de contraseña"
+        }
+      ],
+      "navigation": [
+        "device_info",
+        "password_modify",
+        "unlock_setting",
+        "router",
+        "upgrade",
+        "share_manage",
+        "main_tab"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#config",
+        "layout": "analysis/apk/resources/layout/activity_dm_config.xml"
+      },
+      "widgets": [
+        "bt_del_device",
+        "bt_syn_time",
+        "iv_move_alert",
+        "iv_ring_alert",
+        "iv_upgrade_icon",
+        "ll_config_wifi",
+        "ll_edit_info",
+        "ll_f1_time",
+        "ll_fps",
+        "ll_select_lock_num",
+        "ll_select_voice_model",
+        "ll_upgrade",
+        "publico_titlebar",
+        "rl_move_alert",
+        "rl_ring_alert",
+        "tv_bit_str_cur",
+        "tv_device_name",
+        "tv_f1_enable_time",
+        "tv_lock_num",
+        "tv_modify_password",
+        "tv_modify_unlock_password",
+        "tv_unlock_setting",
+        "tv_user",
+        "tv_voice_model"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "color/textColor",
+        "dimen/btn_height",
+        "dimen/text_normal_size",
+        "drawable/btn_switch_off",
+        "drawable/icon_arrow_list_right",
+        "drawable/icon_arrow_list_right_new",
+        "drawable/publico_selector_btn_bg",
+        "string/key_alarm_call",
+        "string/key_alarm_motion",
+        "string/key_delete",
+        "string/key_device",
+        "string/key_f1_enable_time",
+        "string/key_firmware_version",
+        "string/key_intercom_way",
+        "string/key_lock_number",
+        "string/key_modify_device_password",
+        "string/key_modify_unlock_password",
+        "string/key_time_sync",
+        "string/key_unlock_setting",
+        "string/key_user",
+        "string/key_video_fps",
+        "string/key_video_fps_high",
+        "string/key_wifi_setup",
+        "style/CustomTextView",
+        "style/Custom_Text_View_Marquee",
+        "style/option_text_view"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_dm_config.xml",
+        "sha256": "22ced49abf6c1f3ea41f1bbb05e3628df0da4b21e7e9825d2bba837f90c65954",
+        "bytes": 15057
+      }
+    },
+    {
+      "id": "password_modify",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.manage.view.DMPasswordModifyActivity",
+      "title": {
+        "en": "Modify password",
+        "es": "Modificar contraseña"
+      },
+      "layout": "analysis/apk/resources/layout/activity_dm_password_modify.xml",
+      "states": [
+        {
+          "id": "device_mode",
+          "description": "Cambia contraseña de dispositivo"
+        },
+        {
+          "id": "admin_mode",
+          "description": "Cambia admin y desbloqueo"
+        },
+        {
+          "id": "unlock_mode",
+          "description": "Solo contraseña de apertura"
+        },
+        {
+          "id": "init_mode",
+          "description": "Inicialización sin campo antiguo"
+        },
+        {
+          "id": "mismatch",
+          "description": "Etiquetas en rojo"
+        },
+        {
+          "id": "empty",
+          "description": "Error de campos vacíos"
+        },
+        {
+          "id": "success",
+          "description": "Contraseña modificada"
+        }
+      ],
+      "navigation": [
+        "config"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#password_modify",
+        "layout": "analysis/apk/resources/layout/activity_dm_password_modify.xml"
+      },
+      "widgets": [
+        "et_confirm_2",
+        "et_confirm_pass",
+        "et_new_2",
+        "et_new_pass",
+        "et_old_pass",
+        "ll_modify_confirm",
+        "ll_modify_confirm_2",
+        "ll_modify_new",
+        "ll_modify_new_2",
+        "ll_old",
+        "publico_titlebar",
+        "tv_admin",
+        "tv_confirm_password",
+        "tv_confirm_password_2",
+        "tv_new_password",
+        "tv_new_password_2",
+        "tv_unlock"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "string/key_confirm",
+        "string/key_modify_admin_password",
+        "string/key_modify_unlock_password",
+        "string/key_new",
+        "string/key_old",
+        "string/key_password_length_hint",
+        "style/CustomEdit",
+        "style/CustomTextView",
+        "style/option_linear_layout",
+        "style/option_text"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_dm_password_modify.xml",
+        "sha256": "286c302439229429f1de8945d26869254b339f9e92a9603f2460cef3011dc764",
+        "bytes": 4398
+      }
+    },
+    {
+      "id": "unlock_setting",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.manage.view.DMUnlockSettingActivity",
+      "title": {
+        "en": "Unlock setting",
+        "es": "Configuración de desbloqueo"
+      },
+      "layout": "analysis/apk/resources/layout/activity_dm_unlock_setting.xml",
+      "states": [
+        {
+          "id": "quick_on",
+          "description": "Apertura rápida activa"
+        },
+        {
+          "id": "quick_off",
+          "description": "Apertura rápida inactiva"
+        },
+        {
+          "id": "bio_on",
+          "description": "Confirmación biométrica activa"
+        },
+        {
+          "id": "bio_off",
+          "description": "Confirmación biométrica inactiva"
+        },
+        {
+          "id": "bio_unavailable",
+          "description": "Fila biométrica oculta"
+        },
+        {
+          "id": "warning",
+          "description": "Diálogo explicativo con no mostrar más"
+        },
+        {
+          "id": "saved",
+          "description": "Guarda y finaliza"
+        }
+      ],
+      "navigation": [
+        "config"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#unlock_setting",
+        "layout": "analysis/apk/resources/layout/activity_dm_unlock_setting.xml"
+      },
+      "widgets": [
+        "iv_biological_unlock",
+        "iv_quick_unlock",
+        "ll_unlock_setting",
+        "publico_titlebar",
+        "rl_biological_unlock",
+        "rl_quick_unlock"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/btn_height",
+        "dimen/text_normal_size",
+        "drawable/btn_switch_off",
+        "string/key_biological_unlock",
+        "string/key_quick_unlock",
+        "style/CustomTextView"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_dm_unlock_setting.xml",
+        "sha256": "74405cb0c6e8af980be77732f2d601b6957bb1d70c1da128b95c827ae8866ca3",
+        "bytes": 3152
+      }
+    },
+    {
+      "id": "device_info",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.manage.view.DMDeviceInfoEditActivity",
+      "title": {
+        "en": "Device Info",
+        "es": "Información del dispositivo"
+      },
+      "layout": "analysis/apk/resources/layout/activity_dm_device_info_edit.xml",
+      "states": [
+        {
+          "id": "read_only",
+          "description": "Nombre y UID no editables"
+        },
+        {
+          "id": "editing",
+          "description": "Nombre editable y botón guardar"
+        },
+        {
+          "id": "validation_error",
+          "description": "Nombre vacío o duplicado"
+        },
+        {
+          "id": "success",
+          "description": "Guardado local/remoto"
+        },
+        {
+          "id": "failure",
+          "description": "Error de modificación"
+        }
+      ],
+      "navigation": [
+        "config"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#device_info",
+        "layout": "analysis/apk/resources/layout/activity_dm_device_info_edit.xml"
+      },
+      "widgets": [
+        "et_device_name",
+        "et_uid",
+        "publico_titlebar",
+        "tv_name",
+        "tv_uid"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "drawable/publico_shape_rectangle_2",
+        "string/key_name",
+        "string/key_uid",
+        "style/CustomEdit",
+        "style/CustomTextView"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_dm_device_info_edit.xml",
+        "sha256": "83a5eb8da6c4e2878040844136fbab448409554ce4d12b9d2b8ab921149cee4c",
+        "bytes": 2012
+      }
+    },
+    {
+      "id": "about",
+      "kind": "activity",
+      "class": "com.quvii.ubell.me.view.MeAboutActivity",
+      "title": {
+        "en": "About",
+        "es": "Info"
+      },
+      "layout": "analysis/apk/resources/layout/activity_me_about.xml",
+      "states": [
+        {
+          "id": "version",
+          "description": "Logo, WI-BOX y versión"
+        },
+        {
+          "id": "privacy",
+          "description": "Diálogo con HTML local"
+        },
+        {
+          "id": "debug_trigger",
+          "description": "Secuencia oculta abre TestInfo"
+        }
+      ],
+      "navigation": [
+        "debug"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#about",
+        "layout": "analysis/apk/resources/layout/activity_me_about.xml"
+      },
+      "widgets": [
+        "bt_privacy_policy",
+        "iv_icon",
+        "publico_titlebar",
+        "tv_app_name",
+        "tv_version_about"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/standard_width",
+        "dimen/text_normal_size",
+        "drawable/logo",
+        "drawable/publico_selector_btn_bg",
+        "string/app_name",
+        "string/key_privacy_policy"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_me_about.xml",
+        "sha256": "bda0c1ec4d6a442fec290f7771e0c92cdec20e7b74597cd8af82d01315293937",
+        "bytes": 2102
+      }
+    },
+    {
+      "id": "image_pager",
+      "kind": "activity",
+      "class": "com.quvii.ubell.fileManage.view.FMImagePagerActivity",
+      "title": {
+        "en": "Gallery pager",
+        "es": "Visor de galería"
+      },
+      "layout": "analysis/apk/resources/layout/activity_fm_image_pager.xml",
+      "states": [
+        {
+          "id": "white",
+          "description": "Fondo blanco con título y acciones"
+        },
+        {
+          "id": "black",
+          "description": "Fondo negro sin título ni acciones"
+        },
+        {
+          "id": "page",
+          "description": "Indicador posición/total"
+        },
+        {
+          "id": "share",
+          "description": "Compartir elemento"
+        },
+        {
+          "id": "delete_confirm",
+          "description": "Confirmación de borrado"
+        },
+        {
+          "id": "save_result",
+          "description": "SnackBar de guardado"
+        }
+      ],
+      "navigation": [
+        "video_player",
+        "tab_gallery"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#image_pager",
+        "layout": "analysis/apk/resources/layout/activity_fm_image_pager.xml"
+      },
+      "widgets": [
+        "iv_file_delete",
+        "iv_file_share",
+        "ll_edit_info",
+        "publico_titlebar",
+        "rl_background",
+        "vp_main"
+      ],
+      "resources": [
+        "color/colorPrimary",
+        "color/main_ui_color_white",
+        "drawable/selector_file_delete",
+        "drawable/selector_share"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_fm_image_pager.xml",
+        "sha256": "7d1c3c8a96de941229e147615382cec7e4072337cd31ba8dac1893559da1c701",
+        "bytes": 1661
+      }
+    },
+    {
+      "id": "video_player",
+      "kind": "activity",
+      "class": "com.quvii.ubell.fileManage.view.FMLocalVideoPlayActivity",
+      "title": {
+        "en": "Video player",
+        "es": "Reproductor de vídeo"
+      },
+      "layout": "analysis/apk/resources/layout/activity_fm_local_video_play.xml",
+      "states": [
+        {
+          "id": "playing",
+          "description": "Reproducción y botón pausa"
+        },
+        {
+          "id": "paused",
+          "description": "Overlay y botón play"
+        },
+        {
+          "id": "stopped",
+          "description": "Overlay visible"
+        },
+        {
+          "id": "muted",
+          "description": "Icono mute"
+        },
+        {
+          "id": "unmuted",
+          "description": "Icono sonido"
+        },
+        {
+          "id": "seeking",
+          "description": "Pausa temporal y seek"
+        },
+        {
+          "id": "tools_visible",
+          "description": "Controles visibles"
+        },
+        {
+          "id": "tools_hidden",
+          "description": "Oculta controles tras 5 s"
+        },
+        {
+          "id": "landscape",
+          "description": "Vídeo a pantalla completa"
+        }
+      ],
+      "navigation": [
+        "image_pager"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#video_player",
+        "layout": "analysis/apk/resources/layout/activity_fm_local_video_play.xml"
+      },
+      "widgets": [
+        "fl_window",
+        "iv_menu_pause",
+        "iv_menu_voice",
+        "iv_video_bg",
+        "ll_bottom_menu",
+        "ll_seek_bar",
+        "publico_titlebar",
+        "rl_background",
+        "sb_player",
+        "surface",
+        "tv_current",
+        "tv_total"
+      ],
+      "resources": [
+        "color/colorPrimary",
+        "dimen/title_height",
+        "drawable/file_mangement_icon_video",
+        "drawable/vertical_preview_play_selector",
+        "drawable/vertical_preview_sound_selector"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_fm_local_video_play.xml",
+        "sha256": "01d1a4f09657c470019f5d698ef7e078203794da388381dc6bb03bae1b5dc5f7",
+        "bytes": 3164
+      }
+    },
+    {
+      "id": "push_call",
+      "kind": "activity",
+      "class": "com.quvii.ubell.push.view.PushCallActivity",
+      "title": {
+        "en": "Call from panel",
+        "es": "llamada de placa de calle"
+      },
+      "layout": "analysis/apk/resources/layout/activity_push_call.xml",
+      "states": [
+        {
+          "id": "ringing",
+          "description": "Nombre, aceptar y rechazar con tono"
+        },
+        {
+          "id": "vibration",
+          "description": "Vibración opcional"
+        },
+        {
+          "id": "accept",
+          "description": "Abre preview y registra aceptación"
+        },
+        {
+          "id": "refuse",
+          "description": "Cierra o envía a segundo plano"
+        },
+        {
+          "id": "auto_refuse",
+          "description": "Auto-rechazo a 30 s"
+        },
+        {
+          "id": "answered_elsewhere",
+          "description": "Mensaje y cierre por evento 20"
+        }
+      ],
+      "navigation": [
+        "preview",
+        "main_tab"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#push_call",
+        "layout": "analysis/apk/resources/layout/activity_push_call.xml"
+      },
+      "widgets": [
+        "iv_accept",
+        "iv_refuse",
+        "tv_device_name"
+      ],
+      "resources": [
+        "color/white",
+        "drawable/backgroud_calling",
+        "drawable/btn_accept",
+        "drawable/btn_refuse",
+        "drawable/ico_logo",
+        "style/CustomTextView"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_push_call.xml",
+        "sha256": "f2a63856c3213752d7ce2d4ca807ea90fb36879c4dba28d20ccc241a9f7a8808",
+        "bytes": 2282
+      }
+    },
+    {
+      "id": "debug",
+      "kind": "activity",
+      "class": "com.quvii.ubell.test.view.TestInfoActivity",
+      "title": {
+        "en": "Debug",
+        "es": "Debug"
+      },
+      "layout": "analysis/apk/resources/layout/activity_test_info.xml",
+      "states": [
+        {
+          "id": "debug_toggle",
+          "description": "Modo debug y aviso de reinicio"
+        },
+        {
+          "id": "forwarding",
+          "description": "Fuerza forwarding"
+        },
+        {
+          "id": "connection_type",
+          "description": "Muestra tipo de conexión"
+        },
+        {
+          "id": "advanced",
+          "description": "Opciones tras código"
+        },
+        {
+          "id": "service_switch",
+          "description": "Cambio de servidor y borrado local"
+        },
+        {
+          "id": "send_log",
+          "description": "Compartir log"
+        },
+        {
+          "id": "token",
+          "description": "Token disponible o null"
+        }
+      ],
+      "navigation": [
+        "loading"
+      ],
+      "reachability": "hidden_gesture",
+      "note": "Acceso por secuencia en About y código para opciones avanzadas",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#debug",
+        "layout": "analysis/apk/resources/layout/activity_test_info.xml"
+      },
+      "widgets": [
+        "bt_send_log",
+        "cb_debug_mode",
+        "cb_force_forwarding",
+        "cb_show_connect_mode",
+        "ll_force_forwarding",
+        "ll_p2p_timeout",
+        "ll_service",
+        "ll_show_connect",
+        "publico_titlebar",
+        "sv_info",
+        "tv_advanced",
+        "tv_info",
+        "tv_p2p_timeout",
+        "tv_push_mode",
+        "tv_service",
+        "tv_token"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "drawable/icon_arrow_list_right",
+        "drawable/publico_selector_bg_round",
+        "drawable/publico_selector_btn_bg",
+        "style/CustomButton",
+        "style/CustomTextView",
+        "style/option_text_view"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_test_info.xml",
+        "sha256": "75c571828b66a7d169e2952976895375bcda57ad42a3f5151815246823bdfc54",
+        "bytes": 7891
+      }
+    },
+    {
+      "id": "upgrade",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.manage.view.DMUpgradeActivity",
+      "title": {
+        "en": "Firmware version",
+        "es": "Versión Firmware"
+      },
+      "layout": "analysis/apk/resources/layout/activity_dm_upgrade.xml",
+      "states": [
+        {
+          "id": "query",
+          "description": "Consulta versión actual y disponible"
+        },
+        {
+          "id": "up_to_date",
+          "description": "Firmware actualizado"
+        },
+        {
+          "id": "available",
+          "description": "Diálogo de confirmación"
+        },
+        {
+          "id": "progress",
+          "description": "Progreso no cancelable"
+        },
+        {
+          "id": "success",
+          "description": "Diálogo de éxito y reinicio posterior"
+        },
+        {
+          "id": "failure",
+          "description": "Diálogo de fallo"
+        }
+      ],
+      "navigation": [
+        "config"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#upgrade",
+        "layout": "analysis/apk/resources/layout/activity_dm_upgrade.xml"
+      },
+      "widgets": [
+        "bt_upgrade",
+        "publico_titlebar",
+        "tv_current_version",
+        "tv_latest_version"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/btn_height",
+        "dimen/margin_normal",
+        "dimen/margin_small",
+        "dimen/text_small_size",
+        "drawable/publico_selector_bg_round",
+        "string/key_current_version",
+        "string/key_latest_version",
+        "string/key_upgrade",
+        "style/CustomTextView",
+        "style/option_style"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_dm_upgrade.xml",
+        "sha256": "7f0b65a3a0c4d929ded918990a4c8c1159baa2f839038ae70050a7db7bb0142b",
+        "bytes": 2842
+      }
+    },
+    {
+      "id": "guide",
+      "kind": "activity",
+      "class": "com.quvii.ubell.main.view.StartGuideActivity",
+      "title": {
+        "en": "Start guide",
+        "es": "Guía de inicio"
+      },
+      "layout": "analysis/apk/resources/layout/activity_start_guide.xml",
+      "states": [
+        {
+          "id": "page_locks",
+          "description": "Guía More locks"
+        },
+        {
+          "id": "page_cameras",
+          "description": "Guía More Cameras"
+        },
+        {
+          "id": "page_playback",
+          "description": "Guía Quick Playback"
+        },
+        {
+          "id": "start",
+          "description": "Botón Start Now"
+        }
+      ],
+      "navigation": [
+        "main_tab"
+      ],
+      "reachability": "legacy_no_inbound",
+      "note": "Declarada pero LoadingPresenter siempre abre MainTabActivity",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#guide",
+        "layout": "analysis/apk/resources/layout/activity_start_guide.xml"
+      },
+      "widgets": [
+        "bt_start",
+        "tv_describe",
+        "vp",
+        "vp_indicator"
+      ],
+      "resources": [],
+      "resource_evidence": {
+        "path": "layout/activity_start_guide.xml",
+        "sha256": "bd2c51b50f2a7874fb08a0257e19065ab419e813ddd5efd8f8f2382f45faad39",
+        "bytes": 1353
+      }
+    },
+    {
+      "id": "add_method_legacy",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.add.view.DAAddTypeActivity",
+      "title": {
+        "en": "Add Device",
+        "es": "Añadir Dispositivo"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_add_type.xml",
+      "states": [
+        {
+          "id": "ap",
+          "description": "AP add"
+        },
+        {
+          "id": "voice",
+          "description": "Sound waves to add"
+        },
+        {
+          "id": "switch_success",
+          "description": "Continúa al router"
+        },
+        {
+          "id": "switch_failure",
+          "description": "Paso manual WiFi"
+        }
+      ],
+      "navigation": [
+        "router",
+        "handle_wifi"
+      ],
+      "reachability": "legacy_no_inbound",
+      "note": "No se encontró referencia de entrada en el código actual",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#add_method_legacy",
+        "layout": "analysis/apk/resources/layout/activity_da_add_type.xml"
+      },
+      "widgets": [
+        "bt_add_ap",
+        "bt_add_voice",
+        "publico_titlebar"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/btn_height",
+        "dimen/text_normal_size",
+        "drawable/publico_selector_btn_bg",
+        "string/key_add_type_ap",
+        "string/key_add_type_voice"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_da_add_type.xml",
+        "sha256": "7520422abe5e1b3721747bcb0838bc3d60ca2f47b320315c154704872f002ab1",
+        "bytes": 1408
+      }
+    },
+    {
+      "id": "router",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.add.view.DARouterInfoActivity",
+      "title": {
+        "en": "Wi-Fi Setup",
+        "es": "Ajustes Wi-Fi"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_router_info.xml",
+      "states": [
+        {
+          "id": "loading",
+          "description": "Refresco de redes"
+        },
+        {
+          "id": "selected",
+          "description": "SSID elegido con nivel wifi_1 a wifi_4"
+        },
+        {
+          "id": "password_hidden",
+          "description": "Contraseña oculta"
+        },
+        {
+          "id": "password_visible",
+          "description": "Contraseña visible"
+        },
+        {
+          "id": "save_password",
+          "description": "Guardar contraseña activo por defecto"
+        },
+        {
+          "id": "validation",
+          "description": "Contraseña corta"
+        },
+        {
+          "id": "new_mode",
+          "description": "Continúa AP o audio"
+        },
+        {
+          "id": "modify_mode",
+          "description": "Textos cambiar y notas adicionales"
+        }
+      ],
+      "navigation": [
+        "wifi_progress",
+        "voice",
+        "config"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#router",
+        "layout": "analysis/apk/resources/layout/activity_da_router_info.xml"
+      },
+      "widgets": [
+        "bt_next",
+        "cb_save_password",
+        "et_password",
+        "iv_show_password",
+        "iv_wifi_name",
+        "ll_background",
+        "lv_wifi_list",
+        "publico_titlebar",
+        "srl_main",
+        "tv_note",
+        "tv_note_2",
+        "tv_password",
+        "tv_wifi_name"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "color/textColor",
+        "dimen/text_nomal_size",
+        "dimen/text_small_size",
+        "drawable/btn_show_password",
+        "drawable/publico_shape_rectangle_2",
+        "drawable/wifi_1",
+        "string/key_next",
+        "string/key_password",
+        "string/key_router_choose_hint",
+        "string/key_save_password",
+        "string/key_select_ssid",
+        "style/CustomEdit",
+        "style/CustomTextView",
+        "style/Custom_Text_View_Marquee",
+        "style/option_button"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_da_router_info.xml",
+        "sha256": "e04a2dc3db007b599eba2fd8d30ce31fa3c410e6bb8707510f37dcce6501aa83",
+        "bytes": 5822
+      }
+    },
+    {
+      "id": "voice",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.add.view.DAVoiceSetActivity",
+      "title": {
+        "en": "Sound waves to add",
+        "es": "Sound waves to add"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_voice_set.xml",
+      "states": [
+        {
+          "id": "sending",
+          "description": "Envío acústico"
+        },
+        {
+          "id": "waiting",
+          "description": "Espera de dispositivo online"
+        },
+        {
+          "id": "volume_low",
+          "description": "Aviso de volumen insuficiente"
+        },
+        {
+          "id": "failure",
+          "description": "Fallo y botón retry"
+        },
+        {
+          "id": "success",
+          "description": "Continúa bind o main"
+        }
+      ],
+      "navigation": [
+        "device_bind",
+        "main_tab"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#voice",
+        "layout": "analysis/apk/resources/layout/activity_da_voice_set.xml"
+      },
+      "widgets": [
+        "bt_next",
+        "publico_titlebar",
+        "tv_status",
+        "tv_volume_hint"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/btn_height",
+        "drawable/device_add_sound_waver",
+        "drawable/publico_selector_bg_round",
+        "string/key_next",
+        "string/key_sound_wavers_add_hint",
+        "string/key_volume_too_low_hint",
+        "style/CustomButton",
+        "style/CustomTextView"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_da_voice_set.xml",
+        "sha256": "772cc1a152733b8833029d4b84c4ef6258194dd78cebaeee8ed41a933ef4322a",
+        "bytes": 2205
+      }
+    },
+    {
+      "id": "wifi_progress",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.add.view.DAWifiSetActivity",
+      "title": {
+        "en": "Wi-Fi Setup",
+        "es": "Ajustes Wi-Fi"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_wifi_set.xml",
+      "states": [
+        {
+          "id": "connecting",
+          "description": "Conecta dispositivo"
+        },
+        {
+          "id": "sending",
+          "description": "Envía datos"
+        },
+        {
+          "id": "waiting",
+          "description": "Espera online con cuenta atrás"
+        },
+        {
+          "id": "network_error",
+          "description": "Aviso de red y restauración manual"
+        },
+        {
+          "id": "retry",
+          "description": "Botón retry"
+        },
+        {
+          "id": "failure",
+          "description": "Pantalla de pairing error"
+        },
+        {
+          "id": "success",
+          "description": "Continúa bind o main"
+        }
+      ],
+      "navigation": [
+        "pairing_fail",
+        "device_bind",
+        "main_tab",
+        "handle_wifi"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#wifi_progress",
+        "layout": "analysis/apk/resources/layout/activity_da_wifi_set.xml"
+      },
+      "widgets": [
+        "bt_next",
+        "publico_titlebar",
+        "tv_net_error",
+        "tv_status"
+      ],
+      "resources": [
+        "color/bg_red",
+        "color/main_ui_color_white",
+        "drawable/device_add_wifi_set",
+        "string/key_network_unavailable",
+        "string/key_next",
+        "style/CustomTextView",
+        "style/option_button"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_da_wifi_set.xml",
+        "sha256": "a43d3acf77858b51babd0ccba691ee90543d4c863d4e9355504b12b14658f191",
+        "bytes": 1647
+      }
+    },
+    {
+      "id": "share_device",
+      "kind": "activity",
+      "class": "com.quvii.ubell.share.view.ShareDeviceActivity",
+      "title": {
+        "en": "New user",
+        "es": "Nuevo usuario"
+      },
+      "layout": "analysis/apk/resources/layout/activity_share_device.xml",
+      "states": [
+        {
+          "id": "qr",
+          "description": "QR de 120 dp"
+        },
+        {
+          "id": "link",
+          "description": "Enlace textual"
+        },
+        {
+          "id": "expiration",
+          "description": "Disponible antes de fecha"
+        },
+        {
+          "id": "copied",
+          "description": "Enlace copiado"
+        },
+        {
+          "id": "save_result",
+          "description": "Resultado al guardar QR"
+        },
+        {
+          "id": "share_sheet",
+          "description": "Chooser Android"
+        }
+      ],
+      "navigation": [
+        "share_manage"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#share_device",
+        "layout": "analysis/apk/resources/layout/activity_share_device.xml"
+      },
+      "widgets": [
+        "bt_copy",
+        "bt_qr_code",
+        "iv_logo",
+        "iv_qr_code",
+        "publico_titlebar",
+        "tv_share_hint",
+        "tv_time_hint",
+        "tv_url"
+      ],
+      "resources": [
+        "color/colorPrimary",
+        "color/main_ui_color_white",
+        "color/textColor",
+        "color/white",
+        "drawable/shape_share_tv_bg",
+        "drawable/share_more_way",
+        "string/key_available_before",
+        "string/key_copy",
+        "string/key_save",
+        "string/key_share_copy_link",
+        "string/key_share_invite_friends",
+        "string/key_share_scan_text",
+        "string/key_share_share_by",
+        "style/option_button"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_share_device.xml",
+        "sha256": "9d331856a3ada3a957841e484935fa0dae5b37b490b501f7ac80cd593be7bdbc",
+        "bytes": 5909
+      }
+    },
+    {
+      "id": "pairing_fail",
+      "kind": "activity",
+      "class": "com.quvii.ubell.device.add.view.DADeviceConfigFailActivity",
+      "title": {
+        "en": "Error",
+        "es": "Error"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_device_config_fail.xml",
+      "states": [
+        {
+          "id": "error",
+          "description": "Explicación de pairing fallido"
+        },
+        {
+          "id": "main_only",
+          "description": "Solo botón siguiente, back físico ignorado"
+        }
+      ],
+      "navigation": [
+        "main_tab"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#pairing_fail",
+        "layout": "analysis/apk/resources/layout/activity_da_device_config_fail.xml"
+      },
+      "widgets": [
+        "bt_next",
+        "publico_titlebar"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/text_nomal_size",
+        "string/key_next",
+        "string/key_pairing_error_hint",
+        "style/CustomTextView",
+        "style/option_button"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_da_device_config_fail.xml",
+        "sha256": "7f725384a728e3e689c2ec6b5f40ac3bd6fc426e8be1a2f959512fb36e47d006",
+        "bytes": 1343
+      }
+    },
+    {
+      "id": "share_manage",
+      "kind": "activity",
+      "class": "com.quvii.ubell.share.view.ShareManageActivity",
+      "title": {
+        "en": "Users",
+        "es": "Usuarios"
+      },
+      "layout": "analysis/apk/resources/layout/activity_share_manage.xml",
+      "states": [
+        {
+          "id": "loading",
+          "description": "Refresco de invitaciones"
+        },
+        {
+          "id": "empty",
+          "description": "No Users"
+        },
+        {
+          "id": "list",
+          "description": "Usuarios con permisos"
+        },
+        {
+          "id": "create",
+          "description": "Nueva invitación con permisos por defecto"
+        },
+        {
+          "id": "edit",
+          "description": "Editar nombre/permisos"
+        },
+        {
+          "id": "delete",
+          "description": "Confirmación de borrado"
+        },
+        {
+          "id": "limit",
+          "description": "Botón añadir oculto a 100"
+        },
+        {
+          "id": "error",
+          "description": "No autorizado o fallo"
+        }
+      ],
+      "navigation": [
+        "share_device",
+        "config"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#share_manage",
+        "layout": "analysis/apk/resources/layout/activity_share_manage.xml"
+      },
+      "widgets": [
+        "publico_titlebar",
+        "rv_main",
+        "srl_main",
+        "tv_no_record"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "color/textColor",
+        "dimen/standard_width",
+        "string/key_users_share_empty"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_share_manage.xml",
+        "sha256": "fdf6a451a5b0630342c478cbe0f087414568c939a5cd3800ee3bcfac6b55261b",
+        "bytes": 1547
+      }
+    },
+    {
+      "id": "share_bind",
+      "kind": "activity",
+      "class": "com.quvii.ubell.share.view.ShareBindActivity",
+      "title": {
+        "en": "Add Device",
+        "es": "Añadir Dispositivo"
+      },
+      "layout": "analysis/apk/resources/layout/activity_share_bind.xml",
+      "states": [
+        {
+          "id": "form",
+          "description": "UID/código bloqueados y nombre editable"
+        },
+        {
+          "id": "validation",
+          "description": "Nombre vacío o duplicado"
+        },
+        {
+          "id": "accept",
+          "description": "Aceptación con progreso"
+        },
+        {
+          "id": "success",
+          "description": "Vuelve a main"
+        },
+        {
+          "id": "invalid",
+          "description": "Invitación inválida o usada"
+        }
+      ],
+      "navigation": [
+        "main_tab"
+      ],
+      "reachability": "linked",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#share_bind",
+        "layout": "analysis/apk/resources/layout/activity_share_bind.xml"
+      },
+      "widgets": [
+        "bt_accept",
+        "et_device_name",
+        "et_device_password",
+        "et_uid",
+        "iv_qr",
+        "iv_show_pwd",
+        "ll_background",
+        "publico_titlebar",
+        "tv_hint",
+        "tv_name",
+        "tv_password",
+        "tv_uid"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/text_normal_size",
+        "drawable/btn_show_password_big",
+        "drawable/publico_shape_rectangle_2",
+        "drawable/qr_code_n",
+        "string/key_accept",
+        "string/key_code",
+        "string/key_name",
+        "string/key_share_accept_hint",
+        "string/key_uid",
+        "style/CustomEdit",
+        "style/CustomTextView",
+        "style/option_button"
+      ],
+      "resource_evidence": {
+        "path": "layout/activity_share_bind.xml",
+        "sha256": "aea8af1a2c6093edb6f54d3052a491665c72eb06289ff7bdc63cb0633b75d8d7",
+        "bytes": 3983
+      }
+    },
+    {
+      "id": "tab_devices",
+      "kind": "fragment",
+      "class": "com.quvii.ubell.main.view.MainDeviceListFragment",
+      "title": {
+        "en": "Device",
+        "es": "Dispositivo"
+      },
+      "layout": "analysis/apk/resources/layout/fragment_device_list.xml",
+      "states": [
+        {
+          "id": "empty",
+          "description": "Botón central añadir"
+        },
+        {
+          "id": "list",
+          "description": "Tarjetas con portada y acciones"
+        },
+        {
+          "id": "refresh",
+          "description": "SwipeRefresh y estado online"
+        },
+        {
+          "id": "offline",
+          "description": "Estado offline"
+        },
+        {
+          "id": "password",
+          "description": "Diálogo de apertura/F1"
+        },
+        {
+          "id": "biometric",
+          "description": "Verificación biométrica"
+        },
+        {
+          "id": "action_result",
+          "description": "Toast éxito/fallo"
+        }
+      ],
+      "navigation": [
+        "add_type",
+        "preview",
+        "config"
+      ],
+      "reachability": "main_tab",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#tab_devices",
+        "layout": "analysis/apk/resources/layout/fragment_device_list.xml"
+      },
+      "widgets": [
+        "main_device_btn_add_device",
+        "main_device_lan_list_view",
+        "main_device_srl",
+        "publico_titlebar",
+        "rl_add_device",
+        "tv_add_dev"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/text_normal_size",
+        "drawable/selector_add_new_dev",
+        "string/key_device_add"
+      ],
+      "resource_evidence": {
+        "path": "layout/fragment_device_list.xml",
+        "sha256": "a5a73ad000fa232f41f9ca50d03cfa55277355949288a3add63baf51f77e86b4",
+        "bytes": 2033
+      }
+    },
+    {
+      "id": "tab_events",
+      "kind": "fragment",
+      "class": "com.quvii.ubell.main.view.MainMessageListFragment",
+      "title": {
+        "en": "Events",
+        "es": "Eventos"
+      },
+      "layout": "analysis/apk/resources/layout/fragment_message_list.xml",
+      "states": [
+        {
+          "id": "loading",
+          "description": "Carga inicial y refresh"
+        },
+        {
+          "id": "empty",
+          "description": "Texto de ausencia de eventos"
+        },
+        {
+          "id": "list",
+          "description": "Una sola lista All ACTIVITY"
+        },
+        {
+          "id": "filters_hidden",
+          "description": "RINGS/MOTION ocultos"
+        },
+        {
+          "id": "warning",
+          "description": "Aviso sobre fotos y firmware"
+        },
+        {
+          "id": "edit",
+          "description": "Selección y barra inferior"
+        },
+        {
+          "id": "delete",
+          "description": "Confirmación de borrado"
+        },
+        {
+          "id": "image",
+          "description": "Diálogo de foto"
+        }
+      ],
+      "navigation": [
+        "tab_event_list"
+      ],
+      "reachability": "main_tab",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#tab_events",
+        "layout": "analysis/apk/resources/layout/fragment_message_list.xml"
+      },
+      "widgets": [
+        "iv_delete",
+        "iv_dividing_line",
+        "iv_select_all",
+        "line_all_activity",
+        "line_motion",
+        "line_rings",
+        "ll_bottom",
+        "ll_line_all_activity_rings_motion",
+        "publico_titlebar",
+        "rb_all_activity",
+        "rb_motion",
+        "rb_rings",
+        "rg_title",
+        "vp_main"
+      ],
+      "resources": [
+        "color/clr_normal",
+        "color/colorPrimary",
+        "color/fm_fragment_text_normal",
+        "color/fm_fragment_text_selected",
+        "color/main_ui_color_white",
+        "dimen/btn_height_small",
+        "dimen/fm_fragment_dial_info_line",
+        "dimen/main_bottom_height",
+        "drawable/selector_file_all_selected",
+        "drawable/selector_file_delete",
+        "string/key_alarm_title_all",
+        "string/key_alarm_title_call",
+        "string/key_alarm_title_motion"
+      ],
+      "resource_evidence": {
+        "path": "layout/fragment_message_list.xml",
+        "sha256": "0c9945754846388a2cdae694183955701cc40ac58a3014d65d47ddb46c4b0b33",
+        "bytes": 4450
+      }
+    },
+    {
+      "id": "tab_event_list",
+      "kind": "fragment",
+      "class": "com.quvii.ubell.main.view.MainMessageTypeFragment",
+      "title": {
+        "en": "Activity list",
+        "es": "Lista de actividad"
+      },
+      "layout": "analysis/apk/resources/layout/fragment_main_message_type.xml",
+      "states": [
+        {
+          "id": "empty_all",
+          "description": "Mensaje de llamadas del hogar"
+        },
+        {
+          "id": "empty_call",
+          "description": "Mensaje vacío de llamadas"
+        },
+        {
+          "id": "empty_motion",
+          "description": "Mensaje e icono de movimiento"
+        },
+        {
+          "id": "refresh",
+          "description": "Tirar para refrescar"
+        },
+        {
+          "id": "load_more",
+          "description": "Carga más a partir de 15"
+        },
+        {
+          "id": "edit",
+          "description": "Selección múltiple"
+        }
+      ],
+      "navigation": [
+        "tab_events"
+      ],
+      "reachability": "nested_fragment",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#tab_event_list",
+        "layout": "analysis/apk/resources/layout/fragment_main_message_type.xml"
+      },
+      "widgets": [
+        "iv_hint",
+        "ll_hint",
+        "lv_alarm",
+        "tv_hint_down",
+        "tv_hint_up",
+        "xfv_main"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "color/textColor",
+        "dimen/standard_width",
+        "dimen/text_normal_size",
+        "drawable/move_detection_logo",
+        "string/key_alarm_record_hint_motion1",
+        "string/key_alarm_record_hint_motion2"
+      ],
+      "resource_evidence": {
+        "path": "layout/fragment_main_message_type.xml",
+        "sha256": "9cb70bd06bf99d37050402a4f22974dde6f03db84887a0d11845e6015650ae1a",
+        "bytes": 3026
+      }
+    },
+    {
+      "id": "tab_gallery",
+      "kind": "fragment",
+      "class": "com.quvii.ubell.main.view.MainFileFragment",
+      "title": {
+        "en": "Gallery",
+        "es": "Galería"
+      },
+      "layout": "analysis/apk/resources/layout/fragment_flie.xml",
+      "states": [
+        {
+          "id": "empty",
+          "description": "Texto sin fotos ni vídeos"
+        },
+        {
+          "id": "grid",
+          "description": "Tres columnas agrupadas por fecha"
+        },
+        {
+          "id": "edit",
+          "description": "Barra de selección y pestañas oculta"
+        },
+        {
+          "id": "selected",
+          "description": "Contador en título"
+        },
+        {
+          "id": "select_all",
+          "description": "Seleccionar todo"
+        },
+        {
+          "id": "share",
+          "description": "Compartir selección"
+        },
+        {
+          "id": "save",
+          "description": "Guardar selección y resultado"
+        },
+        {
+          "id": "delete",
+          "description": "Confirmación de borrado"
+        }
+      ],
+      "navigation": [
+        "image_pager"
+      ],
+      "reachability": "main_tab",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#tab_gallery",
+        "layout": "analysis/apk/resources/layout/fragment_flie.xml"
+      },
+      "widgets": [
+        "file_grid",
+        "iv_all_select_file",
+        "iv_file_delete",
+        "iv_file_save",
+        "iv_file_share",
+        "ll_edit_info",
+        "publico_titlebar",
+        "tv_no_record",
+        "v_cut_line"
+      ],
+      "resources": [
+        "color/colorPrimary",
+        "color/main_ui_color_white",
+        "color/textColor",
+        "dimen/standard_width",
+        "drawable/selector_btn_save",
+        "drawable/selector_file_all_selected",
+        "drawable/selector_file_delete",
+        "drawable/selector_share",
+        "string/key_album_empty_hint"
+      ],
+      "resource_evidence": {
+        "path": "layout/fragment_flie.xml",
+        "sha256": "6a7878f94f1cd17e3099bd7ae09aae6c1e16e6505d780f6b6cbaad898897afc5",
+        "bytes": 3320
+      }
+    },
+    {
+      "id": "tab_settings",
+      "kind": "fragment",
+      "class": "com.quvii.ubell.main.view.MainMeFragment",
+      "title": {
+        "en": "Settings",
+        "es": "Ajustes"
+      },
+      "layout": "analysis/apk/resources/layout/fragment_me.xml",
+      "states": [
+        {
+          "id": "sound_on",
+          "description": "Sonido activado"
+        },
+        {
+          "id": "sound_off",
+          "description": "Sonido desactivado"
+        },
+        {
+          "id": "vibration_on",
+          "description": "Vibración activada"
+        },
+        {
+          "id": "vibration_off",
+          "description": "Vibración desactivada"
+        },
+        {
+          "id": "about",
+          "description": "Abre información"
+        },
+        {
+          "id": "exit_confirm",
+          "description": "Diálogo de salida"
+        },
+        {
+          "id": "hidden_options",
+          "description": "Auto rotate, canales y preview time ocultos"
+        }
+      ],
+      "navigation": [
+        "about"
+      ],
+      "reachability": "main_tab",
+      "note": "",
+      "evidence": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#tab_settings",
+        "layout": "analysis/apk/resources/layout/fragment_me.xml"
+      },
+      "widgets": [
+        "iv_auto_rotate",
+        "iv_sound",
+        "iv_vibration",
+        "ll_about",
+        "ll_auto_rotate",
+        "ll_channels_switch_mode",
+        "ll_exit",
+        "ll_preview_time",
+        "ll_sound",
+        "ll_vibration",
+        "publico_titlebar",
+        "tv_channels_select_mode",
+        "tv_preview_time"
+      ],
+      "resources": [
+        "color/main_ui_color_white",
+        "color/textColor",
+        "dimen/text_normal_size",
+        "drawable/btn_switch_off",
+        "drawable/btn_switch_on",
+        "drawable/icon_arrow_list_right",
+        "drawable/publico_selector_btn_bg",
+        "string/key_about",
+        "string/key_auto_rotate",
+        "string/key_automatic",
+        "string/key_call_reception",
+        "string/key_exit",
+        "string/key_preview_time",
+        "string/key_sound",
+        "string/key_vibration",
+        "string/key_video_channel_select",
+        "style/CustomTextView",
+        "style/Custom_Text_View_Marquee",
+        "style/option_linear_layout"
+      ],
+      "resource_evidence": {
+        "path": "layout/fragment_me.xml",
+        "sha256": "84c4e172d046adc58f10d2cab4b7b9a1ee5f20f28d641c905a83df54faeeae77",
+        "bytes": 6979
+      }
+    }
+  ],
+  "screen_count": 38,
+  "navigation_edges": [
+    {
+      "from": "loading",
+      "to": "main_tab"
+    },
+    {
+      "from": "loading",
+      "to": "push_call"
+    },
+    {
+      "from": "loading",
+      "to": "preview"
+    },
+    {
+      "from": "cache",
+      "to": "loading"
+    },
+    {
+      "from": "main_tab",
+      "to": "tab_devices"
+    },
+    {
+      "from": "main_tab",
+      "to": "tab_events"
+    },
+    {
+      "from": "main_tab",
+      "to": "tab_gallery"
+    },
+    {
+      "from": "main_tab",
+      "to": "tab_settings"
+    },
+    {
+      "from": "add_type",
+      "to": "product_intro"
+    },
+    {
+      "from": "add_type",
+      "to": "online_type"
+    },
+    {
+      "from": "preview",
+      "to": "config"
+    },
+    {
+      "from": "preview",
+      "to": "password_modify"
+    },
+    {
+      "from": "online_type",
+      "to": "online_devices"
+    },
+    {
+      "from": "online_type",
+      "to": "device_bind"
+    },
+    {
+      "from": "product_choose",
+      "to": "product_intro"
+    },
+    {
+      "from": "product_intro",
+      "to": "scan"
+    },
+    {
+      "from": "product_intro",
+      "to": "router"
+    },
+    {
+      "from": "product_intro",
+      "to": "handle_wifi"
+    },
+    {
+      "from": "handle_wifi",
+      "to": "router"
+    },
+    {
+      "from": "handle_wifi",
+      "to": "wifi_progress"
+    },
+    {
+      "from": "wifi_list_legacy",
+      "to": "wifi_set_legacy"
+    },
+    {
+      "from": "wifi_set_legacy",
+      "to": "config"
+    },
+    {
+      "from": "wifi_set_legacy",
+      "to": "product_intro"
+    },
+    {
+      "from": "device_bind",
+      "to": "main_tab"
+    },
+    {
+      "from": "device_bind",
+      "to": "scan"
+    },
+    {
+      "from": "online_devices",
+      "to": "device_bind"
+    },
+    {
+      "from": "scan",
+      "to": "product_intro"
+    },
+    {
+      "from": "scan",
+      "to": "device_bind"
+    },
+    {
+      "from": "scan",
+      "to": "share_bind"
+    },
+    {
+      "from": "config",
+      "to": "device_info"
+    },
+    {
+      "from": "config",
+      "to": "password_modify"
+    },
+    {
+      "from": "config",
+      "to": "unlock_setting"
+    },
+    {
+      "from": "config",
+      "to": "router"
+    },
+    {
+      "from": "config",
+      "to": "upgrade"
+    },
+    {
+      "from": "config",
+      "to": "share_manage"
+    },
+    {
+      "from": "config",
+      "to": "main_tab"
+    },
+    {
+      "from": "password_modify",
+      "to": "config"
+    },
+    {
+      "from": "unlock_setting",
+      "to": "config"
+    },
+    {
+      "from": "device_info",
+      "to": "config"
+    },
+    {
+      "from": "about",
+      "to": "debug"
+    },
+    {
+      "from": "image_pager",
+      "to": "video_player"
+    },
+    {
+      "from": "image_pager",
+      "to": "tab_gallery"
+    },
+    {
+      "from": "video_player",
+      "to": "image_pager"
+    },
+    {
+      "from": "push_call",
+      "to": "preview"
+    },
+    {
+      "from": "push_call",
+      "to": "main_tab"
+    },
+    {
+      "from": "debug",
+      "to": "loading"
+    },
+    {
+      "from": "upgrade",
+      "to": "config"
+    },
+    {
+      "from": "guide",
+      "to": "main_tab"
+    },
+    {
+      "from": "add_method_legacy",
+      "to": "router"
+    },
+    {
+      "from": "add_method_legacy",
+      "to": "handle_wifi"
+    },
+    {
+      "from": "router",
+      "to": "wifi_progress"
+    },
+    {
+      "from": "router",
+      "to": "voice"
+    },
+    {
+      "from": "router",
+      "to": "config"
+    },
+    {
+      "from": "voice",
+      "to": "device_bind"
+    },
+    {
+      "from": "voice",
+      "to": "main_tab"
+    },
+    {
+      "from": "wifi_progress",
+      "to": "pairing_fail"
+    },
+    {
+      "from": "wifi_progress",
+      "to": "device_bind"
+    },
+    {
+      "from": "wifi_progress",
+      "to": "main_tab"
+    },
+    {
+      "from": "wifi_progress",
+      "to": "handle_wifi"
+    },
+    {
+      "from": "share_device",
+      "to": "share_manage"
+    },
+    {
+      "from": "pairing_fail",
+      "to": "main_tab"
+    },
+    {
+      "from": "share_manage",
+      "to": "share_device"
+    },
+    {
+      "from": "share_manage",
+      "to": "config"
+    },
+    {
+      "from": "share_bind",
+      "to": "main_tab"
+    },
+    {
+      "from": "tab_devices",
+      "to": "add_type"
+    },
+    {
+      "from": "tab_devices",
+      "to": "preview"
+    },
+    {
+      "from": "tab_devices",
+      "to": "config"
+    },
+    {
+      "from": "tab_events",
+      "to": "tab_event_list"
+    },
+    {
+      "from": "tab_event_list",
+      "to": "tab_events"
+    },
+    {
+      "from": "tab_gallery",
+      "to": "image_pager"
+    },
+    {
+      "from": "tab_settings",
+      "to": "about"
+    }
+  ],
+  "visual_system": {
+    "colors": {
+      "appTitleColor": "#78c9e7",
+      "app_main_tab_bg": "@color/appTitleColor",
+      "bg_red": "#e73e04",
+      "bg_red_pressed": "#cc330a",
+      "black_bg": "#ff000000",
+      "black_transparent": "#50000000",
+      "btn_upgrade_color_bg": "#7e9aaf",
+      "clr_normal": "#ffffff",
+      "clr_pressed": "#c9c9c9",
+      "colorAccent": "@android:color/darker_gray",
+      "colorPrimary": "#78c9e7",
+      "colorPrimaryDark": "#78c9e7",
+      "color_bottom_tab_text": "@color/white",
+      "color_bottom_tab_text_normal": "#929292",
+      "common_sub_text": "#ff888888",
+      "conditions_agree": "@color/colorPrimary",
+      "conditions_disagree": "@android:color/darker_gray",
+      "cut_line": "@android:color/darker_gray",
+      "device_list_pressed": "#e8e8e8",
+      "disable_color_bg": "#dfddde",
+      "fm_fragment_text_normal": "#7d7d7d",
+      "fm_fragment_text_selected": "#00a3dd",
+      "grey": "#ff888888",
+      "guide_blue_tv": "#00a3dd",
+      "icon_black": "#88000000",
+      "main_ui_color_white": "#f4f4f4",
+      "new_line_color": "#ffcecece",
+      "preview_item_bg": "@android:color/black",
+      "preview_item_select": "@android:color/transparent",
+      "progree_bar_bg": "#ff6700",
+      "progressBarBg": "@android:color/darker_gray",
+      "snackBarBackground": "#af78c9e7",
+      "snackBarText": "@color/titleText",
+      "textColor": "#ff4d4d4d",
+      "textColorGray": "@android:color/darker_gray",
+      "titleText": "#fff",
+      "transparent": "#00000000",
+      "white": "#fff",
+      "window_selected": "@android:color/transparent"
+    },
+    "palette_notes": {
+      "primary": "#78c9e7 usado en título y barra inferior",
+      "background": "#f4f4f4 como main_ui_color_white",
+      "text": "#4d4d4d como textColor; blanco en cabecera",
+      "selected_event": "#00a3dd",
+      "error": "#e73e04",
+      "preview": "negro"
+    },
+    "typography": {
+      "default_family": "sans-serif del sistema; FontHelper.Init(false) desactiva alger.ttf",
+      "bundled_font": "fonts/alger.ttf presente pero no aplicado por defecto",
+      "styles": [
+        "CustomButton 18sp normal",
+        "CustomTextView 15sp",
+        "Título 20sp",
+        "Bottom tabs 12sp",
+        "Guía 30sp bold",
+        "About app name 25sp",
+        "Textos auxiliares 10/13/14/15/16/18sp"
+      ],
+      "evidence": [
+        "E060"
+      ]
+    },
+    "dimensions": {
+      "activity_device_config_wifi_textsize": "18sp",
+      "bottom_menu_height": "130dp",
+      "bottom_text_size": "12sp",
+      "btn_height": "50dp",
+      "btn_height_large": "60dp",
+      "btn_height_small": "25dp",
+      "btn_small_width": "120dp",
+      "btn_width": "300dp",
+      "default_gap": "8dp",
+      "devlist_height": "55dp",
+      "fm_fragment_dial_info_line": "3dp",
+      "fullscreen_img_size": "55dp",
+      "logo_text_size": "25sp",
+      "main_bottom_height": "55dp",
+      "margin_large": "20dp",
+      "margin_normal": "10dp",
+      "margin_small": "5dp",
+      "padding_large": "30dp",
+      "padding_mini": "3dp",
+      "padding_normal": "15dp",
+      "padding_small": "5dp",
+      "padding_small_normal": "10dp",
+      "preview_item_icon_small": "50dp",
+      "standard_width": "45dp",
+      "talk_record_text_size": "12sp",
+      "text_large_size": "22sp",
+      "text_mini_size": "10sp",
+      "text_nomal_size": "16sp",
+      "text_normal_size": "18sp",
+      "text_small_size": "15sp",
+      "title_height": "60dp",
+      "title_text_size": "20sp"
+    },
+    "key_dimensions": {
+      "title_height": "60dp",
+      "main_bottom_height": "55dp",
+      "button_height": "50dp",
+      "button_horizontal_margin": "30dp en option_button",
+      "device_cover": "200dp de alto",
+      "guide_image": "640x960 px xhdpi",
+      "qr_code": "120x120 dp",
+      "tab_icons": "60x60 px xhdpi"
+    },
+    "iconography": "PNGs propios y selectores XML para normal/pressed/selected/on/off; no Lucide ni Material Symbols en el APK original",
+    "themes": {
+      "light": "AppTheme Light.NoActionBar con colorPrimary/primaryDark #78c9e7",
+      "dark": "values-night/colors.xml está vacío; no hay tema oscuro propio. La pantalla de vídeo y el visor negro son estados locales, no DayNight",
+      "night_resources_evidence": "analysis/apk/resources/values-night/colors.xml"
+    }
+  },
+  "localization": {
+    "default_english_app_strings": 282,
+    "spanish_app_strings": 281,
+    "identical_in_spanish": 59,
+    "identical_note": "Texto idéntico en ambos recursos; incluye cadenas sin traducir y marcas/abreviaturas",
+    "missing_in_spanish": [
+      "key_is_phone_calling"
+    ],
+    "english_fallback": "values-en solo contiene recursos de librerías; las cadenas base en values/strings.xml están en inglés",
+    "examples": [
+      {
+        "key": "key_device",
+        "en": "Device",
+        "es": "Dispositivo"
+      },
+      {
+        "key": "key_device_add",
+        "en": "Add Device",
+        "es": "Añadir Dispositivo"
+      },
+      {
+        "key": "key_unlock",
+        "en": "Unlock",
+        "es": "Abrir"
+      },
+      {
+        "key": "key_album",
+        "en": "Gallery",
+        "es": "Galería"
+      },
+      {
+        "key": "key_setting",
+        "en": "Settings",
+        "es": "Ajustes"
+      },
+      {
+        "key": "key_alarm_title_all",
+        "en": "All ACTIVITY",
+        "es": "All ACTIVITY",
+        "note": "Sin traducir"
+      }
+    ],
+    "evidence": "analysis/apk/evidence/string-stats.json"
+  },
+  "resource_densities": {
+    "drawable-ldrtl-xhdpi": {
+      "files": 1,
+      "examples": [
+        {
+          "path": "drawable-ldrtl-xhdpi/icon_arrow_list_right.png",
+          "width": 44,
+          "height": 44
+        }
+      ]
+    },
+    "drawable-xhdpi": {
+      "files": 52,
+      "examples": [
+        {
+          "path": "drawable-xhdpi/backgroud_calling.png",
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "path": "drawable-xhdpi/btn_accept.png",
+          "width": 120,
+          "height": 120
+        },
+        {
+          "path": "drawable-xhdpi/btn_preview_mode_normal.png",
+          "width": 50,
+          "height": 50
+        },
+        {
+          "path": "drawable-xhdpi/btn_refuse.png",
+          "width": 120,
+          "height": 120
+        },
+        {
+          "path": "drawable-xhdpi/device_add_sound_waver.png",
+          "width": 564,
+          "height": 180
+        },
+        {
+          "path": "drawable-xhdpi/device_add_wifi_set.png",
+          "width": 564,
+          "height": 180
+        },
+        {
+          "path": "drawable-xhdpi/device_cover_default.png",
+          "width": 600,
+          "height": 450
+        },
+        {
+          "path": "drawable-xhdpi/device_status_offline.png",
+          "width": 48,
+          "height": 48
+        }
+      ]
+    }
+  },
+  "resource_manifest": "analysis/apk/resources/manifest.json",
+  "evidence": {
+    "ui_code": "analysis/apk/evidence/ui-code-evidence.md",
+    "layouts": "analysis/apk/resources/layout",
+    "resource_hashes": "analysis/apk/resources/manifest.json"
+  }
+}

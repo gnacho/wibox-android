@@ -1,0 +1,14 @@
+command: python3 analysis/rea/verify_analysis.py
+working_directory: /home/nacho/Documentos/Repos/wibox-kotlin
+exit: 0
+stdout: REA_ANALYSIS_VERIFIED
+stderr: <empty>
+
+second_pass: ejecucion real de REA 6.8.0 sobre Wibox v2.2
+runtime: /home/nacho/temp/opencode-work/rea-runtime/node_modules/rea-agents/scripts/rea.mjs
+provider: jadx-headless-mcp-0.7.1
+artifacts: 39 archivos analysis/rea/wibox-*.json parseados como JSON valido
+analysis_commands: inspect-android-package, search-android-classes, inspect-android-class, inspect-android-method, trace-android-references
+verification: python3 analysis/rea/verify_analysis.py -> REA_ANALYSIS_VERIFIED
+integration: python3 analysis/verify_analysis_integration.py -> WIBOX_ANALYSIS_INTEGRATION_VERIFIED
+network_or_devices: none

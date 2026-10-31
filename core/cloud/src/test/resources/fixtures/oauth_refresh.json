@@ -1,0 +1,4 @@
+{
+  "access_token": "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJleHAiOjE4MDAwMDU0MDAsImZpeHR1cmUiOnRydWUsIm5hbWUiOiJhY2Nlc3MtcmVmcmVzaGVkIn0.fixture-signature",
+  "refresh_token": "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJleHAiOjE4MDAwMTA4MDAsImZpeHR1cmUiOnRydWUsIm5hbWUiOiJyZWZyZXNoLXJvdGF0ZWQifQ.fixture-signature"
+}

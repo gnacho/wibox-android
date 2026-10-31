@@ -1,0 +1,8 @@
+<envelope xmlns:xi="http://www.w3.org/2001/XInclude">
+  <header><flag>tdkcloud</flag><result>0</result></header>
+  <content>
+    <priority>0</priority><version>5.1.11</version><url></url>
+    <description><xi:include href="https://unit.test/fixture-include.xml" parse="text"/></description>
+    <config><version>0</version><url></url><picture></picture></config>
+  </content>
+</envelope>

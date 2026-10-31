@@ -1,0 +1,8 @@
+{
+  "code": 10401,
+  "data": null,
+  "errTip": "fixture-error",
+  "msg": "fixture-error",
+  "path": "/fixture/provider-error",
+  "timestamp": 1800000001000
+}

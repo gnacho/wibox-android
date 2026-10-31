@@ -1,0 +1,18 @@
+{
+  "package": "dev.nacho.wibox",
+  "versionCode": 1,
+  "versionName": "0.1.0",
+  "apk": "/home/nacho/Descargas/wibox-kotlin/Wibox-QVCloud.apk",
+  "sizeBytes": 2412550,
+  "sha256": "4043f7b0eb4e3ba47aa1982435331ce85b14641c6dbe99357f0ac47769bc5ba3",
+  "signatureVerified": true,
+  "zipAlignmentVerified": true,
+  "installedAndStarted": true,
+  "installSerial": "emulator-5554",
+  "evidence": {
+    "signature": "analysis/final-audit/release-signature.txt",
+    "alignment": "analysis/final-audit/release-alignment.txt",
+    "install": "analysis/final-audit/release-install.txt",
+    "screenshot": "analysis/final-audit/release-smoke.png"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "AlarmId": "fixture-alarm-002",
+  "DevUmid": "fixture-device-002",
+  "CameraName": "Fixture garden",
+  "NotReadCount": "1",
+  "AlarmEvent": "2",
+  "AlarmTime": "2027-01-15 10:01:00"
+}

@@ -1,0 +1,10 @@
+{
+  "AlarmId": "fixture-alarm-001",
+  "DevUmid": "fixture-device-001",
+  "SensorChNo": "1",
+  "CameraName": "Fixture entrance",
+  "NotReadCount": "2",
+  "AlarmEvent": "19",
+  "AlarmTime": "2027-01-15 10:00:00",
+  "FutureField": "fixture-preserved"
+}

@@ -1,0 +1,18 @@
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v3.2 scheme (APK Signature Scheme v3.2): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+V3.0 Signer: certificate DN: CN=Wibox Kotlin, OU=Local Release, O=Personal, C=ES
+V3.0 Signer: certificate SHA-256 digest: 09a9ed8661dc99b46fae29c37e59d234c77a3f6caed2ed33171c67f25c0a1a8f
+V3.0 Signer: certificate SHA-1 digest: 26b3376831f9215f3c8b378328c132aee17298e0
+V3.0 Signer: certificate MD5 digest: b61019ebc9caabc49fe29498207afefd
+V3.0 Signer: key algorithm: RSA
+V3.0 Signer: key size (bits): 4096
+V3.0 Signer: public key SHA-256 digest: 1075db553fbdf113969e67ddf54ad219fac981516fd0a864dc13b62dfba9af8c
+V3.0 Signer: public key SHA-1 digest: df0038a98a6fc74c4cb404d1d021d29aca013a89
+V3.0 Signer: public key MD5 digest: 814ecf955b5514f6c663df8bd94ac0bf

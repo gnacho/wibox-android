@@ -1,0 +1,18 @@
+/home/nacho/temp/opencode-work/wibox-jadx/resources/assets/ca.pem size=3908
+908f47ae87a568e44306b4e8cc97568692d0766ecfdfb2136d819ee0f539811b  /home/nacho/temp/opencode-work/wibox-jadx/resources/assets/ca.pem
+/home/nacho/temp/opencode-work/wibox-jadx/resources/assets/ca.pem: ASCII text
+/home/nacho/temp/opencode-work/wibox-jadx/resources/assets/client.bks size=2133
+18d88f113afab53f5e3f7c21edd2cca3170847a4e1b8c618745415a8fe3c9334  /home/nacho/temp/opencode-work/wibox-jadx/resources/assets/client.bks
+/home/nacho/temp/opencode-work/wibox-jadx/resources/assets/client.bks: data
+/home/nacho/temp/opencode-work/wibox-jadx/resources/assets/client.pem size=3858
+11479d5a65121ba64117937256c0eba0be4e87252184d8b99f2b5b4370828566  /home/nacho/temp/opencode-work/wibox-jadx/resources/assets/client.pem
+/home/nacho/temp/opencode-work/wibox-jadx/resources/assets/client.pem: ASCII text
+/home/nacho/temp/opencode-work/wibox-jadx/resources/assets/client.txt size=1679
+c2df4ea5ac3d277b197bf5c2c05c38efb7a4bdf339db4078fb5c2737c1a6bd9a  /home/nacho/temp/opencode-work/wibox-jadx/resources/assets/client.txt
+/home/nacho/temp/opencode-work/wibox-jadx/resources/assets/client.txt: PEM RSA private key
+/home/nacho/temp/opencode-work/wibox-jadx/resources/assets/grs_sp.bks size=1470
+9a804f1a36accc9f537c3cb650d22f02bf62e55eb3b763af68cb23acf240f48e  /home/nacho/temp/opencode-work/wibox-jadx/resources/assets/grs_sp.bks
+/home/nacho/temp/opencode-work/wibox-jadx/resources/assets/grs_sp.bks: data
+/home/nacho/temp/opencode-work/wibox-jadx/resources/assets/server.bks size=2129
+808578c6308cd9314ac9edb39ae6c5baa232dd7414277ac8e353b3330c22cdf0  /home/nacho/temp/opencode-work/wibox-jadx/resources/assets/server.bks
+/home/nacho/temp/opencode-work/wibox-jadx/resources/assets/server.bks: data

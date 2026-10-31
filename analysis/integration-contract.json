@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "source_of_truth": {
+    "stock_application": "analysis/apk/inventory.json",
+    "visual_structure": "analysis/apk/ui-inventory.json",
+    "rea_role": "reverse_engineering_tool_only",
+    "runtime_stock_behavior_confirmed": false
+  },
+  "stock_cloud": {
+    "oauth": {
+      "path": "/qvoauthv2/token",
+      "method": "GET",
+      "grant_types": ["password", "refresh_token"],
+      "token_header": "token"
+    },
+    "shadow_http_paths": [
+      "/openapi-tdk/device/status",
+      "/openapi-tdk/device/status/multi",
+      "/openapi-tdk/device/status/sub",
+      "/openapi-tdk/device/status/unsub"
+    ],
+    "mqtt": {
+      "status": "implemented_but_disabled_by_default",
+      "default_enabled": false,
+      "runtime_active_claimed": false
+    },
+    "media": {
+      "transport": "primary_media_transport",
+      "native_p2p_required_by_stock": true,
+      "sip_client_available": false,
+      "webrtc_peerconnection_available": false
+    },
+    "service_discovery": "dynamic_unresolved",
+    "visible_username_password_login": false
+  },
+  "implementation_rules": {
+    "strict_tls_validation": true,
+    "redact_secrets_from_logs": true,
+    "embed_original_certificates_or_credentials": false,
+    "reuse_original_native_binaries": false,
+    "retry_ambiguous_physical_actions": false,
+    "report_action_success_without_acknowledgement": false,
+    "require_evidence_for_new_wire_operations": true,
+    "supported_features_must_be_explicit": true
+  },
+  "alternative_firmware_profiles": {
+    "separate_from_stock": true,
+    "enabled_by_default": false,
+    "duhow_transports": ["local-http-cgi", "mqtt"],
+    "cmos486_transports": ["webrtc", "rtsp", "mqtt"]
+  }
+}

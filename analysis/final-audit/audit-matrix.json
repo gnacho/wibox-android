@@ -1,0 +1,6008 @@
+{
+  "schema_version": 1,
+  "status": "PENDING_FINAL_IMPLEMENTATION_AUDIT",
+  "generated_at": "2026-10-31T09:23:26.892079+00:00",
+  "source_hashes": {
+    "analysis/architecture/provider-matrix.json": "912878dcef3f697cef5d7fc561dc1d1542a241673993343909fbdf4d6dd6a915",
+    "analysis/apk/ui-inventory.json": "6d5d1735527717332a85e3bf2051747ed2578f91dceb7dd4daaca8938dbe33ea",
+    "analysis/dynamic/inventory.json": "f31824799489b4e89712be985c611efc80f6502a830fd513e74c540bb9523ea6",
+    "analysis/external-api/api-contract.json": "93e984174b98f46b783514f901d932aed64f09d072c6a9fa94d59d04bc606ca3"
+  },
+  "summary": {
+    "capabilities_total": 64,
+    "screens_total": 38,
+    "navigation_edges_total": 71,
+    "dynamic_unsupported_updates": [
+      "app_upgrade_check"
+    ],
+    "external_api_design": {
+      "status": "design-only",
+      "methods": 15,
+      "models": 43,
+      "service_implemented": false
+    }
+  },
+  "capabilities": [
+    {
+      "id": "core.lifecycle",
+      "name": "Ciclo de vida, cierre y cancelacion",
+      "evidence_references": [
+        "core/cloud/src/main/kotlin/dev/nacho/wibox/core/cloud/WiboxCloud.kt",
+        "docs/protocol.md#7"
+      ],
+      "current_implementation": "implemented_contract",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "implemented_contract"
+        },
+        "mqtt": {
+          "support": "required",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "required",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "contract_tested",
+          "details": []
+        },
+        "behavior": {
+          "level": "offline_only",
+          "details": []
+        },
+        "security": {
+          "level": "resource_isolation_offline",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_applicable_local",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "contract_tested",
+        "not_applicable_local",
+        "offline_only",
+        "resource_isolation_offline"
+      ],
+      "acceptance": {
+        "api_wire": "Contrato publico estable y cierre idempotente.",
+        "behavior": "Cancelacion y ausencia de trabajos huerfanos en todos los adaptadores.",
+        "security": "Recursos y secretos no compartidos tras cierre.",
+        "hardware": "No aplica al lifecycle puro."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "core.capability_negotiation",
+      "name": "Negociacion de capacidades por proveedor y dispositivo",
+      "evidence_references": [
+        "core/cloud/src/main/kotlin/dev/nacho/wibox/core/cloud/EventModels.kt",
+        "E020"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "required",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "required",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_capability_set",
+          "details": []
+        },
+        "behavior": {
+          "level": "not_negotiated",
+          "details": []
+        },
+        "security": {
+          "level": "not_reviewed_runtime",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_negotiated",
+        "not_reviewed_runtime",
+        "not_tested",
+        "static_capability_set"
+      ],
+      "acceptance": {
+        "api_wire": "Snapshot con soporte, ambito, origen y evidencia.",
+        "behavior": "Required, optional, unsupported y unknown cambian por cuenta y dispositivo.",
+        "security": "Permisos efectivos sin elevar capacidades por rol.",
+        "hardware": "Comprobar diferencias entre modelos y permisos reales."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "auth.opaque_registration",
+      "name": "Registro opaco de cuenta",
+      "evidence_references": [
+        "E004",
+        "E010",
+        "docs/rea-analysis.md#20"
+      ],
+      "current_implementation": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "static_evidence_only"
+        },
+        "mqtt": {
+          "support": "unsupported",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "unsupported",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "not_demonstrated",
+          "details": []
+        },
+        "security": {
+          "level": "not_reviewed_runtime",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_demonstrated",
+        "not_reviewed_runtime",
+        "not_tested",
+        "static_only"
+      ],
+      "acceptance": {
+        "api_wire": "Request y response completos de userFreeRegister.",
+        "behavior": "Registro, guardado y login posterior con errores y duplicados.",
+        "security": "Credencial generada protegida y sin logs.",
+        "hardware": "Alta autorizada con cuenta desechable y dispositivo cuando el flujo lo requiera."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "auth.user_login",
+      "name": "Login de la cuenta opaca",
+      "evidence_references": [
+        "E004",
+        "E010"
+      ],
+      "current_implementation": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "static_evidence_only"
+        },
+        "mqtt": {
+          "support": "unsupported",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "unsupported",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "not_demonstrated",
+          "details": []
+        },
+        "security": {
+          "level": "not_reviewed_runtime",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_demonstrated",
+        "not_reviewed_runtime",
+        "not_tested",
+        "static_only"
+      ],
+      "acceptance": {
+        "api_wire": "Contrato userLogin y errores.",
+        "behavior": "Login, reutilizacion y expiracion observados.",
+        "security": "Password y cookies cifrados y redactados.",
+        "hardware": "No aplica al login aislado; la integracion usa cuenta autorizada."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "auth.oauth_password",
+      "name": "OAuth password grant",
+      "evidence_references": [
+        "E029",
+        "E033",
+        "P-OAUTH-PASSWORD"
+      ],
+      "current_implementation": "implemented_contract",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "implemented_contract"
+        },
+        "mqtt": {
+          "support": "unsupported",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "unsupported",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "contract_tested",
+          "details": []
+        },
+        "behavior": {
+          "level": "offline_only",
+          "details": []
+        },
+        "security": {
+          "level": "strict_tls_offline",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_applicable_protocol_only",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "contract_tested",
+        "not_applicable_protocol_only",
+        "offline_only",
+        "strict_tls_offline"
+      ],
+      "acceptance": {
+        "api_wire": "GET, query, token header y JWT contrastados tambien en runtime.",
+        "behavior": "Errores y expiracion reales sin login visible inventado.",
+        "security": "TLS estricto y secretos sin logs ni URLs persistidas.",
+        "hardware": "No aplica al grant aislado; exige integracion autorizada."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "auth.oauth_refresh",
+      "name": "OAuth refresh y single-flight",
+      "evidence_references": [
+        "E033",
+        "E034",
+        "E035",
+        "P-OAUTH-REFRESH"
+      ],
+      "current_implementation": "implemented_contract",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "implemented_contract"
+        },
+        "mqtt": {
+          "support": "unsupported",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "unsupported",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "contract_tested",
+          "details": []
+        },
+        "behavior": {
+          "level": "offline_only",
+          "details": []
+        },
+        "security": {
+          "level": "strict_tls_offline",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_applicable_protocol_only",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "contract_tested",
+        "not_applicable_protocol_only",
+        "offline_only",
+        "strict_tls_offline"
+      ],
+      "acceptance": {
+        "api_wire": "Refresh grant y rotacion reales.",
+        "behavior": "Concurrencia, margen y revocacion observados.",
+        "security": "Un solo almacen atomico y sin password retenido.",
+        "hardware": "No aplica al refresh aislado."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "auth.session_restore",
+      "name": "Restauracion de sesion",
+      "evidence_references": [
+        "E034",
+        "E036",
+        "P-SESSION-RESTORE"
+      ],
+      "current_implementation": "implemented_contract",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "implemented_contract"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "contract_tested",
+          "details": []
+        },
+        "behavior": {
+          "level": "offline_only",
+          "details": []
+        },
+        "security": {
+          "level": "store_injected_not_android_verified",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_applicable_local",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "contract_tested",
+        "not_applicable_local",
+        "offline_only",
+        "store_injected_not_android_verified"
+      ],
+      "acceptance": {
+        "api_wire": "Sesion serializada sin campos publicos secretos.",
+        "behavior": "Restaurar, caducar y borrar tras reinicio de app.",
+        "security": "TokenStore Android cifrado y atomico probado.",
+        "hardware": "No aplica al almacenamiento local; probar en Android real o emulador."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "auth.logout",
+      "name": "Cierre y revocacion de sesion",
+      "evidence_references": [
+        "E036",
+        "E041"
+      ],
+      "current_implementation": "unknown",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "unknown",
+          "status": "unknown"
+        },
+        "mqtt": {
+          "support": "unknown",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "unknown",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "unknown",
+          "details": []
+        },
+        "behavior": {
+          "level": "unknown",
+          "details": []
+        },
+        "security": {
+          "level": "unknown",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_tested",
+        "unknown"
+      ],
+      "acceptance": {
+        "api_wire": "Distinguir borrado local, unsub y revocacion remota.",
+        "behavior": "Efectos sobre cuenta, tokens y dispositivos observados.",
+        "security": "Borrado verificado sin revocacion falsa.",
+        "hardware": "Cuenta autorizada cuando exista efecto remoto."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "discovery.regional_services",
+      "name": "Descubrimiento regional QVCloud",
+      "evidence_references": [
+        "E034",
+        "E040",
+        "U-SERVICE-DISCOVERY",
+        "docs/rea-analysis.md#20"
+      ],
+      "current_implementation": "unsupported",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "unsupported"
+        },
+        "mqtt": {
+          "support": "unsupported",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "unsupported",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "unsupported_current",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_tested",
+        "static_only",
+        "strict_design_only",
+        "unsupported_current"
+      ],
+      "acceptance": {
+        "api_wire": "Respuesta QvLocationManager y servicios 4 y 8.",
+        "behavior": "Region, cache, fallo y re-descubrimiento reales.",
+        "security": "Endpoints validados sin IP historica ni trust-all.",
+        "hardware": "Cuenta y entorno autorizados; no requiere efecto fisico."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "devices.list",
+      "name": "Lista cloud de dispositivos",
+      "evidence_references": [
+        "E004",
+        "E010",
+        "E020",
+        "U-DEVICE-LIST"
+      ],
+      "current_implementation": "unsupported",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "unsupported"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "unsupported_current",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_tested",
+        "static_only",
+        "strict_design_only",
+        "unsupported_current"
+      ],
+      "acceptance": {
+        "api_wire": "Contrato getDevList completo.",
+        "behavior": "Merge con cache, vacio real, duplicados y permisos.",
+        "security": "Dispositivos limitados a la cuenta autorizada.",
+        "hardware": "Cuenta con dispositivos owner y shared."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "devices.dynamic_credentials",
+      "name": "Credenciales dinamicas de dispositivo",
+      "evidence_references": [
+        "E010",
+        "E013",
+        "E022"
+      ],
+      "current_implementation": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "static_evidence_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "not_demonstrated",
+          "details": []
+        },
+        "security": {
+          "level": "not_reviewed_runtime",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_demonstrated",
+        "not_reviewed_runtime",
+        "not_tested",
+        "static_only"
+      ],
+      "acceptance": {
+        "api_wire": "Respuesta y expiracion de password y dataEncodeKey.",
+        "behavior": "Renovacion sin interrumpir indebidamente media.",
+        "security": "Secretos aislados por dispositivo y nunca en URL o log.",
+        "hardware": "Expiracion y renovacion con dispositivo autorizado."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "devices.local_discovery",
+      "name": "Descubrimiento LAN de dispositivos",
+      "evidence_references": [
+        "E014",
+        "E017",
+        "E018"
+      ],
+      "current_implementation": "unsupported",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "unsupported"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "not_tested",
+        "static_only",
+        "strict_design_only"
+      ],
+      "acceptance": {
+        "api_wire": "Datagramas o callbacks y esquema de respuesta.",
+        "behavior": "Timeout, refresh, vacio, duplicados y permisos Android.",
+        "security": "Sin credenciales derivadas expuestas ni red no autorizada.",
+        "hardware": "Busqueda y seleccion de dispositivo LAN real."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "devices.online_status",
+      "name": "Presencia online y offline",
+      "evidence_references": [
+        "E020",
+        "E041",
+        "E063"
+      ],
+      "current_implementation": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "static_evidence_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "shadow_contract_partial",
+          "details": []
+        },
+        "behavior": {
+          "level": "semantics_unknown",
+          "details": []
+        },
+        "security": {
+          "level": "strict_tls_offline",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_tested",
+        "semantics_unknown",
+        "shadow_contract_partial",
+        "strict_tls_offline"
+      ],
+      "acceptance": {
+        "api_wire": "Campos P2P y Shadow con significado confirmado.",
+        "behavior": "Transiciones, frescura, ausencia y unknown.",
+        "security": "No elevar offline a exito ni filtrar identificadores.",
+        "hardware": "Conectar, desconectar y reconectar dispositivo autorizado."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "pairing.qr",
+      "name": "QR de dispositivo",
+      "evidence_references": [
+        "E007",
+        "E012"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "parser_local_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "offline_parser_only",
+          "details": []
+        },
+        "security": {
+          "level": "no_real_secret_fixtures",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "no_real_secret_fixtures",
+        "not_tested",
+        "offline_parser_only",
+        "parser_local_only"
+      ],
+      "acceptance": {
+        "api_wire": "Campos apName, uid, authCode y model con variantes reales.",
+        "behavior": "Camara, galeria, invalido y reintento.",
+        "security": "AuthCode sin logs ni capturas persistentes.",
+        "hardware": "Escanear QR fisico autorizado y completar o rechazar alta."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "pairing.ap_wifi",
+      "name": "Provisioning AP WiFi",
+      "evidence_references": [
+        "E014",
+        "E015",
+        "E017",
+        "E018"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "no_real_wifi",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "no_real_wifi",
+        "not_tested",
+        "static_only"
+      ],
+      "acceptance": {
+        "api_wire": "Secuencia CGI/AP y payloads reales.",
+        "behavior": "Conexion, espera, cancelacion y recuperacion con red cambiante.",
+        "security": "WiFi protegida, sin admin por defecto anadido ni Base64 tratado como cifrado.",
+        "hardware": "Alta AP completa con rollback documentado."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "pairing.audio",
+      "name": "Provisioning por audio",
+      "evidence_references": [
+        "E016",
+        "E017",
+        "E018"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "no_audio_emitted",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "no_audio_emitted",
+        "not_tested",
+        "static_only"
+      ],
+      "acceptance": {
+        "api_wire": "Frecuencias y payload verificados.",
+        "behavior": "Volumen bajo, espera, fallo y retry real.",
+        "security": "No registrar SSID, UID completo ni password.",
+        "hardware": "Emision y alta con dispositivo autorizado."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "pairing.bind",
+      "name": "Bind manual y posterior al provisioning",
+      "evidence_references": [
+        "E009",
+        "E010",
+        "E013"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "local_validation_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "local_validation_only",
+        "not_tested",
+        "static_only"
+      ],
+      "acceptance": {
+        "api_wire": "Bind, respuesta y codigos 100152003/100152005.",
+        "behavior": "Timeout 35 s, retry solo permitido y duplicados.",
+        "security": "AuthCode y credenciales dinamicas protegidas.",
+        "hardware": "Bind real y reconciliacion tras respuesta ambigua."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "invitations.accept",
+      "name": "Aceptar invitacion",
+      "evidence_references": [
+        "E008",
+        "E010"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "parser_local_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "synthetic_links_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "not_tested",
+        "parser_local_only",
+        "synthetic_links_only"
+      ],
+      "acceptance": {
+        "api_wire": "noLoginShareInvitationAccept y respuesta.",
+        "behavior": "Valida, usada, caducada, duplicada y reaceptada.",
+        "security": "Codigo tratado como secreto y OEM validado exactamente.",
+        "hardware": "Invitacion cruzada entre cuentas autorizadas."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "invitations.manage",
+      "name": "Gestion de usuarios e invitaciones",
+      "evidence_references": [
+        "E055",
+        "analysis/apk/ui-inventory.json#share_manage"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "not_implemented",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "local_roles_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "local_roles_only",
+        "not_implemented",
+        "not_tested"
+      ],
+      "acceptance": {
+        "api_wire": "Listar, crear, editar y borrar con respuestas reales.",
+        "behavior": "Vacio, refresco, errores y limite 100.",
+        "security": "Solo owner autorizado y sin enlaces en logs.",
+        "hardware": "Dos cuentas y cambios de permisos efectivos."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "invitations.issue",
+      "name": "Emitir QR y enlace de invitacion",
+      "evidence_references": [
+        "E008",
+        "E011",
+        "analysis/apk/ui-inventory.json#share_device"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "not_implemented",
+          "details": []
+        },
+        "behavior": {
+          "level": "synthetic_link_only",
+          "details": []
+        },
+        "security": {
+          "level": "example_invalid_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "example_invalid_only",
+        "not_implemented",
+        "not_tested",
+        "synthetic_link_only"
+      ],
+      "acceptance": {
+        "api_wire": "Campos InviteCode, OwnerId, OemId, AppVersion, DeviceId, From y AppId.",
+        "behavior": "QR escaneable, copia, compartir y caducidad.",
+        "security": "QR y enlace sin exposicion en logs o analytics.",
+        "hardware": "Generar y aceptar en otra instalacion real."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "invitations.permissions",
+      "name": "Permisos de invitacion y rol shared",
+      "evidence_references": [
+        "E019",
+        "E055"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "local_roles_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "local_roles_only",
+        "not_tested",
+        "static_only"
+      ],
+      "acceptance": {
+        "api_wire": "Powers y permisos preview/playback/alarm/unlock/F1/callGuard.",
+        "behavior": "Visibilidad owner/shared y rechazo efectivo por accion.",
+        "security": "Autorizacion en proveedor, no solo boton oculto.",
+        "hardware": "Matriz de permisos con cuenta shared real."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "shadow.get",
+      "name": "Shadow individual",
+      "evidence_references": [
+        "E041",
+        "P-SHADOW-STATUS"
+      ],
+      "current_implementation": "implemented_contract",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "implemented_contract"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "contract_tested",
+          "details": []
+        },
+        "behavior": {
+          "level": "offline_only",
+          "details": []
+        },
+        "security": {
+          "level": "strict_tls_offline",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "contract_tested",
+        "not_tested",
+        "offline_only",
+        "strict_tls_offline"
+      ],
+      "acceptance": {
+        "api_wire": "POST, token y respuestas reales por version.",
+        "behavior": "Campos nulos y desconocidos sin semantica inventada.",
+        "security": "Token protegido y datos limitados por cuenta.",
+        "hardware": "Leer campos de dispositivo real y comparar cambios."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "shadow.multi",
+      "name": "Shadow multiple",
+      "evidence_references": [
+        "E041",
+        "P-SHADOW-MULTI"
+      ],
+      "current_implementation": "implemented_contract",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "implemented_contract"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "contract_tested",
+          "details": []
+        },
+        "behavior": {
+          "level": "offline_only",
+          "details": []
+        },
+        "security": {
+          "level": "strict_tls_offline",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "contract_tested",
+        "not_tested",
+        "offline_only",
+        "strict_tls_offline"
+      ],
+      "acceptance": {
+        "api_wire": "Array request y response real.",
+        "behavior": "Ausencias, duplicados y lotes sin rellenar estados.",
+        "security": "IDs limitados a dispositivos autorizados.",
+        "hardware": "Consulta con mas de un dispositivo real."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "shadow.subscribe",
+      "name": "Suscripcion Shadow HTTP",
+      "evidence_references": [
+        "E041",
+        "P-SHADOW-SUB"
+      ],
+      "current_implementation": "implemented_contract",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "implemented_contract"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "contract_tested",
+          "details": []
+        },
+        "behavior": {
+          "level": "ack_offline_only",
+          "details": []
+        },
+        "security": {
+          "level": "strict_tls_offline",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "ack_offline_only",
+        "contract_tested",
+        "not_tested",
+        "strict_tls_offline"
+      ],
+      "acceptance": {
+        "api_wire": "Body y ack reales code 0.",
+        "behavior": "Determinar canal posterior, duplicados y caducidad.",
+        "security": "Suscripcion solo a recursos permitidos.",
+        "hardware": "Cambio real que pruebe o refute entrega posterior."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "shadow.unsubscribe",
+      "name": "Desuscripcion Shadow HTTP",
+      "evidence_references": [
+        "E041",
+        "P-SHADOW-UNSUB"
+      ],
+      "current_implementation": "implemented_contract",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "implemented_contract"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "contract_tested",
+          "details": []
+        },
+        "behavior": {
+          "level": "ack_offline_only",
+          "details": []
+        },
+        "security": {
+          "level": "strict_tls_offline",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "ack_offline_only",
+        "contract_tested",
+        "not_tested",
+        "strict_tls_offline"
+      ],
+      "acceptance": {
+        "api_wire": "doType 1 y 2 y ack reales.",
+        "behavior": "Efectos diferenciados de logout y unbind.",
+        "security": "No revocacion ni desvinculacion falsa.",
+        "hardware": "Observar efecto real sin asumir efectos fisicos."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "events.alarm_parser",
+      "name": "Parser offline de alarmas FCM",
+      "evidence_references": [
+        "E056",
+        "E057",
+        "P-ALARM-FCM"
+      ],
+      "current_implementation": "implemented_offline",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "implemented_offline"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "offline_fixtures",
+          "details": []
+        },
+        "behavior": {
+          "level": "parser_tested",
+          "details": []
+        },
+        "security": {
+          "level": "synthetic_fixtures",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_applicable_parser",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_applicable_parser",
+        "offline_fixtures",
+        "parser_tested",
+        "synthetic_fixtures"
+      ],
+      "acceptance": {
+        "api_wire": "Campos y tipos 2, 19 y 20 con fixtures reales sanitizados.",
+        "behavior": "Invalidos, desconocidos y fecha sin zona inventada.",
+        "security": "Payload sensible redactado.",
+        "hardware": "No aplica al parser puro; la entrega se prueba aparte."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "events.push_registration",
+      "name": "Registro y rotacion de token push",
+      "evidence_references": [
+        "E048",
+        "E056",
+        "E057"
+      ],
+      "current_implementation": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "static_evidence_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "not_demonstrated",
+          "details": []
+        },
+        "security": {
+          "level": "not_reviewed_runtime",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_demonstrated",
+        "not_reviewed_runtime",
+        "not_tested",
+        "static_only"
+      ],
+      "acceptance": {
+        "api_wire": "Rutas push, HMAC y respuesta reales.",
+        "behavior": "Nuevo token, igual token, fallo y reintento seguro.",
+        "security": "Token FCM cifrado y fuera de logs.",
+        "hardware": "Instalacion Android que reciba una llamada autorizada."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "events.realtime",
+      "name": "Eventos realtime y resincronizacion",
+      "evidence_references": [
+        "E037",
+        "E038",
+        "E039",
+        "E040",
+        "E063",
+        "E073",
+        "U-REALTIME"
+      ],
+      "current_implementation": "unsupported",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "unsupported"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "mqtt_static_disabled",
+          "details": []
+        },
+        "behavior": {
+          "level": "unsupported_current",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "mqtt_static_disabled",
+        "not_tested",
+        "strict_design_only",
+        "unsupported_current"
+      ],
+      "acceptance": {
+        "api_wire": "Canal activo, topics tdk/client_api, QoS 1, heartbeat 300 s y payloads observados.",
+        "behavior": "Duplicados, huecos, replay, cursor, resync y reconexion 0 a 10 s cuando aplique.",
+        "security": "TLS, OAuth como password si stock lo confirma y autorizacion por topic o canal.",
+        "hardware": "Eventos reales con reconexion y perdida controlada."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "events.history",
+      "name": "Historial y paginacion de alarmas",
+      "evidence_references": [
+        "E051",
+        "E052"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "local_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "local_only",
+        "not_tested",
+        "static_only"
+      ],
+      "acceptance": {
+        "api_wire": "UserAlarm/DeviceAlarm y XML completo.",
+        "behavior": "Paginas de 15, refresh, load more, 502 y errores.",
+        "security": "Historial limitado por permiso y sin payload en logs.",
+        "hardware": "Cuenta con eventos reales y varias paginas."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "events.photo",
+      "name": "Foto asociada a evento",
+      "evidence_references": [
+        "E051",
+        "E052",
+        "analysis/apk/ui-inventory.json#tab_events"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "not_implemented",
+          "details": []
+        },
+        "behavior": {
+          "level": "synthetic_markers_only",
+          "details": []
+        },
+        "security": {
+          "level": "no_real_media",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "no_real_media",
+        "not_implemented",
+        "not_tested",
+        "synthetic_markers_only"
+      ],
+      "acceptance": {
+        "api_wire": "Referencia y descarga de foto reales.",
+        "behavior": "Ausencia, caducidad, error y aviso de firmware.",
+        "security": "Acceso autorizado y cache sin URIs amplias.",
+        "hardware": "Evento real con imagen verificable."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "events.delete",
+      "name": "Borrado de eventos",
+      "evidence_references": [
+        "E051",
+        "analysis/apk/ui-inventory.json#tab_events"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "not_implemented",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "local_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "local_only",
+        "not_implemented",
+        "not_tested"
+      ],
+      "acceptance": {
+        "api_wire": "Borrado individual y total real.",
+        "behavior": "Seleccion, confirmacion, error y refresco.",
+        "security": "Autorizacion server side y sin borrado optimista falso.",
+        "hardware": "Borrado en cuenta desechable y comprobacion posterior."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "events.filters",
+      "name": "Filtros All, RINGS y MOTION",
+      "evidence_references": [
+        "E051",
+        "analysis/apk/ui-inventory.json#tab_events"
+      ],
+      "current_implementation": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "optional",
+          "status": "static_evidence_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "hidden_in_reference",
+          "details": []
+        },
+        "security": {
+          "level": "not_reviewed_runtime",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "hidden_in_reference",
+        "not_reviewed_runtime",
+        "not_tested",
+        "static_only"
+      ],
+      "acceptance": {
+        "api_wire": "Parametros de filtro si se habilitan.",
+        "behavior": "Visibilidad actual y filtrado correcto por tipo.",
+        "security": "No revelar eventos excluidos por permiso.",
+        "hardware": "Datos reales de cada tipo si el filtro se expone."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "media.preview_single",
+      "name": "Preview P2P de un panel",
+      "evidence_references": [
+        "E011",
+        "E021",
+        "E042",
+        "U-MEDIA"
+      ],
+      "current_implementation": "unsupported",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "unsupported"
+        },
+        "mqtt": {
+          "support": "unknown",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "native_static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "unsupported_current",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "native_static_only",
+        "not_tested",
+        "strict_design_only",
+        "unsupported_current"
+      ],
+      "acceptance": {
+        "api_wire": "Tunel, negociacion y media FOSS verificados.",
+        "behavior": "Connecting, playing, buffering, stopped, offline y cierre.",
+        "security": "Credenciales y claves fuera de URL, logs y UI.",
+        "hardware": "Video real por modelo y firmware sin binario original."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "media.preview_multi",
+      "name": "Preview de cuatro paneles",
+      "evidence_references": [
+        "E021",
+        "E023",
+        "analysis/apk/ui-inventory.json#preview"
+      ],
+      "current_implementation": "unsupported",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "unsupported"
+        },
+        "mqtt": {
+          "support": "unknown",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "not_implemented",
+          "details": []
+        },
+        "behavior": {
+          "level": "unsupported_current",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_implemented",
+        "not_tested",
+        "strict_design_only",
+        "unsupported_current"
+      ],
+      "acceptance": {
+        "api_wire": "Canales y sesiones simultaneas reales.",
+        "behavior": "Foco, uno/cuatro paneles, rotacion y recursos.",
+        "security": "Sesiones aisladas sin secretos compartidos.",
+        "hardware": "Cuatro flujos o maximo real soportado y rendimiento medido."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "media.stream_controls",
+      "name": "Canal, calidad, timeout y reconexion",
+      "evidence_references": [
+        "E021",
+        "E024",
+        "E026"
+      ],
+      "current_implementation": "unsupported",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "unsupported"
+        },
+        "mqtt": {
+          "support": "unknown",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "unsupported_current",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_tested",
+        "static_only",
+        "strict_design_only",
+        "unsupported_current"
+      ],
+      "acceptance": {
+        "api_wire": "Parametros de canal y stream reales.",
+        "behavior": "Alta/baja/audio+foto, 90 s y hasta tres resumes.",
+        "security": "Controles limitados por permiso.",
+        "hardware": "Cambios y reconexiones observados con dispositivo."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "media.listen",
+      "name": "Escucha de audio",
+      "evidence_references": [
+        "E023"
+      ],
+      "current_implementation": "unsupported",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "unsupported"
+        },
+        "mqtt": {
+          "support": "unknown",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "native_static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "unsupported_current",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "native_static_only",
+        "not_tested",
+        "strict_design_only",
+        "unsupported_current"
+      ],
+      "acceptance": {
+        "api_wire": "Inicio y fin de listening reales.",
+        "behavior": "Estado, espera de player, error y cierre.",
+        "security": "Sin captura o reproduccion tras cancelar.",
+        "hardware": "Audio entrante y latencia con dispositivo."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "media.talk",
+      "name": "Habla bidireccional",
+      "evidence_references": [
+        "E011",
+        "E023"
+      ],
+      "current_implementation": "unsupported",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "unsupported"
+        },
+        "mqtt": {
+          "support": "unknown",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "native_static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "unsupported_current",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "native_static_only",
+        "not_tested",
+        "strict_design_only",
+        "unsupported_current"
+      ],
+      "acceptance": {
+        "api_wire": "Talk URL y canal sustituidos por implementacion verificada.",
+        "behavior": "Microfono, half/full duplex, interrupcion y cierre.",
+        "security": "Permiso y datos de microfono limitados a sesion activa.",
+        "hardware": "Audio en ambos sentidos con dispositivo."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "media.snapshot",
+      "name": "Captura de fotograma",
+      "evidence_references": [
+        "E021",
+        "analysis/apk/ui-inventory.json#preview"
+      ],
+      "current_implementation": "unsupported",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "unsupported"
+        },
+        "mqtt": {
+          "support": "unknown",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "not_implemented",
+          "details": []
+        },
+        "behavior": {
+          "level": "metadata_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "no_real_media",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "metadata_demo_only",
+        "no_real_media",
+        "not_implemented",
+        "not_tested"
+      ],
+      "acceptance": {
+        "api_wire": "Captura del decoder real.",
+        "behavior": "Archivo, galeria, error y confirmacion.",
+        "security": "Destino y URI minimos, sin fotos falsas.",
+        "hardware": "Imagen real comparada con el stream."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "media.record",
+      "name": "Grabacion de video",
+      "evidence_references": [
+        "E021",
+        "analysis/apk/ui-inventory.json#preview"
+      ],
+      "current_implementation": "unsupported",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "unsupported"
+        },
+        "mqtt": {
+          "support": "unknown",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "not_implemented",
+          "details": []
+        },
+        "behavior": {
+          "level": "metadata_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "no_real_media",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "metadata_demo_only",
+        "no_real_media",
+        "not_implemented",
+        "not_tested"
+      ],
+      "acceptance": {
+        "api_wire": "Grabacion y finalizacion reales.",
+        "behavior": "Tiempo, stop, interrupcion, error y archivo.",
+        "security": "Almacenamiento acotado y sin contenido sintetico presentado como real.",
+        "hardware": "Reproducir archivo grabado de dispositivo real."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "media.local_gallery",
+      "name": "Galeria local de fotos y videos",
+      "evidence_references": [
+        "E062",
+        "analysis/apk/ui-inventory.json#tab_gallery"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "optional",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "local_metadata_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "no_real_media",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "local_metadata_only",
+        "no_real_media",
+        "not_tested"
+      ],
+      "acceptance": {
+        "api_wire": "Archivos reales y metadatos coherentes.",
+        "behavior": "Grid, fechas, pager, video, seleccion y borrado.",
+        "security": "Permisos minimos y URIs restringidas.",
+        "hardware": "Prueba Android con fotos y videos de fixture reales."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "media.local_share_save",
+      "name": "Compartir y guardar media local",
+      "evidence_references": [
+        "E062",
+        "E075"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "optional",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "local_partial",
+          "details": []
+        },
+        "behavior": {
+          "level": "share_export_unsupported",
+          "details": []
+        },
+        "security": {
+          "level": "fileprovider_review_required",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "fileprovider_review_required",
+        "local_partial",
+        "not_tested",
+        "share_export_unsupported"
+      ],
+      "acceptance": {
+        "api_wire": "SEND/SEND_MULTIPLE y almacenamiento real.",
+        "behavior": "Guardar, compartir, ausencia de handler y errores.",
+        "security": "URI grants minimos y sin root-path amplio injustificado.",
+        "hardware": "Compartir archivos reales con otra app de prueba."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "actions.unlock",
+      "name": "Apertura lock1",
+      "evidence_references": [
+        "E019",
+        "E023",
+        "E025",
+        "U-ACTIONS"
+      ],
+      "current_implementation": "unsupported",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "unsupported"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "unsupported_current",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_tested",
+        "static_only",
+        "strict_design_only",
+        "unsupported_current"
+      ],
+      "acceptance": {
+        "api_wire": "Comando y respuesta reales.",
+        "behavior": "Password/biometria local, timeout 15 s y reconciliacion.",
+        "security": "Autorizacion y ausencia de retry ambiguo.",
+        "hardware": "Comando, ack y efecto fisico diferenciados en cerradura autorizada."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "actions.f1",
+      "name": "Accion F1",
+      "evidence_references": [
+        "E019",
+        "E023",
+        "U-ACTIONS"
+      ],
+      "current_implementation": "unsupported",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "unsupported"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "unsupported_current",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_tested",
+        "static_only",
+        "strict_design_only",
+        "unsupported_current"
+      ],
+      "acceptance": {
+        "api_wire": "Comando F1 y parametros reales.",
+        "behavior": "Pulso, duracion, ack, timeout y cancelacion.",
+        "security": "Permiso F1 y no repeticion ambigua.",
+        "hardware": "Rele F1 observado con duracion y efecto."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "actions.call_guard",
+      "name": "Llamada a conserjeria",
+      "evidence_references": [
+        "E019",
+        "E054",
+        "U-ACTIONS"
+      ],
+      "current_implementation": "unsupported",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "unsupported"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "unsupported_current",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_tested",
+        "static_only",
+        "strict_design_only",
+        "unsupported_current"
+      ],
+      "acceptance": {
+        "api_wire": "Comando callGuard real.",
+        "behavior": "Envio, respuesta, ocupado y cierre.",
+        "security": "Permiso callGuard verificado.",
+        "hardware": "Llamada real a destino de prueba autorizado."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "actions.call_accept",
+      "name": "Aceptar llamada entrante",
+      "evidence_references": [
+        "E057",
+        "E058",
+        "E059",
+        "U-ACTIONS"
+      ],
+      "current_implementation": "unsupported",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "unsupported"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "not_tested",
+        "static_only",
+        "strict_design_only"
+      ],
+      "acceptance": {
+        "api_wire": "Aceptacion y correlacion real.",
+        "behavior": "Abrir media, duplicados y llamada ya finalizada.",
+        "security": "Solo dispositivo y llamada autorizados.",
+        "hardware": "Llamada real aceptada con audio/video o error explicito."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "actions.call_reject",
+      "name": "Rechazar llamada entrante",
+      "evidence_references": [
+        "E057",
+        "E058",
+        "E059",
+        "U-ACTIONS"
+      ],
+      "current_implementation": "unsupported",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "unsupported"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "not_tested",
+        "static_only",
+        "strict_design_only"
+      ],
+      "acceptance": {
+        "api_wire": "Rechazo y respuesta reales.",
+        "behavior": "Foreground/background y cierre sin llamada zombie.",
+        "security": "No cancelar otra llamada por ID incorrecto.",
+        "hardware": "Rechazo real y estado en placa y otros terminales."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "calls.lifecycle",
+      "name": "Ciclo de llamada, timeout y atendida en otro terminal",
+      "evidence_references": [
+        "E056",
+        "E057",
+        "E059"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "unknown",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "not_tested",
+        "static_only",
+        "strict_design_only"
+      ],
+      "acceptance": {
+        "api_wire": "Eventos 19 y 20 correlacionados.",
+        "behavior": "Auto-rechazo 30 s, answered elsewhere y background.",
+        "security": "IDs y notificaciones sin datos sensibles.",
+        "hardware": "Dos terminales y placa real en escenarios autorizados."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "config.rename",
+      "name": "Editar nombre de dispositivo",
+      "evidence_references": [
+        "analysis/apk/ui-inventory.json#device_info"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "not_implemented",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "local_validation_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "local_validation_only",
+        "not_implemented",
+        "not_tested"
+      ],
+      "acceptance": {
+        "api_wire": "Modificacion local/remota real.",
+        "behavior": "Read only, edicion, duplicado, exito y fallo.",
+        "security": "UID inmutable y permiso de edicion.",
+        "hardware": "Cambio persistido y sincronizado en cuenta real."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "config.passwords",
+      "name": "Modificar contraseñas",
+      "evidence_references": [
+        "E031",
+        "E048",
+        "analysis/apk/ui-inventory.json#password_modify"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_validation_only",
+          "details": []
+        },
+        "security": {
+          "level": "not_reviewed_runtime",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_validation_only",
+        "not_reviewed_runtime",
+        "not_tested",
+        "static_only"
+      ],
+      "acceptance": {
+        "api_wire": "Modos device/admin/unlock e init.",
+        "behavior": "Antigua, nueva, mismatch, rotacion y errores.",
+        "security": "Hash requerido por capability y secretos nunca persistidos en claro.",
+        "hardware": "Cambio y posterior autenticacion con dispositivo autorizado."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "config.unlock_security",
+      "name": "Quick unlock y biometria",
+      "evidence_references": [
+        "E019",
+        "analysis/apk/ui-inventory.json#unlock_setting"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "local_settings_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "biometric_unavailable_demo",
+          "details": []
+        },
+        "security": {
+          "level": "local_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "biometric_unavailable_demo",
+        "local_only",
+        "local_settings_only",
+        "not_tested"
+      ],
+      "acceptance": {
+        "api_wire": "Preferencias y BiometricPrompt real.",
+        "behavior": "Quick on/off, bio on/off, unavailable, warning y fallback.",
+        "security": "Biometria solo autoriza localmente y no sustituye permiso cloud.",
+        "hardware": "Dispositivo Android con y sin biometria; apertura Wibox aparte."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "config.alarms",
+      "name": "Configurar llamada y movimiento",
+      "evidence_references": [
+        "E051",
+        "E055",
+        "analysis/apk/ui-inventory.json#config"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "local_roles_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "local_roles_only",
+        "not_tested",
+        "static_only"
+      ],
+      "acceptance": {
+        "api_wire": "Lectura y escritura de alarmas reales.",
+        "behavior": "On/off, carga, error y shared oculto.",
+        "security": "Solo owner y sincronizacion confirmada.",
+        "hardware": "Cambiar ajustes y provocar evento autorizado."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "config.wifi",
+      "name": "Cambiar WiFi del dispositivo",
+      "evidence_references": [
+        "E014",
+        "E015",
+        "analysis/apk/ui-inventory.json#router"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "no_real_wifi",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "no_real_wifi",
+        "not_tested",
+        "static_only"
+      ],
+      "acceptance": {
+        "api_wire": "Cambio y respuesta reales.",
+        "behavior": "Modify mode, cuenta atras, error y reconexion.",
+        "security": "Password no guardada por defecto en el nuevo diseno.",
+        "hardware": "Cambio WiFi y retorno de gestion con dispositivo autorizado."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "config.time_sync",
+      "name": "Sincronizar hora",
+      "evidence_references": [
+        "E055",
+        "analysis/apk/ui-inventory.json#config"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "not_implemented",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "local_roles_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "local_roles_only",
+        "not_implemented",
+        "not_tested"
+      ],
+      "acceptance": {
+        "api_wire": "Comando y respuesta reales con zona horaria.",
+        "behavior": "Exito, error y shared sin acceso.",
+        "security": "Solo owner y sin comando generico reutilizado.",
+        "hardware": "Hora y zona comprobadas en dispositivo."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "config.playback_intercom",
+      "name": "FPS, calidad, intercom, F1 y lock number",
+      "evidence_references": [
+        "analysis/apk/ui-inventory.json#config",
+        "E021",
+        "E023"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "not_implemented",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "local_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "local_only",
+        "not_implemented",
+        "not_tested"
+      ],
+      "acceptance": {
+        "api_wire": "Lectura y escritura de cada ajuste.",
+        "behavior": "FPS, modos de audio, F1 y locks efectivos por modelo.",
+        "security": "Capacidades por dispositivo y cambios autorizados.",
+        "hardware": "Verificar efecto de cada ajuste en el modelo compatible."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "config.delete_device",
+      "name": "Borrar o desvincular dispositivo",
+      "evidence_references": [
+        "E041",
+        "E055",
+        "analysis/apk/ui-inventory.json#config"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "not_implemented",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "local_roles_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "local_roles_only",
+        "not_implemented",
+        "not_tested"
+      ],
+      "acceptance": {
+        "api_wire": "Unbind y efectos remotos reales.",
+        "behavior": "Confirmacion, error, cache, invitaciones y unsub.",
+        "security": "Solo owner, sin borrado optimista ni revocacion falsa.",
+        "hardware": "Desvincular y comprobar acceso anterior y posterior."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "firmware.check",
+      "name": "Consultar firmware actual y disponible",
+      "evidence_references": [
+        "analysis/apk/ui-inventory.json#upgrade"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "not_implemented",
+          "details": []
+        },
+        "behavior": {
+          "level": "up_to_date_stub",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_implemented",
+        "not_tested",
+        "strict_design_only",
+        "up_to_date_stub"
+      ],
+      "acceptance": {
+        "api_wire": "Consulta real y versiones tipadas.",
+        "behavior": "Query, up to date, available y error.",
+        "security": "Respuesta autentica y sin instalar por consulta.",
+        "hardware": "Leer version del dispositivo sin actualizarlo."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "firmware.apply",
+      "name": "Aplicar actualizacion de firmware",
+      "evidence_references": [
+        "analysis/apk/ui-inventory.json#upgrade"
+      ],
+      "current_implementation": "unsupported",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "unsupported"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "not_implemented",
+          "details": []
+        },
+        "behavior": {
+          "level": "unsupported_current",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_implemented",
+        "not_tested",
+        "strict_design_only",
+        "unsupported_current"
+      ],
+      "acceptance": {
+        "api_wire": "Paquete, origen, firma y progreso reales.",
+        "behavior": "Confirmacion, progreso, fallo y estado posterior.",
+        "security": "Autenticidad y rollback documentado antes de cualquier prueba.",
+        "hardware": "Solo prueba expresamente autorizada con recuperacion disponible."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "app.update_check",
+      "name": "Consultar actualizacion de la app",
+      "evidence_references": [
+        "E049",
+        "E050"
+      ],
+      "current_implementation": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "optional",
+          "status": "static_evidence_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "request_response_observed",
+          "details": []
+        },
+        "behavior": {
+          "level": "dynamic_success_contract_observed",
+          "details": []
+        },
+        "security": {
+          "level": "strict_tls_required_not_original",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "dynamic_success_contract_observed",
+        "not_tested",
+        "request_response_observed",
+        "strict_tls_required_not_original"
+      ],
+      "acceptance": {
+        "api_wire": "GET, query, Accept-Language y respuesta real.",
+        "behavior": "Cache, intervalo, error y aviso sin autoapply.",
+        "security": "TLS estricto aunque el APK use trust-all.",
+        "hardware": "Emulador o Android real sin instalar actualizacion en la prueba de consulta."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "app.privacy_terms",
+      "name": "Privacidad y terminos locales",
+      "evidence_references": [
+        "E064",
+        "analysis/apk/ui-inventory.json#about"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "required",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "required",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "local_content",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_only",
+          "details": []
+        },
+        "security": {
+          "level": "no_remote_policy",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_applicable_local",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_content",
+        "local_only",
+        "no_remote_policy",
+        "not_applicable_local"
+      ],
+      "acceptance": {
+        "api_wire": "Recurso local por idioma, sin URL HTTP legacy.",
+        "behavior": "Dialogo accesible y estado de aceptacion si se exige.",
+        "security": "Contenido revisado y sin trackers.",
+        "hardware": "No aplica al contenido local; probar Android para accesibilidad."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "app.deep_link",
+      "name": "Deep link y relay push",
+      "evidence_references": [
+        "E006",
+        "E057",
+        "analysis/apk/ui-inventory.json#loading",
+        "analysis/apk/ui-inventory.json#cache"
+      ],
+      "current_implementation": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "optional",
+          "status": "static_evidence_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "manifest_static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "not_demonstrated",
+          "details": []
+        },
+        "security": {
+          "level": "not_reviewed_runtime",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "manifest_static_only",
+        "not_demonstrated",
+        "not_reviewed_runtime",
+        "not_tested"
+      ],
+      "acceptance": {
+        "api_wire": "Intent y extras reales sin inventar parametros wibox://.",
+        "behavior": "Cache relay, Loading, llamada, preview y back stack.",
+        "security": "Validar origen, IDs y ausencia de secretos en Intent.",
+        "hardware": "Notificacion real en foreground/background/locked."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "app.diagnostics",
+      "name": "Diagnostico y debug",
+      "evidence_references": [
+        "E061",
+        "E067"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "optional",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "local_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "token_not_displayed_demo",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "local_only",
+        "not_tested",
+        "token_not_displayed_demo"
+      ],
+      "acceptance": {
+        "api_wire": "Diagnostico tipado y acotado por build.",
+        "behavior": "Toggle, forwarding, conexion, servicio y logs sin efectos ocultos.",
+        "security": "Nunca mostrar token ni credenciales; exportacion saneada.",
+        "hardware": "Solo si se habilita contra una cuenta desechable."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "app.sound_vibration",
+      "name": "Sonido y vibracion",
+      "evidence_references": [
+        "E058",
+        "E060"
+      ],
+      "current_implementation": "local_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "local_only"
+        },
+        "mqtt": {
+          "support": "required",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "required",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "local_preferences",
+          "details": []
+        },
+        "behavior": {
+          "level": "local_demo_only",
+          "details": []
+        },
+        "security": {
+          "level": "local_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "local_demo_only",
+        "local_only",
+        "local_preferences",
+        "not_tested"
+      ],
+      "acceptance": {
+        "api_wire": "Preferencias reales y canales Android.",
+        "behavior": "On/off persistentes y respeto al modo del sistema.",
+        "security": "Sin vibracion o tono despues de cancelar.",
+        "hardware": "Dispositivo Android con llamada de prueba."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "security.persistence",
+      "name": "Persistencia segura y aislamiento de secretos",
+      "evidence_references": [
+        "E036",
+        "E043",
+        "E044",
+        "E045",
+        "E046",
+        "E047",
+        "core/cloud/src/main/kotlin/dev/nacho/wibox/core/cloud/CloudModels.kt"
+      ],
+      "current_implementation": "design_required",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "design_required"
+        },
+        "mqtt": {
+          "support": "required",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "required",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "token_store_abstraction",
+          "details": []
+        },
+        "behavior": {
+          "level": "android_store_not_verified",
+          "details": []
+        },
+        "security": {
+          "level": "design_required",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "android_store_not_verified",
+        "design_required",
+        "not_tested",
+        "token_store_abstraction"
+      ],
+      "acceptance": {
+        "api_wire": "Almacenes separados y versionados por cuenta/proveedor.",
+        "behavior": "Guardar, restaurar, migrar, borrar y recuperar corrupcion sin demo fallback.",
+        "security": "Keystore, cifrado, atomicidad, backup y logs sin secretos verificados.",
+        "hardware": "Reinicio y restauracion en Android real o emulador."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    },
+    {
+      "id": "events.notifications",
+      "name": "Notificaciones de llamada y movimiento",
+      "evidence_references": [
+        "E056",
+        "E057",
+        "E058",
+        "E059"
+      ],
+      "current_implementation": "static_evidence_only",
+      "providers": {
+        "stock-qvcloud": {
+          "support": "required",
+          "status": "static_evidence_only"
+        },
+        "mqtt": {
+          "support": "optional",
+          "status": "not_implemented"
+        },
+        "self-hosted": {
+          "support": "optional",
+          "status": "not_implemented"
+        }
+      },
+      "compatibility_now": {
+        "api_wire": {
+          "level": "static_only",
+          "details": []
+        },
+        "behavior": {
+          "level": "not_demonstrated",
+          "details": []
+        },
+        "security": {
+          "level": "strict_design_only",
+          "details": []
+        },
+        "hardware": {
+          "level": "not_tested",
+          "details": []
+        }
+      },
+      "observed_evidence_levels": [
+        "not_demonstrated",
+        "not_tested",
+        "static_only",
+        "strict_design_only"
+      ],
+      "acceptance": {
+        "api_wire": "FCM y acciones de notificacion reales.",
+        "behavior": "Foreground, background, locked, full-screen, aceptar y rechazar.",
+        "security": "Permisos Android y contenido minimo en pantalla bloqueada.",
+        "hardware": "Llamada y movimiento reales en instalacion autorizada."
+      },
+      "final_verification": "PENDING_FINAL_IMPLEMENTATION_AUDIT"
+    }
+  ],
+  "screens": [
+    {
+      "id": "loading",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.main.view.LoadingActivity",
+      "title": {
+        "en": "WI-BOX",
+        "es": "WI-BOX"
+      },
+      "layout": "analysis/apk/resources/layout/activity_loading.xml",
+      "states": [
+        {
+          "id": "splash",
+          "description": "Fondo start a pantalla completa"
+        },
+        {
+          "id": "storage_permission",
+          "description": "Diálogo de almacenamiento y ajustes"
+        },
+        {
+          "id": "phone_permission",
+          "description": "Resultado READ_PHONE_STATE no bloquea el arranque"
+        },
+        {
+          "id": "startup_wait",
+          "description": "Espera de login o timeout de 10 s"
+        },
+        {
+          "id": "push_redirect",
+          "description": "Redirige evento 19 a llamada o preview"
+        }
+      ],
+      "navigation": [
+        "main_tab",
+        "push_call",
+        "preview"
+      ],
+      "reachability": "entry",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#loading",
+        "layout": "analysis/apk/resources/layout/activity_loading.xml"
+      },
+      "resources": [
+        "drawable/start"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "cache",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.push.view.CacheActivity",
+      "title": {
+        "en": "Push relay",
+        "es": "Relay push"
+      },
+      "layout": null,
+      "states": [
+        {
+          "id": "relay",
+          "description": "Copia extras a LoadingActivity"
+        },
+        {
+          "id": "finish",
+          "description": "Finaliza sin UI propia"
+        }
+      ],
+      "navigation": [
+        "loading"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#cache",
+        "layout": null
+      },
+      "resources": [],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "main_tab",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.main.view.MainTabActivity",
+      "title": {
+        "en": "Main tabs",
+        "es": "Pestañas principales"
+      },
+      "layout": "analysis/apk/resources/layout/activity_main_tab.xml",
+      "states": [
+        {
+          "id": "devices_selected",
+          "description": "Pestaña Dispositivo activa por defecto"
+        },
+        {
+          "id": "events_selected",
+          "description": "Pestaña Eventos"
+        },
+        {
+          "id": "gallery_selected",
+          "description": "Pestaña Galería"
+        },
+        {
+          "id": "settings_selected",
+          "description": "Pestaña Ajustes"
+        },
+        {
+          "id": "terms",
+          "description": "Diálogo de términos no cancelable"
+        },
+        {
+          "id": "android_hint",
+          "description": "Aviso Android 10 con no mostrar más"
+        },
+        {
+          "id": "edit_mode",
+          "description": "Barra inferior oculta en edición"
+        }
+      ],
+      "navigation": [
+        "tab_devices",
+        "tab_events",
+        "tab_gallery",
+        "tab_settings"
+      ],
+      "reachability": "root",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#main_tab",
+        "layout": "analysis/apk/resources/layout/activity_main_tab.xml"
+      },
+      "resources": [
+        "color/app_main_tab_bg",
+        "color/color_bottom_tab_text",
+        "color/color_bottom_tab_text_normal",
+        "color/main_ui_color_white",
+        "dimen/bottom_text_size",
+        "dimen/main_bottom_height",
+        "dimen/table_btn_paddingBottom",
+        "dimen/table_btn_paddingTop",
+        "drawable/main_btn_call_log",
+        "drawable/main_btn_device",
+        "drawable/main_btn_file",
+        "drawable/main_btn_setting",
+        "string/key_album",
+        "string/key_call_logs",
+        "string/key_device",
+        "string/key_setting"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "add_type",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.add.view.DANewTypeChooseActivity",
+      "title": {
+        "en": "Add Device",
+        "es": "Añadir Dispositivo"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_type_choose.xml",
+      "states": [
+        {
+          "id": "new_device",
+          "description": "Opción nuevo dispositivo"
+        },
+        {
+          "id": "online_device",
+          "description": "Opción añadir por red"
+        }
+      ],
+      "navigation": [
+        "product_intro",
+        "online_type"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#add_type",
+        "layout": "analysis/apk/resources/layout/activity_da_type_choose.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "string/key_device_new",
+        "string/key_device_online",
+        "style/option_button"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "preview",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.video.view.PreviewActivity",
+      "title": {
+        "en": "Preview",
+        "es": "Autoencendido"
+      },
+      "layout": "analysis/apk/resources/layout/activity_preview.xml",
+      "states": [
+        {
+          "id": "empty",
+          "description": "Hueco para añadir dispositivo"
+        },
+        {
+          "id": "connecting",
+          "description": "Conectando o buffering"
+        },
+        {
+          "id": "playing",
+          "description": "Reproduciendo con controles"
+        },
+        {
+          "id": "stopped",
+          "description": "Detenido"
+        },
+        {
+          "id": "refresh",
+          "description": "Error y botón reintentar"
+        },
+        {
+          "id": "password_error",
+          "description": "Credencial rechazada"
+        },
+        {
+          "id": "offline",
+          "description": "Dispositivo o canal offline"
+        },
+        {
+          "id": "one_window",
+          "description": "Un panel"
+        },
+        {
+          "id": "four_windows",
+          "description": "Cuatro paneles"
+        },
+        {
+          "id": "portrait",
+          "description": "Controles verticales"
+        },
+        {
+          "id": "landscape",
+          "description": "Controles horizontales"
+        },
+        {
+          "id": "listening",
+          "description": "Audio entrante activo"
+        },
+        {
+          "id": "talking",
+          "description": "Micrófono activo"
+        },
+        {
+          "id": "recording",
+          "description": "Grabación y tiempo visible"
+        },
+        {
+          "id": "snapshot",
+          "description": "Confirmación de captura"
+        },
+        {
+          "id": "unlock_progress",
+          "description": "Abriendo"
+        },
+        {
+          "id": "unlock_success",
+          "description": "Apertura correcta"
+        },
+        {
+          "id": "unlock_failure",
+          "description": "Fallo o timeout de apertura"
+        },
+        {
+          "id": "f1",
+          "description": "Estados F1 enviando/éxito/fallo"
+        },
+        {
+          "id": "timeout",
+          "description": "Fin del tiempo de preview"
+        },
+        {
+          "id": "no_permission",
+          "description": "Función no permitida"
+        }
+      ],
+      "navigation": [
+        "config",
+        "password_modify"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#preview",
+        "layout": "analysis/apk/resources/layout/activity_preview.xml"
+      },
+      "resources": [
+        "color/icon_black",
+        "color/main_ui_color_white",
+        "color/preview_item_bg",
+        "color/white",
+        "dimen/talk_record_text_size",
+        "drawable/bg_tip",
+        "drawable/btn_preview_mode_normal",
+        "drawable/icon_cut_line",
+        "drawable/icon_tip_recording",
+        "drawable/play_unlock_selector",
+        "drawable/selector_accept",
+        "drawable/selector_channel_switch",
+        "drawable/selector_preview_f1",
+        "drawable/selector_preview_talk",
+        "drawable/selector_refuse",
+        "drawable/vertical_preview_mute_selector",
+        "drawable/vertical_preview_play_selector",
+        "drawable/vertical_preview_video_recording_selector",
+        "drawable/vertical_screenshot_selector",
+        "style/PreviewMiddleButton",
+        "style/PreviewMiddleCutLine"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "online_type",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.add.view.DAOnlineTypeChooseActivity",
+      "title": {
+        "en": "Add Online",
+        "es": "Añadir por Red"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_online_type_choose.xml",
+      "states": [
+        {
+          "id": "scan_online",
+          "description": "Buscar dispositivos online"
+        },
+        {
+          "id": "manual",
+          "description": "Alta manual"
+        }
+      ],
+      "navigation": [
+        "online_devices",
+        "device_bind"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#online_type",
+        "layout": "analysis/apk/resources/layout/activity_da_online_type_choose.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "string/key_device_add_manual",
+        "string/key_online_device",
+        "style/option_button"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "product_choose",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.add.view.DANewProduceChooseActivity",
+      "title": {
+        "en": "Setup Wizard",
+        "es": "Setup Wizard"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_new_produce_choose.xml",
+      "states": [
+        {
+          "id": "doorbell",
+          "description": "Wi-Fi Doorbell tipo 7410"
+        },
+        {
+          "id": "monitor",
+          "description": "Wi-Fi Monitor tipo 9440"
+        }
+      ],
+      "navigation": [
+        "product_intro"
+      ],
+      "reachability": "legacy_no_inbound",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#product_choose",
+        "layout": "analysis/apk/resources/layout/activity_da_new_produce_choose.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/margin_large",
+        "dimen/margin_normal",
+        "dimen/standard_width",
+        "dimen/text_normal_size",
+        "drawable/device_type_7410",
+        "drawable/device_type_9440",
+        "drawable/publico_selector_bg_round",
+        "string/key_doorbell",
+        "string/key_monitor",
+        "string/key_product_choose_hint",
+        "style/CustomTextView",
+        "style/new_device_setup_title"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "product_intro",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.add.view.DANewProduceIntroduceActivity",
+      "title": {
+        "en": "Wi-Fi Setup",
+        "es": "Ajustes Wi-Fi"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_new_produce_introduce.xml",
+      "states": [
+        {
+          "id": "reset_instructions",
+          "description": "Instrucciones e imagen de reset"
+        },
+        {
+          "id": "location_permission",
+          "description": "Localización desactivada o denegada"
+        },
+        {
+          "id": "camera_permission",
+          "description": "Solicitud de cámara"
+        },
+        {
+          "id": "scan_error",
+          "description": "QR inválido"
+        },
+        {
+          "id": "wifi_switch_error",
+          "description": "Paso manual al AP"
+        }
+      ],
+      "navigation": [
+        "scan",
+        "router",
+        "handle_wifi"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#product_intro",
+        "layout": "analysis/apk/resources/layout/activity_da_new_produce_introduce.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/text_nomal_size",
+        "drawable/reset_device_img",
+        "string/key_next",
+        "string/key_reset_device_prompt",
+        "string/key_reset_device_prompt2",
+        "style/CustomTextView",
+        "style/option_button"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "handle_wifi",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.add.view.DANewHandleWifiActivity",
+      "title": {
+        "en": "Wi-Fi Setup",
+        "es": "Ajustes Wi-Fi"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_new_handle_wifi.xml",
+      "states": [
+        {
+          "id": "instructions",
+          "description": "SSID y contraseña visibles con copiar"
+        },
+        {
+          "id": "copied",
+          "description": "Confirmación de copiado"
+        },
+        {
+          "id": "ap_mismatch",
+          "description": "Snackbar para abrir ajustes WiFi"
+        },
+        {
+          "id": "ap_connected",
+          "description": "Continúa a router o progreso"
+        }
+      ],
+      "navigation": [
+        "router",
+        "wifi_progress"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#handle_wifi",
+        "layout": "analysis/apk/resources/layout/activity_da_new_handle_wifi.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "color/new_line_color",
+        "dimen/btn_height",
+        "dimen/margin_large",
+        "dimen/text_normal_size",
+        "drawable/icon_copy",
+        "drawable/prompt_setup_wifi",
+        "drawable/publico_selector_btn_bg",
+        "string/key_handle_wifi_hint1",
+        "string/key_next",
+        "string/key_password",
+        "string/key_switch_wifi_hint"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "wifi_list_legacy",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.manage.view.DMWifiListActivity",
+      "title": {
+        "en": "Wi-Fi Setup",
+        "es": "Ajustes Wi-Fi"
+      },
+      "layout": "analysis/apk/resources/layout/activity_dm_wifi_list.xml",
+      "states": [
+        {
+          "id": "loading",
+          "description": "Refresco de redes"
+        },
+        {
+          "id": "list",
+          "description": "Lista de SSID"
+        },
+        {
+          "id": "error",
+          "description": "Aviso sin lista"
+        },
+        {
+          "id": "password",
+          "description": "Diálogo de contraseña"
+        },
+        {
+          "id": "connect_failure",
+          "description": "Error de conexión y ajustes"
+        },
+        {
+          "id": "success",
+          "description": "Finaliza al conectar"
+        }
+      ],
+      "navigation": [
+        "wifi_set_legacy"
+      ],
+      "reachability": "legacy_no_inbound",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#wifi_list_legacy",
+        "layout": "analysis/apk/resources/layout/activity_dm_wifi_list.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/standard_width",
+        "dimen/text_normal_size",
+        "drawable/wifi_0",
+        "string/key_wifi_choice_hint1",
+        "string/key_wifi_choice_hint2",
+        "style/new_device_setup_content",
+        "style/new_device_setup_title"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "wifi_set_legacy",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.manage.view.DMWifiSetActivity",
+      "title": {
+        "en": "Wi-Fi Setup",
+        "es": "Ajustes Wi-Fi"
+      },
+      "layout": "analysis/apk/resources/layout/activity_dm_wifi_set.xml",
+      "states": [
+        {
+          "id": "password_hidden",
+          "description": "Contraseña oculta"
+        },
+        {
+          "id": "password_visible",
+          "description": "Contraseña visible"
+        },
+        {
+          "id": "countdown",
+          "description": "Espera con contador"
+        },
+        {
+          "id": "connect_error",
+          "description": "Diálogo para abrir WiFi"
+        },
+        {
+          "id": "modify_success",
+          "description": "Vuelve a ajustes"
+        },
+        {
+          "id": "set_failure",
+          "description": "Error y posible reinicio de alta"
+        }
+      ],
+      "navigation": [
+        "config",
+        "product_intro"
+      ],
+      "reachability": "legacy_no_inbound",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#wifi_set_legacy",
+        "layout": "analysis/apk/resources/layout/activity_dm_wifi_set.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "color/white",
+        "dimen/activity_device_config_wifi_textsize",
+        "dimen/btn_height",
+        "dimen/margin_normal",
+        "dimen/standard_width",
+        "dimen/text_normal_size",
+        "drawable/btn_show_password_big",
+        "drawable/publico_selector_btn_bg",
+        "string/key_enter_wifi_password_hint",
+        "string/key_next",
+        "string/key_wifi_password",
+        "style/addEtStyle",
+        "style/new_device_setup_title",
+        "style/rlStyle"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "device_bind",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.add.view.DADeviceBindActivity",
+      "title": {
+        "en": "Add Device",
+        "es": "Añadir Dispositivo"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_device_bind.xml",
+      "states": [
+        {
+          "id": "qr_locked",
+          "description": "UID bloqueado por QR"
+        },
+        {
+          "id": "manual",
+          "description": "UID editable y escáner"
+        },
+        {
+          "id": "password_hidden",
+          "description": "Contraseña oculta"
+        },
+        {
+          "id": "password_visible",
+          "description": "Contraseña visible"
+        },
+        {
+          "id": "share_link",
+          "description": "Enlace compartido desactiva campos incompatibles"
+        },
+        {
+          "id": "validation_error",
+          "description": "Nombre/UID duplicado o vacío"
+        },
+        {
+          "id": "binding",
+          "description": "Progreso no cancelable"
+        },
+        {
+          "id": "success",
+          "description": "Configuración correcta"
+        },
+        {
+          "id": "invitation_error",
+          "description": "Invitación inválida o usada"
+        }
+      ],
+      "navigation": [
+        "main_tab",
+        "scan"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#device_bind",
+        "layout": "analysis/apk/resources/layout/activity_da_device_bind.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/text_normal_size",
+        "drawable/btn_show_password_big",
+        "drawable/qr_code_n",
+        "drawable/selector_shape_rectangle",
+        "string/key_device_online_add_hint",
+        "string/key_input_share_link_hint",
+        "string/key_name",
+        "string/key_pin_code",
+        "string/key_save",
+        "string/key_share_link",
+        "string/key_uid",
+        "style/CustomEdit",
+        "style/CustomTextView",
+        "style/option_button"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "online_devices",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.add.view.DAOnlineDeviceListActivity",
+      "title": {
+        "en": "Add Online",
+        "es": "Añadir por Red"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_online_device_list.xml",
+      "states": [
+        {
+          "id": "refreshing",
+          "description": "Búsqueda LAN"
+        },
+        {
+          "id": "results",
+          "description": "Lista de dispositivos"
+        },
+        {
+          "id": "empty",
+          "description": "Mensaje no device found"
+        },
+        {
+          "id": "error",
+          "description": "Finaliza refresco sin resultados"
+        }
+      ],
+      "navigation": [
+        "device_bind"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#online_devices",
+        "layout": "analysis/apk/resources/layout/activity_da_online_device_list.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/text_nomal_size",
+        "string/key_search_device_prompt",
+        "style/CustomTextView"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "scan",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.add.view.DACaptureActivity",
+      "title": {
+        "en": "Scan QR-Code",
+        "es": "Escanee el código QR"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_capture.xml",
+      "states": [
+        {
+          "id": "scanning",
+          "description": "Visor y marco QR"
+        },
+        {
+          "id": "pick_image",
+          "description": "Escaneo desde galería con progreso"
+        },
+        {
+          "id": "invalid",
+          "description": "Diálogo QR inválido y reintento"
+        },
+        {
+          "id": "result",
+          "description": "Devuelve resultado al llamador"
+        },
+        {
+          "id": "new_device",
+          "description": "Continúa alta nueva"
+        },
+        {
+          "id": "share",
+          "description": "Abre invitación"
+        }
+      ],
+      "navigation": [
+        "product_intro",
+        "device_bind",
+        "share_bind"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#scan",
+        "layout": "analysis/apk/resources/layout/activity_da_capture.xml"
+      },
+      "resources": [
+        "color/colorPrimary",
+        "color/main_ui_color_white",
+        "drawable/publico_selector_btn_back",
+        "drawable/publico_selector_btn_cancel",
+        "drawable/publico_shape_dialog_bg",
+        "drawable/qr_scan",
+        "drawable/selector_btn_picutre",
+        "string/key_cancel",
+        "string/key_scan_qr"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "config",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.manage.view.DMConfigActivity",
+      "title": {
+        "en": "Settings",
+        "es": "Ajustes"
+      },
+      "layout": "analysis/apk/resources/layout/activity_dm_config.xml",
+      "states": [
+        {
+          "id": "owner",
+          "description": "Todas las opciones del propietario"
+        },
+        {
+          "id": "shared",
+          "description": "Oculta contraseña, WiFi, alarmas, usuarios y firmware"
+        },
+        {
+          "id": "loading",
+          "description": "Consulta de info y alarmas"
+        },
+        {
+          "id": "alarm_on",
+          "description": "Llamada/movimiento activado"
+        },
+        {
+          "id": "alarm_off",
+          "description": "Llamada/movimiento desactivado"
+        },
+        {
+          "id": "upgrade_available",
+          "description": "Icono de nueva versión"
+        },
+        {
+          "id": "delete_confirm",
+          "description": "Confirmación de borrado"
+        },
+        {
+          "id": "delete_error",
+          "description": "Error de borrado"
+        },
+        {
+          "id": "bind_required",
+          "description": "Diálogo de contraseña"
+        }
+      ],
+      "navigation": [
+        "device_info",
+        "password_modify",
+        "unlock_setting",
+        "router",
+        "upgrade",
+        "share_manage",
+        "main_tab"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#config",
+        "layout": "analysis/apk/resources/layout/activity_dm_config.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "color/textColor",
+        "dimen/btn_height",
+        "dimen/text_normal_size",
+        "drawable/btn_switch_off",
+        "drawable/icon_arrow_list_right",
+        "drawable/icon_arrow_list_right_new",
+        "drawable/publico_selector_btn_bg",
+        "string/key_alarm_call",
+        "string/key_alarm_motion",
+        "string/key_delete",
+        "string/key_device",
+        "string/key_f1_enable_time",
+        "string/key_firmware_version",
+        "string/key_intercom_way",
+        "string/key_lock_number",
+        "string/key_modify_device_password",
+        "string/key_modify_unlock_password",
+        "string/key_time_sync",
+        "string/key_unlock_setting",
+        "string/key_user",
+        "string/key_video_fps",
+        "string/key_video_fps_high",
+        "string/key_wifi_setup",
+        "style/CustomTextView",
+        "style/Custom_Text_View_Marquee",
+        "style/option_text_view"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "password_modify",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.manage.view.DMPasswordModifyActivity",
+      "title": {
+        "en": "Modify password",
+        "es": "Modificar contraseña"
+      },
+      "layout": "analysis/apk/resources/layout/activity_dm_password_modify.xml",
+      "states": [
+        {
+          "id": "device_mode",
+          "description": "Cambia contraseña de dispositivo"
+        },
+        {
+          "id": "admin_mode",
+          "description": "Cambia admin y desbloqueo"
+        },
+        {
+          "id": "unlock_mode",
+          "description": "Solo contraseña de apertura"
+        },
+        {
+          "id": "init_mode",
+          "description": "Inicialización sin campo antiguo"
+        },
+        {
+          "id": "mismatch",
+          "description": "Etiquetas en rojo"
+        },
+        {
+          "id": "empty",
+          "description": "Error de campos vacíos"
+        },
+        {
+          "id": "success",
+          "description": "Contraseña modificada"
+        }
+      ],
+      "navigation": [
+        "config"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#password_modify",
+        "layout": "analysis/apk/resources/layout/activity_dm_password_modify.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "string/key_confirm",
+        "string/key_modify_admin_password",
+        "string/key_modify_unlock_password",
+        "string/key_new",
+        "string/key_old",
+        "string/key_password_length_hint",
+        "style/CustomEdit",
+        "style/CustomTextView",
+        "style/option_linear_layout",
+        "style/option_text"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "unlock_setting",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.manage.view.DMUnlockSettingActivity",
+      "title": {
+        "en": "Unlock setting",
+        "es": "Configuración de desbloqueo"
+      },
+      "layout": "analysis/apk/resources/layout/activity_dm_unlock_setting.xml",
+      "states": [
+        {
+          "id": "quick_on",
+          "description": "Apertura rápida activa"
+        },
+        {
+          "id": "quick_off",
+          "description": "Apertura rápida inactiva"
+        },
+        {
+          "id": "bio_on",
+          "description": "Confirmación biométrica activa"
+        },
+        {
+          "id": "bio_off",
+          "description": "Confirmación biométrica inactiva"
+        },
+        {
+          "id": "bio_unavailable",
+          "description": "Fila biométrica oculta"
+        },
+        {
+          "id": "warning",
+          "description": "Diálogo explicativo con no mostrar más"
+        },
+        {
+          "id": "saved",
+          "description": "Guarda y finaliza"
+        }
+      ],
+      "navigation": [
+        "config"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#unlock_setting",
+        "layout": "analysis/apk/resources/layout/activity_dm_unlock_setting.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/btn_height",
+        "dimen/text_normal_size",
+        "drawable/btn_switch_off",
+        "string/key_biological_unlock",
+        "string/key_quick_unlock",
+        "style/CustomTextView"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "device_info",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.manage.view.DMDeviceInfoEditActivity",
+      "title": {
+        "en": "Device Info",
+        "es": "Información del dispositivo"
+      },
+      "layout": "analysis/apk/resources/layout/activity_dm_device_info_edit.xml",
+      "states": [
+        {
+          "id": "read_only",
+          "description": "Nombre y UID no editables"
+        },
+        {
+          "id": "editing",
+          "description": "Nombre editable y botón guardar"
+        },
+        {
+          "id": "validation_error",
+          "description": "Nombre vacío o duplicado"
+        },
+        {
+          "id": "success",
+          "description": "Guardado local/remoto"
+        },
+        {
+          "id": "failure",
+          "description": "Error de modificación"
+        }
+      ],
+      "navigation": [
+        "config"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#device_info",
+        "layout": "analysis/apk/resources/layout/activity_dm_device_info_edit.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "drawable/publico_shape_rectangle_2",
+        "string/key_name",
+        "string/key_uid",
+        "style/CustomEdit",
+        "style/CustomTextView"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "about",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.me.view.MeAboutActivity",
+      "title": {
+        "en": "About",
+        "es": "Info"
+      },
+      "layout": "analysis/apk/resources/layout/activity_me_about.xml",
+      "states": [
+        {
+          "id": "version",
+          "description": "Logo, WI-BOX y versión"
+        },
+        {
+          "id": "privacy",
+          "description": "Diálogo con HTML local"
+        },
+        {
+          "id": "debug_trigger",
+          "description": "Secuencia oculta abre TestInfo"
+        }
+      ],
+      "navigation": [
+        "debug"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#about",
+        "layout": "analysis/apk/resources/layout/activity_me_about.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/standard_width",
+        "dimen/text_normal_size",
+        "drawable/logo",
+        "drawable/publico_selector_btn_bg",
+        "string/app_name",
+        "string/key_privacy_policy"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "image_pager",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.fileManage.view.FMImagePagerActivity",
+      "title": {
+        "en": "Gallery pager",
+        "es": "Visor de galería"
+      },
+      "layout": "analysis/apk/resources/layout/activity_fm_image_pager.xml",
+      "states": [
+        {
+          "id": "white",
+          "description": "Fondo blanco con título y acciones"
+        },
+        {
+          "id": "black",
+          "description": "Fondo negro sin título ni acciones"
+        },
+        {
+          "id": "page",
+          "description": "Indicador posición/total"
+        },
+        {
+          "id": "share",
+          "description": "Compartir elemento"
+        },
+        {
+          "id": "delete_confirm",
+          "description": "Confirmación de borrado"
+        },
+        {
+          "id": "save_result",
+          "description": "SnackBar de guardado"
+        }
+      ],
+      "navigation": [
+        "video_player",
+        "tab_gallery"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#image_pager",
+        "layout": "analysis/apk/resources/layout/activity_fm_image_pager.xml"
+      },
+      "resources": [
+        "color/colorPrimary",
+        "color/main_ui_color_white",
+        "drawable/selector_file_delete",
+        "drawable/selector_share"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "video_player",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.fileManage.view.FMLocalVideoPlayActivity",
+      "title": {
+        "en": "Video player",
+        "es": "Reproductor de vídeo"
+      },
+      "layout": "analysis/apk/resources/layout/activity_fm_local_video_play.xml",
+      "states": [
+        {
+          "id": "playing",
+          "description": "Reproducción y botón pausa"
+        },
+        {
+          "id": "paused",
+          "description": "Overlay y botón play"
+        },
+        {
+          "id": "stopped",
+          "description": "Overlay visible"
+        },
+        {
+          "id": "muted",
+          "description": "Icono mute"
+        },
+        {
+          "id": "unmuted",
+          "description": "Icono sonido"
+        },
+        {
+          "id": "seeking",
+          "description": "Pausa temporal y seek"
+        },
+        {
+          "id": "tools_visible",
+          "description": "Controles visibles"
+        },
+        {
+          "id": "tools_hidden",
+          "description": "Oculta controles tras 5 s"
+        },
+        {
+          "id": "landscape",
+          "description": "Vídeo a pantalla completa"
+        }
+      ],
+      "navigation": [
+        "image_pager"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#video_player",
+        "layout": "analysis/apk/resources/layout/activity_fm_local_video_play.xml"
+      },
+      "resources": [
+        "color/colorPrimary",
+        "dimen/title_height",
+        "drawable/file_mangement_icon_video",
+        "drawable/vertical_preview_play_selector",
+        "drawable/vertical_preview_sound_selector"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "push_call",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.push.view.PushCallActivity",
+      "title": {
+        "en": "Call from panel",
+        "es": "llamada de placa de calle"
+      },
+      "layout": "analysis/apk/resources/layout/activity_push_call.xml",
+      "states": [
+        {
+          "id": "ringing",
+          "description": "Nombre, aceptar y rechazar con tono"
+        },
+        {
+          "id": "vibration",
+          "description": "Vibración opcional"
+        },
+        {
+          "id": "accept",
+          "description": "Abre preview y registra aceptación"
+        },
+        {
+          "id": "refuse",
+          "description": "Cierra o envía a segundo plano"
+        },
+        {
+          "id": "auto_refuse",
+          "description": "Auto-rechazo a 30 s"
+        },
+        {
+          "id": "answered_elsewhere",
+          "description": "Mensaje y cierre por evento 20"
+        }
+      ],
+      "navigation": [
+        "preview",
+        "main_tab"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#push_call",
+        "layout": "analysis/apk/resources/layout/activity_push_call.xml"
+      },
+      "resources": [
+        "color/white",
+        "drawable/backgroud_calling",
+        "drawable/btn_accept",
+        "drawable/btn_refuse",
+        "drawable/ico_logo",
+        "style/CustomTextView"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "debug",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.test.view.TestInfoActivity",
+      "title": {
+        "en": "Debug",
+        "es": "Debug"
+      },
+      "layout": "analysis/apk/resources/layout/activity_test_info.xml",
+      "states": [
+        {
+          "id": "debug_toggle",
+          "description": "Modo debug y aviso de reinicio"
+        },
+        {
+          "id": "forwarding",
+          "description": "Fuerza forwarding"
+        },
+        {
+          "id": "connection_type",
+          "description": "Muestra tipo de conexión"
+        },
+        {
+          "id": "advanced",
+          "description": "Opciones tras código"
+        },
+        {
+          "id": "service_switch",
+          "description": "Cambio de servidor y borrado local"
+        },
+        {
+          "id": "send_log",
+          "description": "Compartir log"
+        },
+        {
+          "id": "token",
+          "description": "Token disponible o null"
+        }
+      ],
+      "navigation": [
+        "loading"
+      ],
+      "reachability": "hidden_gesture",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#debug",
+        "layout": "analysis/apk/resources/layout/activity_test_info.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "drawable/icon_arrow_list_right",
+        "drawable/publico_selector_bg_round",
+        "drawable/publico_selector_btn_bg",
+        "style/CustomButton",
+        "style/CustomTextView",
+        "style/option_text_view"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "upgrade",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.manage.view.DMUpgradeActivity",
+      "title": {
+        "en": "Firmware version",
+        "es": "Versión Firmware"
+      },
+      "layout": "analysis/apk/resources/layout/activity_dm_upgrade.xml",
+      "states": [
+        {
+          "id": "query",
+          "description": "Consulta versión actual y disponible"
+        },
+        {
+          "id": "up_to_date",
+          "description": "Firmware actualizado"
+        },
+        {
+          "id": "available",
+          "description": "Diálogo de confirmación"
+        },
+        {
+          "id": "progress",
+          "description": "Progreso no cancelable"
+        },
+        {
+          "id": "success",
+          "description": "Diálogo de éxito y reinicio posterior"
+        },
+        {
+          "id": "failure",
+          "description": "Diálogo de fallo"
+        }
+      ],
+      "navigation": [
+        "config"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#upgrade",
+        "layout": "analysis/apk/resources/layout/activity_dm_upgrade.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/btn_height",
+        "dimen/margin_normal",
+        "dimen/margin_small",
+        "dimen/text_small_size",
+        "drawable/publico_selector_bg_round",
+        "string/key_current_version",
+        "string/key_latest_version",
+        "string/key_upgrade",
+        "style/CustomTextView",
+        "style/option_style"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "guide",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.main.view.StartGuideActivity",
+      "title": {
+        "en": "Start guide",
+        "es": "Guía de inicio"
+      },
+      "layout": "analysis/apk/resources/layout/activity_start_guide.xml",
+      "states": [
+        {
+          "id": "page_locks",
+          "description": "Guía More locks"
+        },
+        {
+          "id": "page_cameras",
+          "description": "Guía More Cameras"
+        },
+        {
+          "id": "page_playback",
+          "description": "Guía Quick Playback"
+        },
+        {
+          "id": "start",
+          "description": "Botón Start Now"
+        }
+      ],
+      "navigation": [
+        "main_tab"
+      ],
+      "reachability": "legacy_no_inbound",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#guide",
+        "layout": "analysis/apk/resources/layout/activity_start_guide.xml"
+      },
+      "resources": [],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "add_method_legacy",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.add.view.DAAddTypeActivity",
+      "title": {
+        "en": "Add Device",
+        "es": "Añadir Dispositivo"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_add_type.xml",
+      "states": [
+        {
+          "id": "ap",
+          "description": "AP add"
+        },
+        {
+          "id": "voice",
+          "description": "Sound waves to add"
+        },
+        {
+          "id": "switch_success",
+          "description": "Continúa al router"
+        },
+        {
+          "id": "switch_failure",
+          "description": "Paso manual WiFi"
+        }
+      ],
+      "navigation": [
+        "router",
+        "handle_wifi"
+      ],
+      "reachability": "legacy_no_inbound",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#add_method_legacy",
+        "layout": "analysis/apk/resources/layout/activity_da_add_type.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/btn_height",
+        "dimen/text_normal_size",
+        "drawable/publico_selector_btn_bg",
+        "string/key_add_type_ap",
+        "string/key_add_type_voice"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "router",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.add.view.DARouterInfoActivity",
+      "title": {
+        "en": "Wi-Fi Setup",
+        "es": "Ajustes Wi-Fi"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_router_info.xml",
+      "states": [
+        {
+          "id": "loading",
+          "description": "Refresco de redes"
+        },
+        {
+          "id": "selected",
+          "description": "SSID elegido con nivel wifi_1 a wifi_4"
+        },
+        {
+          "id": "password_hidden",
+          "description": "Contraseña oculta"
+        },
+        {
+          "id": "password_visible",
+          "description": "Contraseña visible"
+        },
+        {
+          "id": "save_password",
+          "description": "Guardar contraseña activo por defecto"
+        },
+        {
+          "id": "validation",
+          "description": "Contraseña corta"
+        },
+        {
+          "id": "new_mode",
+          "description": "Continúa AP o audio"
+        },
+        {
+          "id": "modify_mode",
+          "description": "Textos cambiar y notas adicionales"
+        }
+      ],
+      "navigation": [
+        "wifi_progress",
+        "voice",
+        "config"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#router",
+        "layout": "analysis/apk/resources/layout/activity_da_router_info.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "color/textColor",
+        "dimen/text_nomal_size",
+        "dimen/text_small_size",
+        "drawable/btn_show_password",
+        "drawable/publico_shape_rectangle_2",
+        "drawable/wifi_1",
+        "string/key_next",
+        "string/key_password",
+        "string/key_router_choose_hint",
+        "string/key_save_password",
+        "string/key_select_ssid",
+        "style/CustomEdit",
+        "style/CustomTextView",
+        "style/Custom_Text_View_Marquee",
+        "style/option_button"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "voice",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.add.view.DAVoiceSetActivity",
+      "title": {
+        "en": "Sound waves to add",
+        "es": "Sound waves to add"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_voice_set.xml",
+      "states": [
+        {
+          "id": "sending",
+          "description": "Envío acústico"
+        },
+        {
+          "id": "waiting",
+          "description": "Espera de dispositivo online"
+        },
+        {
+          "id": "volume_low",
+          "description": "Aviso de volumen insuficiente"
+        },
+        {
+          "id": "failure",
+          "description": "Fallo y botón retry"
+        },
+        {
+          "id": "success",
+          "description": "Continúa bind o main"
+        }
+      ],
+      "navigation": [
+        "device_bind",
+        "main_tab"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#voice",
+        "layout": "analysis/apk/resources/layout/activity_da_voice_set.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/btn_height",
+        "drawable/device_add_sound_waver",
+        "drawable/publico_selector_bg_round",
+        "string/key_next",
+        "string/key_sound_wavers_add_hint",
+        "string/key_volume_too_low_hint",
+        "style/CustomButton",
+        "style/CustomTextView"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "wifi_progress",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.add.view.DAWifiSetActivity",
+      "title": {
+        "en": "Wi-Fi Setup",
+        "es": "Ajustes Wi-Fi"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_wifi_set.xml",
+      "states": [
+        {
+          "id": "connecting",
+          "description": "Conecta dispositivo"
+        },
+        {
+          "id": "sending",
+          "description": "Envía datos"
+        },
+        {
+          "id": "waiting",
+          "description": "Espera online con cuenta atrás"
+        },
+        {
+          "id": "network_error",
+          "description": "Aviso de red y restauración manual"
+        },
+        {
+          "id": "retry",
+          "description": "Botón retry"
+        },
+        {
+          "id": "failure",
+          "description": "Pantalla de pairing error"
+        },
+        {
+          "id": "success",
+          "description": "Continúa bind o main"
+        }
+      ],
+      "navigation": [
+        "pairing_fail",
+        "device_bind",
+        "main_tab",
+        "handle_wifi"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#wifi_progress",
+        "layout": "analysis/apk/resources/layout/activity_da_wifi_set.xml"
+      },
+      "resources": [
+        "color/bg_red",
+        "color/main_ui_color_white",
+        "drawable/device_add_wifi_set",
+        "string/key_network_unavailable",
+        "string/key_next",
+        "style/CustomTextView",
+        "style/option_button"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "share_device",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.share.view.ShareDeviceActivity",
+      "title": {
+        "en": "New user",
+        "es": "Nuevo usuario"
+      },
+      "layout": "analysis/apk/resources/layout/activity_share_device.xml",
+      "states": [
+        {
+          "id": "qr",
+          "description": "QR de 120 dp"
+        },
+        {
+          "id": "link",
+          "description": "Enlace textual"
+        },
+        {
+          "id": "expiration",
+          "description": "Disponible antes de fecha"
+        },
+        {
+          "id": "copied",
+          "description": "Enlace copiado"
+        },
+        {
+          "id": "save_result",
+          "description": "Resultado al guardar QR"
+        },
+        {
+          "id": "share_sheet",
+          "description": "Chooser Android"
+        }
+      ],
+      "navigation": [
+        "share_manage"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#share_device",
+        "layout": "analysis/apk/resources/layout/activity_share_device.xml"
+      },
+      "resources": [
+        "color/colorPrimary",
+        "color/main_ui_color_white",
+        "color/textColor",
+        "color/white",
+        "drawable/shape_share_tv_bg",
+        "drawable/share_more_way",
+        "string/key_available_before",
+        "string/key_copy",
+        "string/key_save",
+        "string/key_share_copy_link",
+        "string/key_share_invite_friends",
+        "string/key_share_scan_text",
+        "string/key_share_share_by",
+        "style/option_button"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "pairing_fail",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.device.add.view.DADeviceConfigFailActivity",
+      "title": {
+        "en": "Error",
+        "es": "Error"
+      },
+      "layout": "analysis/apk/resources/layout/activity_da_device_config_fail.xml",
+      "states": [
+        {
+          "id": "error",
+          "description": "Explicación de pairing fallido"
+        },
+        {
+          "id": "main_only",
+          "description": "Solo botón siguiente, back físico ignorado"
+        }
+      ],
+      "navigation": [
+        "main_tab"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#pairing_fail",
+        "layout": "analysis/apk/resources/layout/activity_da_device_config_fail.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/text_nomal_size",
+        "string/key_next",
+        "string/key_pairing_error_hint",
+        "style/CustomTextView",
+        "style/option_button"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "share_manage",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.share.view.ShareManageActivity",
+      "title": {
+        "en": "Users",
+        "es": "Usuarios"
+      },
+      "layout": "analysis/apk/resources/layout/activity_share_manage.xml",
+      "states": [
+        {
+          "id": "loading",
+          "description": "Refresco de invitaciones"
+        },
+        {
+          "id": "empty",
+          "description": "No Users"
+        },
+        {
+          "id": "list",
+          "description": "Usuarios con permisos"
+        },
+        {
+          "id": "create",
+          "description": "Nueva invitación con permisos por defecto"
+        },
+        {
+          "id": "edit",
+          "description": "Editar nombre/permisos"
+        },
+        {
+          "id": "delete",
+          "description": "Confirmación de borrado"
+        },
+        {
+          "id": "limit",
+          "description": "Botón añadir oculto a 100"
+        },
+        {
+          "id": "error",
+          "description": "No autorizado o fallo"
+        }
+      ],
+      "navigation": [
+        "share_device",
+        "config"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#share_manage",
+        "layout": "analysis/apk/resources/layout/activity_share_manage.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "color/textColor",
+        "dimen/standard_width",
+        "string/key_users_share_empty"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "share_bind",
+      "kind": "activity",
+      "class_or_fragment": "com.quvii.ubell.share.view.ShareBindActivity",
+      "title": {
+        "en": "Add Device",
+        "es": "Añadir Dispositivo"
+      },
+      "layout": "analysis/apk/resources/layout/activity_share_bind.xml",
+      "states": [
+        {
+          "id": "form",
+          "description": "UID/código bloqueados y nombre editable"
+        },
+        {
+          "id": "validation",
+          "description": "Nombre vacío o duplicado"
+        },
+        {
+          "id": "accept",
+          "description": "Aceptación con progreso"
+        },
+        {
+          "id": "success",
+          "description": "Vuelve a main"
+        },
+        {
+          "id": "invalid",
+          "description": "Invitación inválida o usada"
+        }
+      ],
+      "navigation": [
+        "main_tab"
+      ],
+      "reachability": "linked",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#share_bind",
+        "layout": "analysis/apk/resources/layout/activity_share_bind.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/text_normal_size",
+        "drawable/btn_show_password_big",
+        "drawable/publico_shape_rectangle_2",
+        "drawable/qr_code_n",
+        "string/key_accept",
+        "string/key_code",
+        "string/key_name",
+        "string/key_share_accept_hint",
+        "string/key_uid",
+        "style/CustomEdit",
+        "style/CustomTextView",
+        "style/option_button"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "tab_devices",
+      "kind": "fragment",
+      "class_or_fragment": "com.quvii.ubell.main.view.MainDeviceListFragment",
+      "title": {
+        "en": "Device",
+        "es": "Dispositivo"
+      },
+      "layout": "analysis/apk/resources/layout/fragment_device_list.xml",
+      "states": [
+        {
+          "id": "empty",
+          "description": "Botón central añadir"
+        },
+        {
+          "id": "list",
+          "description": "Tarjetas con portada y acciones"
+        },
+        {
+          "id": "refresh",
+          "description": "SwipeRefresh y estado online"
+        },
+        {
+          "id": "offline",
+          "description": "Estado offline"
+        },
+        {
+          "id": "password",
+          "description": "Diálogo de apertura/F1"
+        },
+        {
+          "id": "biometric",
+          "description": "Verificación biométrica"
+        },
+        {
+          "id": "action_result",
+          "description": "Toast éxito/fallo"
+        }
+      ],
+      "navigation": [
+        "add_type",
+        "preview",
+        "config"
+      ],
+      "reachability": "main_tab",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#tab_devices",
+        "layout": "analysis/apk/resources/layout/fragment_device_list.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "dimen/text_normal_size",
+        "drawable/selector_add_new_dev",
+        "string/key_device_add"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "tab_events",
+      "kind": "fragment",
+      "class_or_fragment": "com.quvii.ubell.main.view.MainMessageListFragment",
+      "title": {
+        "en": "Events",
+        "es": "Eventos"
+      },
+      "layout": "analysis/apk/resources/layout/fragment_message_list.xml",
+      "states": [
+        {
+          "id": "loading",
+          "description": "Carga inicial y refresh"
+        },
+        {
+          "id": "empty",
+          "description": "Texto de ausencia de eventos"
+        },
+        {
+          "id": "list",
+          "description": "Una sola lista All ACTIVITY"
+        },
+        {
+          "id": "filters_hidden",
+          "description": "RINGS/MOTION ocultos"
+        },
+        {
+          "id": "warning",
+          "description": "Aviso sobre fotos y firmware"
+        },
+        {
+          "id": "edit",
+          "description": "Selección y barra inferior"
+        },
+        {
+          "id": "delete",
+          "description": "Confirmación de borrado"
+        },
+        {
+          "id": "image",
+          "description": "Diálogo de foto"
+        }
+      ],
+      "navigation": [
+        "tab_event_list"
+      ],
+      "reachability": "main_tab",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#tab_events",
+        "layout": "analysis/apk/resources/layout/fragment_message_list.xml"
+      },
+      "resources": [
+        "color/clr_normal",
+        "color/colorPrimary",
+        "color/fm_fragment_text_normal",
+        "color/fm_fragment_text_selected",
+        "color/main_ui_color_white",
+        "dimen/btn_height_small",
+        "dimen/fm_fragment_dial_info_line",
+        "dimen/main_bottom_height",
+        "drawable/selector_file_all_selected",
+        "drawable/selector_file_delete",
+        "string/key_alarm_title_all",
+        "string/key_alarm_title_call",
+        "string/key_alarm_title_motion"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "tab_event_list",
+      "kind": "fragment",
+      "class_or_fragment": "com.quvii.ubell.main.view.MainMessageTypeFragment",
+      "title": {
+        "en": "Activity list",
+        "es": "Lista de actividad"
+      },
+      "layout": "analysis/apk/resources/layout/fragment_main_message_type.xml",
+      "states": [
+        {
+          "id": "empty_all",
+          "description": "Mensaje de llamadas del hogar"
+        },
+        {
+          "id": "empty_call",
+          "description": "Mensaje vacío de llamadas"
+        },
+        {
+          "id": "empty_motion",
+          "description": "Mensaje e icono de movimiento"
+        },
+        {
+          "id": "refresh",
+          "description": "Tirar para refrescar"
+        },
+        {
+          "id": "load_more",
+          "description": "Carga más a partir de 15"
+        },
+        {
+          "id": "edit",
+          "description": "Selección múltiple"
+        }
+      ],
+      "navigation": [
+        "tab_events"
+      ],
+      "reachability": "nested_fragment",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#tab_event_list",
+        "layout": "analysis/apk/resources/layout/fragment_main_message_type.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "color/textColor",
+        "dimen/standard_width",
+        "dimen/text_normal_size",
+        "drawable/move_detection_logo",
+        "string/key_alarm_record_hint_motion1",
+        "string/key_alarm_record_hint_motion2"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "tab_gallery",
+      "kind": "fragment",
+      "class_or_fragment": "com.quvii.ubell.main.view.MainFileFragment",
+      "title": {
+        "en": "Gallery",
+        "es": "Galería"
+      },
+      "layout": "analysis/apk/resources/layout/fragment_flie.xml",
+      "states": [
+        {
+          "id": "empty",
+          "description": "Texto sin fotos ni vídeos"
+        },
+        {
+          "id": "grid",
+          "description": "Tres columnas agrupadas por fecha"
+        },
+        {
+          "id": "edit",
+          "description": "Barra de selección y pestañas oculta"
+        },
+        {
+          "id": "selected",
+          "description": "Contador en título"
+        },
+        {
+          "id": "select_all",
+          "description": "Seleccionar todo"
+        },
+        {
+          "id": "share",
+          "description": "Compartir selección"
+        },
+        {
+          "id": "save",
+          "description": "Guardar selección y resultado"
+        },
+        {
+          "id": "delete",
+          "description": "Confirmación de borrado"
+        }
+      ],
+      "navigation": [
+        "image_pager"
+      ],
+      "reachability": "main_tab",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#tab_gallery",
+        "layout": "analysis/apk/resources/layout/fragment_flie.xml"
+      },
+      "resources": [
+        "color/colorPrimary",
+        "color/main_ui_color_white",
+        "color/textColor",
+        "dimen/standard_width",
+        "drawable/selector_btn_save",
+        "drawable/selector_file_all_selected",
+        "drawable/selector_file_delete",
+        "drawable/selector_share",
+        "string/key_album_empty_hint"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    },
+    {
+      "id": "tab_settings",
+      "kind": "fragment",
+      "class_or_fragment": "com.quvii.ubell.main.view.MainMeFragment",
+      "title": {
+        "en": "Settings",
+        "es": "Ajustes"
+      },
+      "layout": "analysis/apk/resources/layout/fragment_me.xml",
+      "states": [
+        {
+          "id": "sound_on",
+          "description": "Sonido activado"
+        },
+        {
+          "id": "sound_off",
+          "description": "Sonido desactivado"
+        },
+        {
+          "id": "vibration_on",
+          "description": "Vibración activada"
+        },
+        {
+          "id": "vibration_off",
+          "description": "Vibración desactivada"
+        },
+        {
+          "id": "about",
+          "description": "Abre información"
+        },
+        {
+          "id": "exit_confirm",
+          "description": "Diálogo de salida"
+        },
+        {
+          "id": "hidden_options",
+          "description": "Auto rotate, canales y preview time ocultos"
+        }
+      ],
+      "navigation": [
+        "about"
+      ],
+      "reachability": "main_tab",
+      "evidence_references": {
+        "code": "analysis/apk/evidence/ui-code-evidence.md#tab_settings",
+        "layout": "analysis/apk/resources/layout/fragment_me.xml"
+      },
+      "resources": [
+        "color/main_ui_color_white",
+        "color/textColor",
+        "dimen/text_normal_size",
+        "drawable/btn_switch_off",
+        "drawable/btn_switch_on",
+        "drawable/icon_arrow_list_right",
+        "drawable/publico_selector_btn_bg",
+        "string/key_about",
+        "string/key_auto_rotate",
+        "string/key_automatic",
+        "string/key_call_reception",
+        "string/key_exit",
+        "string/key_preview_time",
+        "string/key_sound",
+        "string/key_vibration",
+        "string/key_video_channel_select",
+        "style/CustomTextView",
+        "style/Custom_Text_View_Marquee",
+        "style/option_linear_layout"
+      ],
+      "final_verification": "PENDING_FINAL_UI_AUDIT"
+    }
+  ],
+  "navigation_edges": [
+    {
+      "from": "loading",
+      "to": "main_tab"
+    },
+    {
+      "from": "loading",
+      "to": "push_call"
+    },
+    {
+      "from": "loading",
+      "to": "preview"
+    },
+    {
+      "from": "cache",
+      "to": "loading"
+    },
+    {
+      "from": "main_tab",
+      "to": "tab_devices"
+    },
+    {
+      "from": "main_tab",
+      "to": "tab_events"
+    },
+    {
+      "from": "main_tab",
+      "to": "tab_gallery"
+    },
+    {
+      "from": "main_tab",
+      "to": "tab_settings"
+    },
+    {
+      "from": "add_type",
+      "to": "product_intro"
+    },
+    {
+      "from": "add_type",
+      "to": "online_type"
+    },
+    {
+      "from": "preview",
+      "to": "config"
+    },
+    {
+      "from": "preview",
+      "to": "password_modify"
+    },
+    {
+      "from": "online_type",
+      "to": "online_devices"
+    },
+    {
+      "from": "online_type",
+      "to": "device_bind"
+    },
+    {
+      "from": "product_choose",
+      "to": "product_intro"
+    },
+    {
+      "from": "product_intro",
+      "to": "scan"
+    },
+    {
+      "from": "product_intro",
+      "to": "router"
+    },
+    {
+      "from": "product_intro",
+      "to": "handle_wifi"
+    },
+    {
+      "from": "handle_wifi",
+      "to": "router"
+    },
+    {
+      "from": "handle_wifi",
+      "to": "wifi_progress"
+    },
+    {
+      "from": "wifi_list_legacy",
+      "to": "wifi_set_legacy"
+    },
+    {
+      "from": "wifi_set_legacy",
+      "to": "config"
+    },
+    {
+      "from": "wifi_set_legacy",
+      "to": "product_intro"
+    },
+    {
+      "from": "device_bind",
+      "to": "main_tab"
+    },
+    {
+      "from": "device_bind",
+      "to": "scan"
+    },
+    {
+      "from": "online_devices",
+      "to": "device_bind"
+    },
+    {
+      "from": "scan",
+      "to": "product_intro"
+    },
+    {
+      "from": "scan",
+      "to": "device_bind"
+    },
+    {
+      "from": "scan",
+      "to": "share_bind"
+    },
+    {
+      "from": "config",
+      "to": "device_info"
+    },
+    {
+      "from": "config",
+      "to": "password_modify"
+    },
+    {
+      "from": "config",
+      "to": "unlock_setting"
+    },
+    {
+      "from": "config",
+      "to": "router"
+    },
+    {
+      "from": "config",
+      "to": "upgrade"
+    },
+    {
+      "from": "config",
+      "to": "share_manage"
+    },
+    {
+      "from": "config",
+      "to": "main_tab"
+    },
+    {
+      "from": "password_modify",
+      "to": "config"
+    },
+    {
+      "from": "unlock_setting",
+      "to": "config"
+    },
+    {
+      "from": "device_info",
+      "to": "config"
+    },
+    {
+      "from": "about",
+      "to": "debug"
+    },
+    {
+      "from": "image_pager",
+      "to": "video_player"
+    },
+    {
+      "from": "image_pager",
+      "to": "tab_gallery"
+    },
+    {
+      "from": "video_player",
+      "to": "image_pager"
+    },
+    {
+      "from": "push_call",
+      "to": "preview"
+    },
+    {
+      "from": "push_call",
+      "to": "main_tab"
+    },
+    {
+      "from": "debug",
+      "to": "loading"
+    },
+    {
+      "from": "upgrade",
+      "to": "config"
+    },
+    {
+      "from": "guide",
+      "to": "main_tab"
+    },
+    {
+      "from": "add_method_legacy",
+      "to": "router"
+    },
+    {
+      "from": "add_method_legacy",
+      "to": "handle_wifi"
+    },
+    {
+      "from": "router",
+      "to": "wifi_progress"
+    },
+    {
+      "from": "router",
+      "to": "voice"
+    },
+    {
+      "from": "router",
+      "to": "config"
+    },
+    {
+      "from": "voice",
+      "to": "device_bind"
+    },
+    {
+      "from": "voice",
+      "to": "main_tab"
+    },
+    {
+      "from": "wifi_progress",
+      "to": "pairing_fail"
+    },
+    {
+      "from": "wifi_progress",
+      "to": "device_bind"
+    },
+    {
+      "from": "wifi_progress",
+      "to": "main_tab"
+    },
+    {
+      "from": "wifi_progress",
+      "to": "handle_wifi"
+    },
+    {
+      "from": "share_device",
+      "to": "share_manage"
+    },
+    {
+      "from": "pairing_fail",
+      "to": "main_tab"
+    },
+    {
+      "from": "share_manage",
+      "to": "share_device"
+    },
+    {
+      "from": "share_manage",
+      "to": "config"
+    },
+    {
+      "from": "share_bind",
+      "to": "main_tab"
+    },
+    {
+      "from": "tab_devices",
+      "to": "add_type"
+    },
+    {
+      "from": "tab_devices",
+      "to": "preview"
+    },
+    {
+      "from": "tab_devices",
+      "to": "config"
+    },
+    {
+      "from": "tab_events",
+      "to": "tab_event_list"
+    },
+    {
+      "from": "tab_event_list",
+      "to": "tab_events"
+    },
+    {
+      "from": "tab_gallery",
+      "to": "image_pager"
+    },
+    {
+      "from": "tab_settings",
+      "to": "about"
+    }
+  ],
+  "dynamic_evidence": [
+    {
+      "operation": "app_upgrade_check",
+      "evidence_id": "DYN3-HTTP-UPGRADE-001",
+      "request_response_observed": true,
+      "scope": "Observed GET request and HTTP 200 XML success response only",
+      "remaining_limits": [
+        "non-200 responses",
+        "provider errors",
+        "update decision semantics",
+        "strict production TLS behavior"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+Wibox APK static analysis verification
+Date: 2026-10-31
+Working directory: /home/nacho/Documentos/Repos/wibox-kotlin
+Scope: static local analysis only. No installation, mobile device, emulator or Wibox cloud calls.
+
+1. APK identity and integrity
+
+command: sha256sum /home/nacho/Descargas/wibox-fermax-v2.2/Wibox-Fermax-v2.2.apk
+exit: 0
+stdout: 08d78731fe79481b60b4250e736f653cd7af91932844a612b0b5c5a989aac7ce  /home/nacho/Descargas/wibox-fermax-v2.2/Wibox-Fermax-v2.2.apk
+stderr: <empty>
+
+command: unzip -t /home/nacho/Descargas/wibox-fermax-v2.2/Wibox-Fermax-v2.2.apk
+exit: 0
+stdout (last lines): No errors detected in compressed data of /home/nacho/Descargas/wibox-fermax-v2.2/Wibox-Fermax-v2.2.apk.
+stderr: <empty>
+
+command: keytool -printcert -jarfile /home/nacho/Descargas/wibox-fermax-v2.2/Wibox-Fermax-v2.2.apk
+exit: 0
+stdout (summary): CN=Qualvision, self-signed, RSA 2048, SHA256withRSA
+certificate_sha256: 5D:DA:34:C8:E6:DC:DD:45:BA:F5:8D:AB:64:5B:F5:96:48:B9:4C:9B:B4:36:02:9C:72:78:D0:C9:10:40:47:81
+stderr: <empty>
+
+command: jarsigner -verify /home/nacho/Descargas/wibox-fermax-v2.2/Wibox-Fermax-v2.2.apk
+exit: 0
+stdout (summary): jar verified.
+notes: self-signed certificate, chain and timestamp warnings, and packaging inconsistencies recorded in evidence/apk-integrity.txt.
+
+2. Toolchain and decompilation
+
+jadx_release: https://github.com/skylot/jadx/releases/tag/v1.5.6
+jadx_version: 1.5.6
+jadx_zip_sha256: 545ea2be9c242511bc145755cf4bda2485ade42966e096f8b4d3da2a230e8974
+openjdk: 17.0.20.1
+python: 3.14.8
+unzip: 6.00
+imagemagick: 7.1.2-34 Q16-HDRI
+
+command: /home/nacho/temp/opencode-work/jadx-1.5.6/bin/jadx --threads-count 4 --show-bad-code --output-dir /home/nacho/temp/opencode-work/wibox-jadx /home/nacho/Descargas/wibox-fermax-v2.2/Wibox-Fermax-v2.2.apk
+exit: 3
+stdout/stderr summary: ERROR - finished with errors, count: 7
+result: 6637 source files and 1772 resource files. Four explicit JADX ERROR sites plus incorrect-code warnings. Limitations documented, not hidden.
+
+3. Pass 1: complete analysis
+
+command: python3 analysis/apk/build_inventories.py
+exit: 0
+stdout: inventory_components=37/8/3/6; evidence_blocks and ui_screens generated
+stderr: <empty>
+
+command: python3 analysis/apk/verify_analysis.py
+exit: 0
+stdout: WIBOX_APK_ANALYSIS_VERIFIED
+stderr: <empty>
+
+command: python3 analysis/apk/verify_ui_inventory.py
+exit: 0
+stdout: WIBOX_UI_INVENTORY_VERIFIED
+stderr: <empty>
+
+4. Pass 2: expert reread
+
+Corrections: Doorbell=7410 and Monitor=9440, MQTT SUPPORT_DEVICE_SHADOW=false, and real REA/duhow/cmos486 comparison added.
+
+command: python3 analysis/apk/verify_analysis.py
+exit: 0
+stdout: WIBOX_APK_ANALYSIS_VERIFIED
+stderr: <empty>
+
+command: python3 analysis/apk/verify_ui_inventory.py
+exit: 0
+stdout: WIBOX_UI_INVENTORY_VERIFIED
+stderr: <empty>
+
+5. Pass 3: defect and omission search
+
+Corrections: legacy HTTP unbind/schemes added as E074 and FileProvider broad paths added as E075/SEC-10. Verifier number formatting and section titles kept in sync.
+
+command: python3 analysis/apk/verify_analysis.py
+exit: 0
+stdout: WIBOX_APK_ANALYSIS_VERIFIED
+stderr: <empty>
+
+command: python3 analysis/apk/verify_ui_inventory.py
+exit: 0
+stdout: WIBOX_UI_INVENTORY_VERIFIED
+stderr: <empty>
+
+6. Pass 4: polish and final gates
+
+command: Python AST, JSON and XML static checks
+exit: 0
+stdout: STATIC_CHECKS_OK scripts=3 xml=139 json=2
+stderr: <empty>
+checks: Python syntax, JSON parsing, XML parsing, unresolved document markers and prohibited dashes.
+
+command: python3 analysis/apk/verify_analysis.py
+exit: 0
+stdout: WIBOX_APK_ANALYSIS_VERIFIED
+stderr: <empty>
+
+command: python3 analysis/apk/verify_ui_inventory.py
+exit: 0
+stdout: WIBOX_UI_INVENTORY_VERIFIED
+stderr: <empty>
+
+7. Negative controls
+
+verify_analysis.py deep-copies inventory.json, changes apk.package to com.invalid.negative-control, and requires validate() to report "package mismatch in inventory" before allowing the final marker. Original files are not modified.
+
+verify_ui_inventory.py deep-copies ui-inventory.json, removes the preview screen, and requires validate() to report "screen coverage mismatch" before allowing the final marker. Original files are not modified.
+
+Both negative controls were executed inside the successful commands above. Their positive outputs are exactly:
+WIBOX_APK_ANALYSIS_VERIFIED
+WIBOX_UI_INVENTORY_VERIFIED
+
+8. Final coverage
+
+APK: com.fermax.wibox, versionName v2.2, versionCode 18, minSdk 21, targetSdk/compileSdk 35.
+Components: 37 activities, 8 services, 3 receivers, 6 providers.
+Cloud areas: 14.
+Evidence blocks: E001-E075.
+UI: 33 activities plus 5 fragment screens, 38 screens, 231 states, 71 navigation edges.
+Visual resources: 189 files, 74 app layouts, 53 measured images, 39 colors, 32 dimensions.
+Real runtime screenshots: none. start.png and guide_display*.png are resources, not screenshots.
