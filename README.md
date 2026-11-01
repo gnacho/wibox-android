@@ -19,6 +19,14 @@ Proveedor demo local: implementa los mismos flujos con datos sintéticos etiquet
 
 API externa para otras apps: servicio Binder (`dev.nacho.wibox.externalapi`) con denegación por defecto, autorización por UID + paquete + SHA-256 del conjunto de firmantes con allowlist revocable, handshake obligatorio, límites de tasa y tamaño, y Unsupported honesto heredado de las capacidades del proveedor. Los acks nunca superan lo realmente observado (máximo `LOCAL_ACCEPTED` en demo).
 
+## Hardware
+
+El Wi-Box es un módulo Fermax que se instala detrás del telefonillo y levanta su propio punto de acceso mientras no está emparejado. Todo lo que necesita el alta por red está en la etiqueta de fábrica: nombre del AP, su contraseña, la MAC y el UDID, agrupados además en un QR.
+
+![Módulo Wi-Box de Fermax con la etiqueta de fábrica](docs/img/wibox-hardware.webp)
+
+El detalle de esos campos, el orden en que aparecen en el QR y su papel en el registro están en `docs/protocol.md` §14.5. Foto de [segator/wibox-media](https://github.com/segator/wibox-media) (GPL-3.0), copiada sin recodificar.
+
 ## Requisitos
 
 - JDK 17.

@@ -313,6 +313,32 @@ El caso de éxito de registro no se ha observado. La secuencia de intentos reale
 
 Dado que el servidor devuelve el mismo `100009` para deviceIds inexistentes y para el dispositivo real (que está vinculado a la cuenta del usuario), la hipótesis más plausible es un rechazo genérico de registro, siendo "dispositivo ya vinculado a otra cuenta" la explicación pendiente de confirmar; descartarla requeriría desvincular el timbre de la cuenta real (acción destructiva no autorizada). El app no ofrece pantalla de login ni registro independiente: el alta de cuenta va 100% ligada al alta de un device físico. La operación sigue sin estar expuesta en la API pública de `core:cloud`.
 
+### 14.5 La etiqueta del dispositivo
+
+Todos los datos que pide el alta por red salen de la etiqueta pegada en la parte de atrás del módulo. No están en ninguna pantalla del app de fábrica ni se pueden deducir del resto del protocolo: hay que leerlos del aparato.
+
+![Módulo Wi-Box de Fermax con la etiqueta de fábrica](img/wibox-hardware.webp)
+
+La etiqueta lleva cuatro líneas y un QR que las agrupa:
+
+- `AP Name`: nombre del punto de acceso que levanta el módulo mientras no está emparejado.
+- `Password`: contraseña de ese punto de acceso. Es también el `authCode` del registro, como se explica en el apartado anterior.
+- `MAC`: MAC del Wi-Fi del módulo.
+- `UDID`: identificador del dispositivo.
+
+En la tabla siguiente, los valores de la unidad fotografiada, que es un aparato distinto de la unidad usada en las capturas del apartado 14 (aquella tiene AP `<AP_SSID>` y UDID `<UDID>`):
+
+| Campo | Valor |
+|---|---|
+| AP Name | `IDS7938pdef` |
+| Password | `MTZBLNFS` |
+| MAC | `7C:A7:B0:40:E2:79` |
+| UDID | `tdks97tcpdef` |
+
+El QR decodifica (comprobado con `zbarimg --raw`) a `IDS7938pdef tdks97tcpdef MTZBLNFS IDS7938 7CA7B040E279`, es decir, cinco campos separados por espacios en el orden `AP Name UDID Password SSID MAC`. Es el mismo orden que se dedujo del QR de la unidad del apartado 14, lo que refuerza la lectura: el `authCode` del registro es la contraseña del AP y el `UDID` va en segundo lugar, no como `account` de login.
+
+Foto de [segator/wibox-media](https://github.com/segator/wibox-media), fichero `docs/img/wibox-hardware.webp` (GPL-3.0), copiada sin recodificar: `sha256 f26bdd36e0357c6e25857621a0326df267c1c30936854d4e63657e7652890dc3`.
+
 ## 15. Verificación
 
 ```bash
