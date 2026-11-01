@@ -8,7 +8,7 @@ La aplicación es una app Android real escrita en Kotlin con Jetpack Compose. Ar
 
 El modo está identificado como `LOCAL DEMO MODE` en las pantallas principales y se explica en Ajustes. `FakeWiboxCloud` implementa la interfaz pública `WiboxCloud` y devuelve datos deterministas. Sus reconocimientos contienen `local-demo-ack-no-physical-action`. La UI los presenta como reconocimientos locales, nunca como apertura, vídeo, conexión o compatibilidad con el cloud original.
 
-No se contacta con servicios reales, no hay credenciales originales y el manifiesto no solicita permiso de Internet. Tampoco se solicitan cámara, micrófono, ubicación, biometría ni acceso WiFi. Las acciones físicas no se reintentan automáticamente.
+No se contacta con servicios reales y no hay credenciales originales. El manifiesto declara solo `CAMERA`, y se pide en ejecución cuando el usuario pulsa el botón de la pantalla de escaneo: si la deniega, el campo manual sigue funcionando. No se solicitan micrófono, ubicación, biometría ni acceso WiFi. Las acciones físicas no se reintentan automáticamente.
 
 ## 2. Arquitectura
 
@@ -44,7 +44,7 @@ La columna de prueba distingue pruebas automatizadas y evidencia visual. `Routes
 | `wifi_set_legacy` | Omitida | `legacy_no_inbound` | Solo cuelga de la lista legacy | `omittedLegacyScreens` |
 | `device_bind` | `device_bind`, `DeviceBindScreen(shared=false)` | Campos rectangulares propios | Manual, QR bloqueado, validación, duplicado, binding y alta persistente | `AddDeviceViewModelTest`, `LocalFlowInstrumentedTest` |
 | `online_devices` | `online_devices`, `OnlineDevicesScreen` | Filas e icono de dispositivo propios | Loading, resultados, vacío y error | `AddDeviceViewModelTest` |
-| `scan` | `scan`, `ScanCodeScreen` | Marco e icono QR propios. Entrada manual en lugar de cámara | Pegar QR/invitación, válido e inválido. Sin permiso de cámara | `DeviceCodeParserTest`, flujos instrumentados de alta e invitación |
+| `scan` | `scan`, `ScanCodeScreen` | Tarjeta de cámara sobre superficie tonal, marco de encuadre y campo manual debajo | Escaneo con CameraX y ZXing sin Google Play Services, permiso en ejecución con motivo previo, rechazo que deja el campo manual, y pegado a mano | `DeviceCodeParserTest`, `QrDecoderTest`, flujos instrumentados de alta e invitación |
 | `config` | `config/{deviceId}`, `DeviceConfigScreen` | Filas de 50 dp y switches Material | Owner, shared, alarmas, valores editables, borrado y sync local | `AppViewModelTest`, `SecondaryFlowsInstrumentedTest`, [07-config](../fastlane/07-config.png) |
 | `password_modify` | `password_modify/{deviceId}/{mode}`, `PasswordModifyScreen` | Formulario propio | Device, admin, unlock, campos vacíos, mismatch y validación local sin guardar secretos | `RoutesTest` |
 | `unlock_setting` | `unlock_setting/{deviceId}`, `UnlockSettingScreen` | Switches propios | Quick on/off persistente y biometría deshabilitada por no disponible | `AppViewModelTest` |
@@ -137,7 +137,8 @@ Todas proceden de la app debug ejecutándose en `emulator-5554`, Android 17/API 
 
 ## 8. Diferencias y limitaciones deliberadas
 
-- No hay cámara QR. La pantalla conserva el marco y permite pegar códigos para probar el parser sin ML Kit ni dependencias propietarias.
+- El escaneo usa CameraX con `com.google.zxing:core`, que decodifica en el propio dispositivo y no habla con Google Play Services. Se abre con la cámara trasera si existe y, si no, con la frontal. En el AVD sin ventana el escenario virtual entrega fotogramas negros y no hay nada que decodificar: eso es una limitación del emulador, no del lector, y la decodificación está cubierta por `QrDecoderTest`.
+- El QR del sticker trae cinco campos (`apName udid password ssid mac`) y el token de fábrica documentado trae cuatro. El parser acepta las dos formas y guarda `ssid` y `mac` cuando están. Ese es el único dato que se usa para el alta: el QR no lleva credenciales de cloud.
 - Las invitaciones usan `example.invalid` y solo existen en el snapshot local. No se genera un QR escaneable porque no hay generador QR en las dependencias disponibles. La UI lo declara y no muestra un QR falso.
 - Preview y galería usan marcadores sintéticos etiquetados. No contienen vídeo, fotos ni audio originales. Capturar o grabar añade una entrada local, no un archivo multimedia real.
 - AP, LAN, audio y WiFi son máquinas de estados locales. No cambian la red del teléfono, no emiten sonido y no prueban compatibilidad de pairing.
