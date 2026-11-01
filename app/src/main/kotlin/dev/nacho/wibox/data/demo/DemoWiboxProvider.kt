@@ -8,6 +8,7 @@ import dev.nacho.wibox.core.cloud.AppUpgradeInfo
 import dev.nacho.wibox.core.cloud.AppUpgradeRequest
 import dev.nacho.wibox.core.cloud.CapabilityKey
 import dev.nacho.wibox.core.cloud.CapabilitySnapshot
+import dev.nacho.wibox.core.cloud.DevicePermission
 import dev.nacho.wibox.core.cloud.CredentialMaterial
 import dev.nacho.wibox.core.cloud.DevicePort
 import dev.nacho.wibox.core.cloud.DeviceRef
@@ -346,7 +347,11 @@ class DemoWiboxProvider(
         )
     }
 
-    override suspend fun createInvitation(deviceId: String): InvitationRecord = mutate {
+    override suspend fun createInvitation(
+        deviceId: String,
+        displayName: String,
+        permissions: Set<DevicePermission>,
+    ): InvitationRecord = mutate {
         val device = snapshot.value.devices.firstOrNull { it.id == deviceId }
             ?: throw ProviderError.NotFound("createInvitation")
         if (snapshot.value.invitations.count { it.deviceId == deviceId } >= 100) {
@@ -356,13 +361,33 @@ class DemoWiboxProvider(
         val invitation = DemoInvitation(
             id = "invitation-$index",
             deviceId = deviceId,
-            name = "Guest $index",
+            name = displayName.trim().ifEmpty { "Guest $index" },
             code = "LOCAL-$index-${device.id}",
             createdAtMillis = DemoFixtures.BASE_TIME,
             expiresAtMillis = DemoFixtures.BASE_TIME + 7 * 86_400_000L,
+            permissions = permissions.toDemoPermissions(),
         )
         updateLocked(snapshot.value.copy(invitations = snapshot.value.invitations + invitation))
         invitation.toInvitationRecord()
+    }
+
+    override suspend fun updateInvitation(
+        id: String,
+        displayName: String,
+        permissions: Set<DevicePermission>,
+    ): InvitationRecord = mutate {
+        val current = snapshot.value.invitations.firstOrNull { it.id == id }
+            ?: throw ProviderError.NotFound("updateInvitation")
+        val updated = current.copy(
+            name = displayName.trim().ifEmpty { current.name },
+            permissions = permissions.toDemoPermissions(),
+        )
+        updateLocked(
+            snapshot.value.copy(
+                invitations = snapshot.value.invitations.map { if (it.id == id) updated else it },
+            ),
+        )
+        updated.toInvitationRecord()
     }
 
     override suspend fun deleteInvitation(id: String) = mutate {

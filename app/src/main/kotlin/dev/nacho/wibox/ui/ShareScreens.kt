@@ -10,15 +10,20 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,6 +41,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.nacho.wibox.R
+import dev.nacho.wibox.core.cloud.DevicePermission
 import dev.nacho.wibox.ui.scan.QrCodeImage
 
 @Composable
@@ -46,6 +52,7 @@ fun ShareManageScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var pendingDelete by remember { mutableStateOf<InvitationUi?>(null) }
+    var editor by remember { mutableStateOf<InvitationDraft?>(null) }
     LaunchedEffect(state.createdInvitationId) {
         val created = state.createdInvitationId ?: return@LaunchedEffect
         navigator.navigateInventory(
@@ -79,6 +86,7 @@ fun ShareManageScreen(
                                             ),
                                         )
                                     },
+                                    onEdit = { editor = InvitationDraft(invitation) },
                                     onDelete = { pendingDelete = invitation },
                                 )
                             }
@@ -87,13 +95,29 @@ fun ShareManageScreen(
                 }
                 WiboxButton(
                     text = stringResource(R.string.share_create_invitation),
-                    onClick = { viewModel.createInvitation(deviceId) },
+                    onClick = { editor = InvitationDraft(deviceId = deviceId) },
                     modifier = Modifier.padding(vertical = 12.dp),
                     tag = "share_create_invitation",
                     primary = true,
                 )
             }
         }
+    }
+    val draft = editor
+    if (draft != null) {
+        InvitationEditor(
+            draft = draft,
+            onDismiss = { editor = null },
+            onSave = { name, permissions ->
+                val id = draft.id
+                if (id == null) {
+                    viewModel.createInvitation(draft.deviceId, name, permissions)
+                } else {
+                    viewModel.updateInvitation(id, name, permissions)
+                }
+                editor = null
+            },
+        )
     }
     val deleteTarget = pendingDelete
     if (deleteTarget != null) {
@@ -145,6 +169,7 @@ fun ShareDeviceScreen(
 private fun InvitationRow(
     invitation: InvitationUi,
     onOpen: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
     Surface(
@@ -193,6 +218,12 @@ private fun InvitationRow(
             tag = "invitation_delete_${invitation.id}",
             tint = WiboxColors.error,
         )
+        SmallIconButton(
+            painter = R.drawable.ic_edit,
+            contentDescription = stringResource(R.string.invitation_edit),
+            onClick = onEdit,
+            tag = "invitation_edit_${invitation.id}",
+        )
         }
     }
 }
@@ -217,10 +248,10 @@ private fun InvitationDetail(invitation: InvitationUi, onShareLink: () -> Unit) 
             null,
             tag = "invitation_expires",
         )
-        Text(
-            text = stringResource(R.string.invitation_permissions),
-            style = MaterialTheme.typography.bodyMedium,
-            color = WiboxColors.secondaryText,
+        DetailValue(
+            stringResource(R.string.invitation_permissions_label),
+            permissionSummary(invitation.permissions),
+            tag = "invitation_permissions_value",
         )
         Box(
             modifier = Modifier.fillMaxWidth(),
@@ -282,3 +313,103 @@ private fun DetailValue(label: String, value: String?, tag: String?) {
         }
     }
 }
+
+private data class InvitationDraft(
+    val deviceId: String,
+    val id: String? = null,
+    val name: String = "",
+    val permissions: Set<DevicePermission> = DevicePermission.entries.toSet(),
+) {
+    constructor(invitation: InvitationUi) : this(
+        deviceId = invitation.deviceId,
+        id = invitation.id,
+        name = invitation.displayName,
+        permissions = invitation.permissions,
+    )
+}
+
+@Composable
+private fun InvitationEditor(
+    draft: InvitationDraft,
+    onDismiss: () -> Unit,
+    onSave: (String, Set<DevicePermission>) -> Unit,
+) {
+    var name by remember(draft.id) { mutableStateOf(draft.name) }
+    var permissions by remember(draft.id) { mutableStateOf(draft.permissions) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(
+                    if (draft.id == null) R.string.invitation_editor_create_title
+                    else R.string.invitation_editor_edit_title,
+                ),
+                style = MaterialTheme.typography.titleLarge,
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .heightIn(max = 520.dp)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                WiboxTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = stringResource(R.string.invitation_name_label),
+                    tag = "invitation_name_input",
+                )
+                Text(
+                    text = stringResource(R.string.invitation_permissions_label),
+                    modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                DevicePermission.entries.forEach { permission ->
+                    WiboxSwitchRow(
+                        text = permissionLabel(permission),
+                        checked = permission in permissions,
+                        onCheckedChange = { checked ->
+                            permissions = if (checked) permissions + permission else permissions - permission
+                        },
+                        tag = "permission_${permission.name.lowercase()}",
+                        topMargin = 4.dp,
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSave(name, permissions) },
+                modifier = Modifier.testTag("invitation_save"),
+            ) {
+                Text(stringResource(R.string.invitation_editor_save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+        },
+    )
+}
+
+@Composable
+private fun permissionSummary(permissions: Set<DevicePermission>): String {
+    if (permissions.isEmpty()) return stringResource(R.string.invitation_permissions_none)
+    val labels = mutableListOf<String>()
+    for (permission in DevicePermission.entries) {
+        if (permission in permissions) labels += permissionLabel(permission)
+    }
+    return labels.joinToString(", ")
+}
+
+@Composable
+private fun permissionLabel(permission: DevicePermission): String = stringResource(
+    when (permission) {
+        DevicePermission.PREVIEW -> R.string.permission_preview
+        DevicePermission.PLAYBACK -> R.string.permission_playback
+        DevicePermission.ALARM -> R.string.permission_alarms
+        DevicePermission.UNLOCK -> R.string.permission_unlock
+        DevicePermission.F1 -> R.string.permission_f1
+        DevicePermission.CALL_GUARD -> R.string.permission_call_guard
+    },
+)
