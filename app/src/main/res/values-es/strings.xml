@@ -69,7 +69,11 @@
     <string name="next">Siguiente</string>
     <string name="manual_wifi_instructions">Instrucciones manuales del AP</string>
     <string name="scan_qr">Escanee el código QR</string>
-    <string name="camera_not_implemented">El escaneo con cámara no está incluido. Pega un QR de dispositivo o una invitación. No se solicita permiso de cámara.</string>
+    <string name="scan_with_camera_title">Escanea el código con la cámara</string>
+    <string name="scan_with_camera_body">Apunta la cámara al QR de la etiqueta o al de la invitación.</string>
+    <string name="scan_enable_camera">Usar la cámara</string>
+    <string name="scan_camera_denied">La cámara está apagada. Aún puedes pegar el código abajo.</string>
+    <string name="scan_camera_unavailable">Este dispositivo no tiene cámara utilizable. Pega el código abajo.</string>
     <string name="paste_qr_or_invitation">QR de dispositivo o invitación</string>
     <string name="validate_code">Validar código</string>
     <string name="add_online">Añadir por Red</string>
@@ -116,8 +120,8 @@
     <string name="pairing_error_hint">El dispositivo simulado no pudo conectarse al router. Comprueba el SSID y la contraseña demo y reinicia el flujo de emparejamiento.</string>
     <string name="error">Error</string>
     <string name="code_empty">Introduce un QR de dispositivo o una invitación.</string>
-    <string name="qr_field_count">Un QR de dispositivo debe contener exactamente: apName uid authCode model.</string>
-    <string name="qr_invalid_fields">El QR contiene un apName, UID, authCode o modelo no válido.</string>
+    <string name="qr_field_count">Un QR de dispositivo debe llevar los cuatro campos del token de fábrica (apName uid authCode model) o los cinco de la etiqueta (apName udid password ssid mac).</string>
+    <string name="qr_invalid_fields">El QR contiene un campo que no es válido.</string>
     <string name="invitation_unsupported">El OEM o el ID de app de la invitación no son compatibles con esta demo local.</string>
     <string name="invitation_invalid">Invitación incompleta o no válida. Campos obligatorios: InviteCode, OwnerId, OemId, AppVersion, DeviceId, From y AppId.</string>
     <string name="empty_required_fields">Completa todos los campos obligatorios.</string>

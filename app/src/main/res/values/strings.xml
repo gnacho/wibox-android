@@ -69,7 +69,11 @@
     <string name="next">Next</string>
     <string name="manual_wifi_instructions">Manual AP instructions</string>
     <string name="scan_qr">Scan QR-Code</string>
-    <string name="camera_not_implemented">Camera scanning is not included. Paste a device QR or invitation below. No camera permission is requested.</string>
+    <string name="scan_with_camera_title">Scan the code with the camera</string>
+    <string name="scan_with_camera_body">Point the camera at the QR on the label or the one in the invitation.</string>
+    <string name="scan_enable_camera">Use the camera</string>
+    <string name="scan_camera_denied">Camera is off. You can still paste the code below.</string>
+    <string name="scan_camera_unavailable">This device has no usable camera. Paste the code below.</string>
     <string name="paste_qr_or_invitation">Device QR or invitation</string>
     <string name="validate_code">Validate code</string>
     <string name="add_online">Add Online</string>
@@ -116,8 +120,8 @@
     <string name="pairing_error_hint">The simulated device could not link to the router. Check the demo SSID and password, then start the pairing flow again.</string>
     <string name="error">Error</string>
     <string name="code_empty">Enter a device QR or invitation.</string>
-    <string name="qr_field_count">A device QR must contain exactly: apName uid authCode model.</string>
-    <string name="qr_invalid_fields">The QR contains an invalid apName, UID, authCode or model.</string>
+    <string name="qr_field_count">A device QR must contain the four fields of the stock token (apName uid authCode model) or the five on the label (apName udid password ssid mac).</string>
+    <string name="qr_invalid_fields">The QR contains a field that is not valid.</string>
     <string name="invitation_unsupported">The invitation OEM or app ID is not supported by this local demo.</string>
     <string name="invitation_invalid">Invalid or incomplete invitation. Required fields: InviteCode, OwnerId, OemId, AppVersion, DeviceId, From and AppId.</string>
     <string name="empty_required_fields">Complete all required fields.</string>
