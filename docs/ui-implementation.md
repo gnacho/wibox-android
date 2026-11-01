@@ -60,9 +60,9 @@ La columna de prueba distingue pruebas automatizadas y evidencia visual. `Routes
 | `router` | `router?modify={modify}`, `RouterScreen` | Lista WiFi y formulario propios | Selección, password visible/oculta, preferencia de guardado sin persistir secretos, modo nuevo y modificación | `LocalFlowInstrumentedTest` |
 | `voice` | `voice`, `VoiceProvisioningScreen` | `device_add_sound_waver.png` original | Sending, waiting y ready. Sin emitir audio | `AddDeviceViewModelTest` |
 | `wifi_progress` | `wifi_progress`, `WifiProvisioningScreen` | `device_add_wifi_set.png` original | Connecting, sending, waiting, ready y failure manual | `AddDeviceViewModelTest`, `LocalFlowInstrumentedTest` |
-| `share_device` | `share_device/{invitationId}`, `ShareDeviceScreen` | QR real sobre fondo blanco, enlace, código y caducidad | QR generado con ZXing que el propio escáner de la app lee, enlace, chooser Android y expiración | `SecondaryFlowsInstrumentedTest`, `QrEncoderTest` |
+| `share_device` | `share_device/{invitationId}`, `ShareDeviceScreen` | QR real sobre fondo blanco, enlace, código, caducidad y permisos concedidos | QR generado con ZXing que el propio escáner de la app lee, enlace, chooser Android, expiración y lista de permisos de la invitación | `SecondaryFlowsInstrumentedTest`, `QrEncoderTest` |
 | `pairing_fail` | `pairing_fail`, `PairingFailScreen` | Texto y botón propios | Error simulado y regreso a main | `AddDeviceViewModelTest` |
-| `share_manage` | `share_manage/{deviceId}`, `ShareManageScreen` | Filas de invitación propias | Loading, empty, list, create, delete, límite y error | `SecondaryFlowsInstrumentedTest` |
+| `share_manage` | `share_manage/{deviceId}`, `ShareManageScreen` | Filas de invitación propias y diálogo de usuario | Loading, empty, list, create con nombre y permisos, edit con nombre y permisos, delete, límite y error | `SecondaryFlowsInstrumentedTest`, `ViewModelsTest` |
 | `share_bind` | `share_bind`, `DeviceBindScreen(shared=true)` | Formulario propio con UID/código bloqueados | Invitación válida, duplicado, aceptación y alta compartida | `StateAndInvitationInstrumentedTest` |
 | `tab_devices` | Contenido de `main`, `DevicesScreen` | `device_cover_default.png`, estados online/offline originales | Loading, empty, list, offline, acciones deshabilitadas y resultado local | `LocalFlowInstrumentedTest`, [01-devices](../fastlane/01-devices.png) |
 | `tab_events` | Contenido de `main`, `EventsScreen` | Iconos Material propios | Loading, empty, list, warning, edit, selección y borrado | `AppViewModelTest`, [02-events](../fastlane/02-events.png) |
@@ -102,13 +102,13 @@ Se inspeccionaron las ocho capturas en 1080x2400 y estados de inicio, tabs, prev
 | Estado | Representación | Evidencia |
 |---|---|---|
 | Loading | Portada y `LoadingContent` en listas y pairing | Escenario LOADING en instrumentación |
-| Contenido | Fixtures locales reactivos y persistidos | 34 tests unitarios, 45 en `core:cloud` y flujo E2E |
+| Contenido | Fixtures locales reactivos y persistidos | 35 tests unitarios, 45 en `core:cloud` y flujo E2E |
 | Vacío | Botones/mensajes específicos en devices, events, gallery y usuarios | Escenario EMPTY y borrado de invitación |
 | Error | Mensaje tipado, color `#e73e04` y retry manual | Escenario ERROR y tests de `CloudError` |
 | Deshabilitado | Offline, permisos, biometría, upgrade y QR no disponibles | `StateAndInvitationInstrumentedTest`, capturas de dispositivos |
 | Unsupported | Texto explícito, sin éxito ni reintento | Escenario UNSUPPORTED y tests de fake/ViewModels |
 
-La app tiene 34 tests unitarios en cinco ficheros: parser de códigos, rutas, ViewModels y el codificador y el decodificador de QR. `core:cloud` suma 45 en siete ficheros. Los instrumentados son 24 en seis clases: actividad real, E2E local, estados, invitación, flujos secundarios, API externa y captura de superficies. Todos usan repositorios en memoria o DataStore temporal y ninguno usa red.
+La app tiene 35 tests unitarios en seis ficheros: parser de códigos, rutas, ViewModels y el codificador y el decodificador de QR. `core:cloud` suma 45 en siete ficheros. Los instrumentados son 24 en seis clases: actividad real, E2E local, estados, invitación, flujos secundarios, API externa y captura de superficies. Todos usan repositorios en memoria o DataStore temporal y ninguno usa red.
 
 Comandos de referencia:
 
