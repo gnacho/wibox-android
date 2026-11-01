@@ -27,7 +27,7 @@ Las pruebas usan `MockEngine`, reloj y almacenamiento inyectados, fixtures ficti
 | U-DEVICE-LIST | E004, E010, E020 | `listDevices` | `Unsupported` | `EventAndUnsupportedTest.capabilitiesAndUnsupportedOperationsNeverClaimRuntimeSupport` | Falta el contrato HTTP/XML completo de `getDevList` |
 | U-REALTIME | E037 a E041, E063, E073 | `observeEvents` | `Unsupported` | El mismo test de capacidades | MQTT está presente pero desactivado por defecto y sin prueba dinámica |
 | U-ACTIONS | E019, E023, E025 | `performAction` | `Unsupported` | El mismo test de capacidades | No hay wire cloud completo ni ack físico verificado |
-| U-REGISTER | E004, E010 | Registro opaco y `userLogin` | No expuesto como operación | Control estático de API y documentación | `userFreeRegister` y login no tienen un request/response suficientemente cerrado |
+| U-REGISTER | E004, E010, smali `com.quvii.qvweb.userauth` | Registro opaco y `userLogin` | Contrato cerrado por smali, sin operación expuesta | Sección 14 y documentación | Respuesta real del gateway pendiente de captura, el app de referencia nunca llegó a enviar el POST por el bloqueo TLS |
 | U-MEDIA | E011, E021, E023, E042 | Audio y vídeo | No implementado | Revisión de capacidades | P2P nativo no reimplementado y binarios originales prohibidos |
 
 `CloudCapabilities` solo anuncia OAuth password, OAuth refresh, Shadow HTTP, parser offline de alarmas y app upgrade check. Las demás capacidades quedan fuera del conjunto soportado.
@@ -218,9 +218,83 @@ Las cabeceras `Set-Cookie` se ignoran. No se instala almacén de cookies, no se 
 
 La excepción `ssl_insecure` de attempt3 perteneció exclusivamente al proxy MITM de laboratorio por un upstream caducado. No se ha copiado al cliente. TLS conserva validación de certificado y hostname.
 
-Registro, login, bind, lista de dispositivos, media y acciones físicas siguen sin request y response suficientes y permanecen no expuestos o `Unsupported`. OAuth y Shadow conservan su alcance estático, sin validación runtime afirmada.
+Bind, lista de dispositivos, media y acciones físicas siguen sin request y response suficientes y permanecen no expuestos o `Unsupported`. El registro y login disponen ahora del contrato estático completo de la sección 14, sin captura de respuesta real. OAuth y Shadow conservan su alcance estático, sin validación runtime afirmada.
 
-## 14. Verificación
+## 14. Registro y login: contrato userauth observado en smali y verificado contra el servidor
+
+La evidencia procede del análisis estático del APK oficial stock (`com.quvii.qvweb.userauth`) y de tráfico real capturado el 2026-11-01. La interceptación TLS de los hosts `r1` se logró parcheando el pinning propio del SDK (ver 14.1); con el canal abierto, un POST sintético obtuvo respuesta real del servidor con el formato exacto que declaraba el smali. El app de referencia sigue sin haber enviado el POST por sí mismo: su wizard de alta exige el timbre físico.
+
+### 14.1 Endpoint y transporte
+
+El envío usa POST contra `{baseUrl}/auth/user;jus_duplex=up` con `Content-Type: application/xml;charset=utf-8` y `User-Agent: okhttp/3.9.0`. El `baseUrl` lo aporta `DownChannelManager` (`https://host:port/`); el gateway servido es `https://r1-8.qvcloud.net:443/`. Dos requisitos verificados con tráfico real:
+
+- **Cookie de sesión obligatoria**: sin `Cookie: jsessionid=...` el gateway responde 404 nginx plano. Con la cookie de la sesión del canal down del app, el mismo POST devuelve 200. El método del SDK se llama `getAuthInstanceWithCookie`, coherente con este requisito.
+- **Patrón duplex**: el POST `jus_duplex=up` devuelve 200 con cuerpo vacío; la respuesta llega por el canal de bajada `GET /auth/nologin;jus_duplex=down` de la MISMA sesión, un long-poll que se renueva cada ~30 s. El servidor emite la sesión con `Set-Cookie: jsessionid=...` en el primer 200 del canal down. Otros comandos del canal usan `/auth/nologin;jus_duplex=up` y `/auth/user/deli;jus_duplex=up`.
+
+El pinning TLS del SDK está en `OkHttpUtil.initSSL()` (método private static): `KeyStore BKS` con password `123456` cargado desde assets `client.bks` (clave de cliente, mTLS potencial) y `server.bks` (truststore con la CA de Qualvision), consumido por `createBuilder2()` que usa el flujo auth. Ese pinning es la causa de que mitmproxy fuera rechazado con `certificate_unknown` en `r1-*` pese a la CA de usuario instalada y a los parches OpenSSL nativos. La CA raíz embebida es `assets/ca.pem` (QUALVISION TECHNOLOGY CO.,LTD, 2017-2037).
+
+### 14.2 Envelope de request
+
+El cuerpo es XML serializado con simpleframework, raíz `envelope` sin modo estricto, con dos bloques:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<envelope>
+  <header>...</header>
+  <content>...</content>
+</envelope>
+```
+
+Cabecera `header`:
+
+| Campo | Registro (`userFreeRegister`) | Login (`userLogin`) |
+|---|---|---|
+| `flag` | `tdkcloud` | `tdkcloud` |
+| `version` | valor servido por version_check, observado `5.1.11`, no va fija | igual |
+| `command` | `dev-bind-register` | `login` |
+| `seq` | `0` | `0` |
+| `session` | vacía | vacía |
+| `userData` | `authEncWay` | vacía |
+| `client` | `id`, `type`, `oem`, `app` | igual |
+
+El bloque `client` lleva `id` con el push token FCM, `type` con `3`, `oem` con `G0021` y `app` con `2021`. El formato de `clientid` observado en version_check es `003-2021-` seguido de un identificador hexadecimal aleatorio de 16 caracteres.
+
+Contenido `content` de registro (constructor con cinco campos): `deviceId` con el umid, `deviceName`, `password`, `authCode` y `authEncWay` con valor `sha2-256` o `plain`. El flujo real `bindDevRegister` genera la contraseña con un UUID aleatorio, toma `authCode` del QR del timbre físico y fija `authEncWay` en `sha2-256`: es registro con vinculación de dispositivo, no alta de cuenta exenta de hardware.
+
+Contenido `content` de login (constructor con cinco campos): `account`, `password`, `type`, `autchCode` (con este error ortográfico en el wire) e `ipRegionId` con la región IP actual.
+
+### 14.3 Respuesta real observada
+
+Capturada el 2026-11-01 en el canal down del app stock, en respuesta a un POST sintético autenticado con la sesión del canal:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<envelope>
+  <header>
+    <flag>tdkcloud</flag>
+    <version>v1.24</version>
+    <command>dev-bind-register</command>
+    <seq>0</seq>
+    <result>100009</result>
+  </header>
+  <content>
+    <account></account>
+    <dynamic-password></dynamic-password>
+    <password-expired></password-expired>
+    <data-encode-key></data-encode-key>
+    <is-default-out-authcode>0</is-default-out-authcode>
+    <default-out-auth-code></default-out-auth-code>
+  </content>
+</envelope>
+```
+
+Observaciones del wire: la versión del protocolo que declara el servidor en la respuesta es `v1.24` (distinta de la `5.1.11` del cliente); el servidor entregó la misma respuesta dos veces (duplicado del mensaje en dos ciclos de long-poll); el nombre de los elementos (`dynamic-password`, `data-encode-key`, `is-default-out-authcode`) casa 1:1 con los campos del `UserFreeRegisterResp$Content` del smali salvo normalización de nombres. El `result` distinto de cero se interpreta como error; `100009` no aparece como constante en el cliente (definido solo en el servidor).
+
+### 14.4 Límites
+
+El caso de éxito de registro no se ha observado: `result=100009` se obtuvo con `authCode` vacío y `deviceId` sintético, tanto en formato corto (8 hex) como largo (16 hex), de modo que el bloqueo no es el formato de identificadores sino la falta del `authCode` real que emite el QR del timbre. Sin timbre físico no hay alta de cuenta por este camino: el app no ofrece pantalla de login ni registro independiente. La operación sigue sin estar expuesta en la API pública de `core:cloud`. Cualquier implementación futura debe partir de la sección 12 para decidir qué requiere captura autorizada adicional (un timbre real o un parámetro autorizado por el fabricante).
+
+## 15. Verificación
 
 ```bash
 python3 core/cloud/verify_upgrade_contract.py
