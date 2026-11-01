@@ -3,6 +3,7 @@ package dev.nacho.wibox.ui
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.nacho.wibox.core.cloud.DevicePresence
 import dev.nacho.wibox.core.cloud.DeviceSnapshot
 import dev.nacho.wibox.core.cloud.ProviderError
 import dev.nacho.wibox.data.AppPreferences
@@ -23,6 +24,7 @@ data class DeviceDetailUiState(
     val deletedDeviceId: String? = null,
     val operationError: ProviderError? = null,
     val queryingFirmware: Boolean = false,
+    val timeSyncSucceeded: Boolean? = null,
 )
 
 class DeviceDetailViewModel(
@@ -90,6 +92,34 @@ class DeviceDetailViewModel(
         viewModelScope.launch(dispatcher) {
             repository.updatePreferences { it.copy(quickUnlock = enabled) }
         }
+    }
+
+    fun setBiometricUnlock(enabled: Boolean) {
+        viewModelScope.launch(dispatcher) {
+            repository.updatePreferences { it.copy(biometricUnlock = enabled) }
+        }
+    }
+
+    fun syncTime() {
+        val deviceId = savedStateHandle.get<String>(DEVICE_ID_KEY) ?: return
+        viewModelScope.launch(dispatcher) {
+            val online = mutableState.value.device?.presence == DevicePresence.ONLINE
+            if (!online) {
+                mutableState.value = mutableState.value.copy(timeSyncSucceeded = false)
+                return@launch
+            }
+            try {
+                val stamp = System.currentTimeMillis().toString()
+                repository.updateDevice(deviceId) { it.copy(metadata = it.metadata + ("timeSyncAt" to stamp)) }
+                mutableState.value = mutableState.value.copy(timeSyncSucceeded = true, operationError = null)
+            } catch (error: ProviderError) {
+                mutableState.value = mutableState.value.copy(timeSyncSucceeded = false, operationError = error)
+            }
+        }
+    }
+
+    fun consumeTimeSyncResult() {
+        mutableState.value = mutableState.value.copy(timeSyncSucceeded = null)
     }
 
     fun renameDevice(name: String) {

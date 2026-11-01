@@ -45,9 +45,9 @@ La columna de prueba distingue pruebas automatizadas y evidencia visual. `Routes
 | `device_bind` | `device_bind`, `DeviceBindScreen(shared=false)` | Campos rectangulares propios | Manual, QR bloqueado, validación, duplicado, binding y alta persistente | `AddDeviceViewModelTest`, `LocalFlowInstrumentedTest` |
 | `online_devices` | `online_devices`, `OnlineDevicesScreen` | Filas e icono de dispositivo propios | Loading, resultados, vacío y error | `AddDeviceViewModelTest` |
 | `scan` | `scan`, `ScanCodeScreen` | Tarjeta de cámara sobre superficie tonal, marco de encuadre y campo manual debajo | Escaneo con CameraX y ZXing sin Google Play Services, permiso en ejecución con motivo previo, rechazo que deja el campo manual, y pegado a mano | `DeviceCodeParserTest`, `QrDecoderTest`, flujos instrumentados de alta e invitación |
-| `config` | `config/{deviceId}`, `DeviceConfigScreen` | Filas de 50 dp y switches Material | Owner, shared, alarmas, valores editables, borrado y sync local | `AppViewModelTest`, `SecondaryFlowsInstrumentedTest`, [07-config](../fastlane/07-config.png) |
+| `config` | `config/{deviceId}`, `DeviceConfigScreen` | Filas de 50 dp, switches Material y diálogos de opción con radios | Owner, shared, alarmas, valores editables, borrado, sync local, los tres modos de visualización del stock (alta, baja y foto), Intercom Way (full duplex y pulsar para hablar), tiempo de F1 de 1 a 10 s y sincronización de fecha y hora con resultado visible | `AppViewModelTest`, `SecondaryFlowsInstrumentedTest`, [07-config](../fastlane/07-config.png) |
 | `password_modify` | `password_modify/{deviceId}/{mode}`, `PasswordModifyScreen` | Formulario propio | Device, admin, unlock, campos vacíos, mismatch y validación local sin guardar secretos | `RoutesTest` |
-| `unlock_setting` | `unlock_setting/{deviceId}`, `UnlockSettingScreen` | Switches propios | Quick on/off persistente y biometría deshabilitada por no disponible | `AppViewModelTest` |
+| `unlock_setting` | `unlock_setting/{deviceId}`, `UnlockSettingScreen` | Switches propios | Quick on/off persistente y confirmación biométrica persistente en `AppPreferences`, pedida por el sistema solo cuando está activa | `AppViewModelTest` |
 | `device_info` | `device_info/{deviceId}`, `DeviceInfoScreen` | Formulario propio | UID read-only, edición, duplicado y guardado | `AppViewModelTest` |
 | `about` | `about`, `AboutScreen` | `logo.png` original | Versión local, privacidad local y gesto de cinco pulsaciones | `SecondaryFlowsInstrumentedTest` |
 | `image_pager` | `image_pager/{mediaId}`, `ImagePagerScreen` | Marcadores multimedia honestos, sin fotos falsas | Blanco, negro, página, navegación, share unsupported y borrado | `SecondaryFlowsInstrumentedTest` |
@@ -64,7 +64,7 @@ La columna de prueba distingue pruebas automatizadas y evidencia visual. `Routes
 | `pairing_fail` | `pairing_fail`, `PairingFailScreen` | Texto y botón propios | Error simulado y regreso a main | `AddDeviceViewModelTest` |
 | `share_manage` | `share_manage/{deviceId}`, `ShareManageScreen` | Filas de invitación propias y diálogo de usuario | Loading, empty, list, create con nombre y permisos, edit con nombre y permisos, delete, límite y error | `SecondaryFlowsInstrumentedTest`, `ViewModelsTest` |
 | `share_bind` | `share_bind`, `DeviceBindScreen(shared=true)` | Formulario propio con UID/código bloqueados | Invitación válida, duplicado, aceptación y alta compartida | `StateAndInvitationInstrumentedTest` |
-| `tab_devices` | Contenido de `main`, `DevicesScreen` | `device_cover_default.png`, estados online/offline originales | Loading, empty, list, offline, acciones deshabilitadas y resultado local | `LocalFlowInstrumentedTest`, [01-devices](../fastlane/01-devices.png) |
+| `tab_devices` | Contenido de `main`, `DevicesScreen` | `device_cover_default.png`, estados online/offline originales | Loading, empty, list, offline, acciones deshabilitadas, resultado local y confirmación con la credencial del sistema antes de abrir o disparar F1 cuando el ajuste está activo | `LocalFlowInstrumentedTest`, [01-devices](../fastlane/01-devices.png) |
 | `tab_events` | Contenido de `main`, `EventsScreen` | Iconos Material propios | Loading, empty, list, warning, edit, selección y borrado | `AppViewModelTest`, [02-events](../fastlane/02-events.png) |
 | `tab_event_list` | `EventRow` y paginación dentro de `EventsScreen` | Filas de 55 dp propias | Empty, refresh manual, load more cada 15 y edición | `AppViewModelTest` |
 | `tab_gallery` | Contenido de `main`, `GalleryScreen` | Cuadrícula de tres columnas con marcadores locales | Empty, grid, edit, selected, select all, save/share y delete | `AppViewModelTest`, [03-gallery](../fastlane/03-gallery.png) |
@@ -102,13 +102,13 @@ Se inspeccionaron las ocho capturas en 1080x2400 y estados de inicio, tabs, prev
 | Estado | Representación | Evidencia |
 |---|---|---|
 | Loading | Portada y `LoadingContent` en listas y pairing | Escenario LOADING en instrumentación |
-| Contenido | Fixtures locales reactivos y persistidos | 35 tests unitarios, 45 en `core:cloud` y flujo E2E |
+| Contenido | Fixtures locales reactivos y persistidos | 36 tests unitarios, 45 en `core:cloud` y flujo E2E |
 | Vacío | Botones/mensajes específicos en devices, events, gallery y usuarios | Escenario EMPTY y borrado de invitación |
 | Error | Mensaje tipado, color `#e73e04` y retry manual | Escenario ERROR y tests de `CloudError` |
-| Deshabilitado | Offline, permisos, biometría, upgrade y QR no disponibles | `StateAndInvitationInstrumentedTest`, capturas de dispositivos |
+| Deshabilitado | Offline, permisos insuficientes, upgrade y credencial del sistema no disponible | `StateAndInvitationInstrumentedTest`, capturas de dispositivos |
 | Unsupported | Texto explícito, sin éxito ni reintento | Escenario UNSUPPORTED y tests de fake/ViewModels |
 
-La app tiene 35 tests unitarios en seis ficheros: parser de códigos, rutas, ViewModels y el codificador y el decodificador de QR. `core:cloud` suma 45 en siete ficheros. Los instrumentados son 24 en seis clases: actividad real, E2E local, estados, invitación, flujos secundarios, API externa y captura de superficies. Todos usan repositorios en memoria o DataStore temporal y ninguno usa red.
+La app tiene 36 tests unitarios en cinco ficheros: parser de códigos, rutas, ViewModels y el codificador y el decodificador de QR. `core:cloud` suma 45 en siete ficheros. Los instrumentados son 24 en seis clases: actividad real, E2E local, estados, invitación, flujos secundarios, API externa y captura de superficies. Todos usan repositorios en memoria o DataStore temporal y ninguno usa red.
 
 Comandos de referencia:
 
@@ -145,7 +145,8 @@ Todas proceden de la app debug ejecutándose en `emulator-5554`, Android 17/API 
 - AP, LAN, audio y WiFi son máquinas de estados locales. No cambian la red del teléfono, no emiten sonido y no prueban compatibilidad de pairing.
 - La aceptación de llamada abre preview local. No registra FCM ni confirma una llamada real.
 - Las contraseñas de formularios no se persisten. Los ajustes no sensibles, dispositivos, eventos, galería e invitaciones sí usan DataStore.
-- La biometría y el firmware permanecen deshabilitados. No hay actualizaciones reales.
+- La confirmación biométrica no usa `BiometricPrompt`: abre la pantalla de credencial del sistema (`KeyguardManager.createConfirmDeviceCredentialIntent`), que pide huella, PIN o patrón. Si el teléfono no tiene ninguna credencial configurada, el intent vuelve nulo y la acción se ejecuta sin gate, que es el mismo comportamiento que tendría el sistema. La sincronización de hora escribe una marca local en el dispositivo demo, no habla con el portero. El firmware sigue deshabilitado y no hay actualizaciones reales.
+- Los ajustes del dispositivo replican las filas del original: nombre, contraseñas, apertura, Intercom Way, modo de visualización con los tres valores del stock, Wi-Fi, usuarios, tiempo de F1 de 1 a 10 s, recepción de llamada, alertas de movimiento, versión de firmware, sincronizar hora y borrar. La fila `Lock Number` del original está oculta con `visibility="gone"` y no se replica.
 - El banner local y el selector de escenarios son diferencias necesarias para evitar que una demo se confunda con una conexión operativa.
 - Las cinco pantallas `legacy_no_inbound` se omiten porque no tienen navegación de entrada en el inventario actual.
 - La fidelidad afirmada es estructural y visual frente a layouts y recursos estáticos. No se declara equivalencia cloud, compatibilidad con dispositivos ni equivalencia visual dinámica sin evidencia.
