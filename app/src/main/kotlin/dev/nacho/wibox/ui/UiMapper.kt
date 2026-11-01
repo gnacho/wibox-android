@@ -53,6 +53,7 @@ object UiMapper {
         createdAtMillis = record.createdAtMillis,
         expiresAtMillis = record.expiresAtMillis,
         link = record.toLocalInvitationUrl(),
+        permissions = record.permissions,
     )
 
     fun providerStatus(descriptor: ProviderDescriptor): ProviderStatusUi = ProviderStatusUi(

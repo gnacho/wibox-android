@@ -106,6 +106,7 @@ data class InvitationUi(
     val createdAtMillis: Long,
     val expiresAtMillis: Long,
     val link: String,
+    val permissions: Set<DevicePermission> = DevicePermission.entries.toSet(),
 )
 
 data class ProviderStatusUi(
