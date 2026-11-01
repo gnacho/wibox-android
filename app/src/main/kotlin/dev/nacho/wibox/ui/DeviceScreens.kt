@@ -48,6 +48,14 @@ import dev.nacho.wibox.core.cloud.DevicePermission
 import dev.nacho.wibox.core.cloud.DevicePresence
 import dev.nacho.wibox.core.cloud.DeviceRole
 import kotlinx.coroutines.delay
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.TextButton
+import dev.nacho.wibox.data.TalkMode
+import dev.nacho.wibox.data.VideoMode
 
 @Composable
 fun PreviewScreen(
@@ -362,6 +370,9 @@ fun DeviceConfigScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val device = state.device
     var confirmDelete by remember { mutableStateOf(false) }
+    var talkModeDialog by remember { mutableStateOf(false) }
+    var videoModeDialog by remember { mutableStateOf(false) }
+    var f1Dialog by remember { mutableStateOf(false) }
     LaunchedEffect(deviceId) { viewModel.load(deviceId) }
     LaunchedEffect(state.deletedDeviceId) {
         if (state.deletedDeviceId == deviceId) {
@@ -406,33 +417,25 @@ fun DeviceConfigScreen(
                 )
                 WiboxOptionRow(
                     text = stringResource(R.string.intercom_way),
-                    onClick = {
-                        viewModel.updateDevice { snapshot ->
-                            val current = snapshot.metadata["fullDuplex"]?.toBoolean() ?: true
-                            snapshot.copy(metadata = snapshot.metadata + ("fullDuplex" to (!current).toString()))
-                        }
-                    },
+                    onClick = { talkModeDialog = true },
                     trailing = {
                         Text(
-                            stringResource(if (device.fullDuplex) R.string.full_duplex else R.string.half_duplex),
+                            stringResource(talkModeLabel(device.talkMode)),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     },
+                    tag = "config_talk_mode",
                 )
                 WiboxOptionRow(
                     text = stringResource(R.string.preview_mode),
-                    onClick = {
-                        viewModel.updateDevice { snapshot ->
-                            val current = snapshot.metadata["highQuality"]?.toBoolean() ?: true
-                            snapshot.copy(metadata = snapshot.metadata + ("highQuality" to (!current).toString()))
-                        }
-                    },
+                    onClick = { videoModeDialog = true },
                     trailing = {
                         Text(
-                            stringResource(if (device.highQuality) R.string.high_quality else R.string.low_quality),
+                            stringResource(videoModeLabel(device.videoMode)),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     },
+                    tag = "config_video_mode",
                 )
                 if (device.role == DeviceRole.OWNER) {
                     WiboxOptionRow(
@@ -443,18 +446,14 @@ fun DeviceConfigScreen(
                 }
                 WiboxOptionRow(
                     text = stringResource(R.string.f1_enable_time),
-                    onClick = {
-                        viewModel.updateDevice { snapshot ->
-                            val current = snapshot.metadata["f1Seconds"]?.toIntOrNull() ?: 3
-                            snapshot.copy(metadata = snapshot.metadata + ("f1Seconds" to (if (current == 3) 5 else 3).toString()))
-                        }
-                    },
+                    onClick = { f1Dialog = true },
                     trailing = {
                         Text(
                             stringResource(R.string.seconds_value, device.f1Seconds),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     },
+                    tag = "config_f1_time",
                 )
                 if (device.role == DeviceRole.OWNER) {
                     WiboxSwitchRow(
@@ -486,16 +485,66 @@ fun DeviceConfigScreen(
                 }
                 WiboxOptionRow(
                     text = stringResource(R.string.time_sync),
-                    onClick = {},
-                    enabled = false,
+                    onClick = { viewModel.syncTime() },
                     tag = "config_time_sync",
                     trailing = {},
                 )
+                state.timeSyncSucceeded?.let { succeeded ->
+                    Text(
+                        text = stringResource(if (succeeded) R.string.time_sync_success else R.string.time_sync_fail),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 8.dp)
+                            .testTag("config_time_sync_result"),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (succeeded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center,
+                    )
+                }
                 Spacer(Modifier.height(20.dp))
                 WiboxButton(stringResource(R.string.delete), { confirmDelete = true }, tag = "delete_device_button")
                 Spacer(Modifier.height(20.dp))
             }
         }
+    }
+    if (talkModeDialog && device != null) {
+        OptionPickerDialog(
+            title = stringResource(R.string.intercom_way),
+            options = TalkMode.entries.map { it to stringResource(talkModeLabel(it)) },
+            selected = device.talkMode,
+            tagPrefix = "talk_mode_",
+            onSelect = { mode ->
+                talkModeDialog = false
+                viewModel.updateDevice { it.copy(metadata = it.metadata + ("talkMode" to mode.name)) }
+            },
+            onDismiss = { talkModeDialog = false },
+        )
+    }
+    if (videoModeDialog && device != null) {
+        OptionPickerDialog(
+            title = stringResource(R.string.preview_mode),
+            options = VideoMode.entries.map { it to stringResource(videoModeLabel(it)) },
+            selected = device.videoMode,
+            tagPrefix = "video_mode_",
+            onSelect = { mode ->
+                videoModeDialog = false
+                viewModel.updateDevice { it.copy(metadata = it.metadata + ("videoMode" to mode.name)) }
+            },
+            onDismiss = { videoModeDialog = false },
+        )
+    }
+    if (f1Dialog && device != null) {
+        OptionPickerDialog(
+            title = stringResource(R.string.f1_enable_time),
+            options = (1..10).map { it to stringResource(R.string.seconds_value, it) },
+            selected = device.f1Seconds,
+            tagPrefix = "f1_seconds_",
+            onSelect = { seconds ->
+                f1Dialog = false
+                viewModel.updateDevice { it.copy(metadata = it.metadata + ("f1Seconds" to seconds.toString())) }
+            },
+            onDismiss = { f1Dialog = false },
+        )
     }
     if (confirmDelete) {
         ConfirmDialog(
@@ -632,13 +681,12 @@ fun UnlockSettingScreen(
         )
         WiboxSwitchRow(
             text = stringResource(R.string.biometric_unlock),
-            checked = false,
-            onCheckedChange = {},
-            enabled = false,
+            checked = state.preferences.biometricUnlock,
+            onCheckedChange = viewModel::setBiometricUnlock,
             tag = "biometric_unlock_switch",
         )
         Text(
-            text = stringResource(R.string.biometric_unavailable_demo),
+            text = stringResource(R.string.biometric_unlock_tip),
             modifier = Modifier.padding(20.dp),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -873,4 +921,53 @@ fun PushCallScreen(
             Spacer(Modifier.weight(1f))
         }
     }
+}
+
+@Composable
+private fun <T> OptionPickerDialog(
+    title: String,
+    options: List<Pair<T, String>>,
+    selected: T,
+    tagPrefix: String,
+    onSelect: (T) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            Column(modifier = Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState())) {
+                options.forEach { (value, label) ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onSelect(value) }
+                            .padding(vertical = 12.dp)
+                            .testTag("$tagPrefix$value"),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(selected = value == selected, onClick = { onSelect(value) })
+                        Spacer(Modifier.width(12.dp))
+                        Text(label, style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+        },
+    )
+}
+
+@Composable
+private fun videoModeLabel(mode: VideoMode): Int = when (mode) {
+    VideoMode.HIGH -> R.string.video_mode_high
+    VideoMode.LOW -> R.string.video_mode_low
+    VideoMode.PICTURE -> R.string.video_mode_picture
+}
+
+@Composable
+private fun talkModeLabel(mode: TalkMode): Int = when (mode) {
+    TalkMode.FULL_DUPLEX -> R.string.talk_mode_full_duplex
+    TalkMode.HOLD_TO_TALK -> R.string.talk_mode_hold
 }

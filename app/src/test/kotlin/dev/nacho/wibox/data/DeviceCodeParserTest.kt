@@ -85,6 +85,20 @@ class DeviceCodeParserTest {
     }
 
     @Test
+    fun parsesTheInvitationSharedByTheStockAppWithoutAppVersion() {
+        val invitation = DeviceCodeParser.parseInvitation(
+            "https://share.example.invalid/webs/invite_nologin/page_G0021/index.jsp?" +
+                "InviteCode=AB12cd34&OwnerId=1000001&OemId=G0021&DeviceId=1a2b3c4d5e&From=QrInvite&AppId=2021",
+        )
+        assertEquals("AB12cd34", invitation.inviteCode)
+        assertEquals("1000001", invitation.ownerId)
+        assertEquals("1a2b3c4d5e", invitation.deviceId)
+        assertEquals("QrInvite", invitation.from)
+        assertEquals("", invitation.appVersion)
+        assertEquals(2021, invitation.appId)
+    }
+
+    @Test
     fun rejectsMissingAndDuplicateInvitationFields() {
         assertEquals(
             CodeParseError.MISSING_INVITATION_FIELD,

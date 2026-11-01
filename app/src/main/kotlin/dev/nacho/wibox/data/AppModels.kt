@@ -43,6 +43,17 @@ data class InvitationRecord(
     val permissions: Set<DevicePermission> = DevicePermission.entries.toSet(),
 )
 
+enum class VideoMode {
+    HIGH,
+    LOW,
+    PICTURE,
+}
+
+enum class TalkMode {
+    FULL_DUPLEX,
+    HOLD_TO_TALK,
+}
+
 data class AppPreferences(
     val sound: Boolean = true,
     val vibration: Boolean = true,

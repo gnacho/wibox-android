@@ -193,7 +193,7 @@ Aceptar una llamada y abrir preview son operaciones relacionadas pero distintas.
 
 ### 5.8 Invitaciones
 
-El modelo conserva QR, enlace, caducidad, owner, dispositivo, permisos `preview`, `playback`, `alarm`, `unlock`, `F1` y `callGuard`, más el límite de 100 cuando aplique. El contrato de enlace incluye `InviteCode`, `OwnerId`, `OemId`, `AppVersion`, `DeviceId`, `From` y `AppId`. Crear, editar, revocar, aceptar y volver a aceptar son operaciones separadas.
+El modelo conserva QR, enlace, caducidad, owner, dispositivo, permisos `preview`, `playback`, `alarm`, `unlock`, `F1` y `callGuard`, más el límite de 100 cuando aplique. El contrato de enlace lleva `InviteCode`, `OwnerId`, `OemId`, `DeviceId`, `From` y `AppId`, y acepta `AppVersion` cuando viene. La app stock imprime el enlace sin `AppVersion` y con `From=QrInvite`, así que ese campo es opcional y su ausencia no invalida la invitación. Crear, editar, revocar, aceptar y volver a aceptar son operaciones separadas.
 
 La compatibilidad OEM no se resuelve copiando la comparación permisiva del APK. Se fija una regla exacta tras prueba con invitaciones válidas, inválidas, usadas, caducadas y de otro OEM. Los enlaces y códigos se tratan como secretos y no se registran.
 

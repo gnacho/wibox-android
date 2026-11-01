@@ -56,6 +56,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import dev.nacho.wibox.data.VideoMode
+import dev.nacho.wibox.data.TalkMode
 
 class DemoWiboxProvider(
     initialSnapshot: DemoSnapshot = DemoFixtures.initial(),
@@ -470,6 +472,6 @@ private fun DeviceSnapshot.toDemoDevice(original: DemoDevice): DemoDevice = orig
     callAlerts = metadata["callAlerts"]?.toBoolean() ?: original.callAlerts,
     motionAlerts = metadata["motionAlerts"]?.toBoolean() ?: original.motionAlerts,
     f1Seconds = metadata["f1Seconds"]?.toIntOrNull() ?: original.f1Seconds,
-    highQuality = metadata["highQuality"]?.toBoolean() ?: original.highQuality,
-    fullDuplex = metadata["fullDuplex"]?.toBoolean() ?: original.fullDuplex,
+    videoMode = metadata["videoMode"]?.let { value -> VideoMode.entries.firstOrNull { it.name == value } } ?: original.videoMode,
+    talkMode = metadata["talkMode"]?.let { value -> TalkMode.entries.firstOrNull { it.name == value } } ?: original.talkMode,
 )

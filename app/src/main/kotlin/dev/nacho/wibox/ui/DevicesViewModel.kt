@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 data class DevicesUiState(
     val devices: LoadState<List<DeviceUi>> = LoadState.Loading(),
     val action: ActionUi = ActionUi(),
+    val biometricUnlock: Boolean = false,
 )
 
 class DevicesViewModel(
@@ -98,6 +99,7 @@ class DevicesViewModel(
         val mapped = snapshot.devices.map(UiMapper::device)
         val updated = snapshot.devices.mapNotNull { it.lastObservedAtMillis }.maxOrNull()
         mutableState.value = mutableState.value.copy(
+            biometricUnlock = snapshot.preferences.biometricUnlock,
             devices = when (snapshot.preferences.scenario) {
                 AppScenario.LOADING -> LoadState.Loading(previous, refreshing = previous != null, lastUpdated = updated)
                 AppScenario.EMPTY -> LoadState.Content(emptyList(), lastUpdated = updated)

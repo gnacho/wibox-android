@@ -63,6 +63,12 @@ import dev.nacho.wibox.core.cloud.DeviceRole
 import dev.nacho.wibox.core.cloud.ProviderEventType
 import dev.nacho.wibox.data.AppScenario
 import dev.nacho.wibox.data.MediaKind
+import android.app.Activity
+import android.app.KeyguardManager
+import android.content.Context
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun MainScreen(
@@ -171,6 +177,31 @@ private fun DevicesScreen(
     viewModel: DevicesViewModel,
     navigator: AppNavigator,
 ) {
+    val context = LocalContext.current
+    val keyguard = remember(context) { context.getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager }
+    var pendingAction by remember { mutableStateOf<PendingAction?>(null) }
+    val credentialLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val pending = pendingAction
+        pendingAction = null
+        if (pending != null && result.resultCode == Activity.RESULT_OK) {
+            viewModel.performAction(pending.deviceId, pending.type)
+        }
+    }
+    val requestAction: (String, ActionType) -> Unit = { deviceId, action ->
+        val gated = action == ActionType.UNLOCK || action == ActionType.F1
+        @Suppress("DEPRECATION")
+        val intent = if (state.biometricUnlock && gated) {
+            keyguard?.createConfirmDeviceCredentialIntent(null, null)
+        } else {
+            null
+        }
+        if (intent != null) {
+            pendingAction = PendingAction(deviceId, action)
+            credentialLauncher.launch(intent)
+        } else {
+            viewModel.performAction(deviceId, action)
+        }
+    }
     when (val devices = state.devices) {
         is LoadState.Loading -> LoadingContent()
         is LoadState.Error -> ErrorContent(devices.error, viewModel::refresh)
@@ -218,7 +249,7 @@ private fun DevicesScreen(
                                 actionInProgress = state.action.pendingCommandId,
                                 onPreview = { navigator.navigateInventory(AppDestinationRequest("preview", deviceId = device.id)) },
                                 onConfig = { navigator.navigateInventory(AppDestinationRequest("config", deviceId = device.id)) },
-                                onAction = { action -> viewModel.performAction(device.id, action) },
+                                onAction = { action -> requestAction(device.id, action) },
                             )
                         }
                     }
@@ -689,3 +720,5 @@ fun scenarioLabel(scenario: AppScenario): String = when (scenario) {
     AppScenario.ACTION_PENDING -> stringResource(R.string.action_pending)
     AppScenario.ACTION_FAILURE -> stringResource(R.string.action_failed)
 }
+
+private data class PendingAction(val deviceId: String, val type: ActionType)
