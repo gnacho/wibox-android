@@ -52,7 +52,7 @@ Las sombras (`getDeviceShadow` y `getDeviceShadows`) delegan en el puerto de dev
 
 ## Cómo probarlo
 
-Comandos de verificación, todos ejecutados contra el emulador `emulator-5554` cuando aplica:
+Comandos de verificación, todos ejecutados contra el emulador `emulator-5558` cuando aplica:
 
 ```bash
 # Verificador runtime (G1)
@@ -62,7 +62,7 @@ python3 analysis/external-api-runtime/verify_external_api_runtime.py
 ./gradlew :external-api:testDebugUnitTest :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
 
 # Tests instrumentados, incluida la denegación por defecto (G3)
-ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest
+ANDROID_SERIAL=emulator-5558 ./gradlew :app:connectedDebugAndroidTest
 ```
 
 El test instrumentado `ExternalApiDenyByDefaultTest` se vincula al servicio con la firma de la propia app y sin entrada en la allowlist, y comprueba que handshake funciona sin grant, que `requestAuthorization` queda `PENDING` sin acceso, que `getDevice`, `getDeviceShadow` y `performAction` devuelven `NOT_AUTHORIZED`, y que toda llamada sin handshake devuelve `HANDSHAKE_REQUIRED`.

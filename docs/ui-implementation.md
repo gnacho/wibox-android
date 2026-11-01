@@ -116,15 +116,15 @@ Comandos de referencia:
 ./gradlew :app:assembleDebug :app:testDebugUnitTest --rerun-tasks
 python3 scripts/verify_architecture.py
 ./gradlew :app:assembleDebugAndroidTest
-ANDROID_SERIAL=emulator-5554 ./gradlew :app:connectedDebugAndroidTest
+ANDROID_SERIAL=emulator-5558 ./gradlew :app:connectedDebugAndroidTest
 python3 scripts/verify_project.py
 ```
 
-El `ANDROID_SERIAL` es obligatorio en este entorno. Todas las acciones ADB se hicieron con `adb -s emulator-5554`. No se instaló ni ejecutó nada en el OnePlus físico.
+El `ANDROID_SERIAL` es obligatorio en este entorno. Todas las acciones ADB se hicieron con `adb -s emulator-5558`, sobre el AVD `wibox-api37`. No se instaló ni ejecutó nada en el móvil físico salvo la prueba manual de la app, que se hizo con el APK de depuración.
 
 ## 7. Capturas reales
 
-Todas proceden de la app debug ejecutándose en `emulator-5554`, Android 17/API 37, a 1080x2400. Se obtuvieron con `adb -s emulator-5554 exec-out screencap -p`.
+Todas proceden de la app debug ejecutándose en `emulator-5558`, Android 17/API 37, a 1080x2400. Las genera el test instrumentado `CaptureSurfacesTest` con `UiDevice.takeScreenshot`, y las del inventario completo están en `analysis/ui-modernization/captures/` con su manifiesto de hashes.
 
 1. [Dispositivos](../fastlane/01-devices.png)
 2. [Eventos](../fastlane/02-events.png)
@@ -137,7 +137,7 @@ Todas proceden de la app debug ejecutándose en `emulator-5554`, Android 17/API 
 
 ## 8. Diferencias y limitaciones deliberadas
 
-- El escaneo usa CameraX con `com.google.zxing:core`, que decodifica en el propio dispositivo y no habla con Google Play Services. Se abre con la cámara trasera si existe y, si no, con la frontal. En el AVD sin ventana el escenario virtual entrega fotogramas negros y no hay nada que decodificar: eso es una limitación del emulador, no del lector, y la decodificación está cubierta por `QrDecoderTest`.
+- El escaneo usa CameraX con `com.google.zxing:core`, que decodifica en el propio dispositivo y no habla con Google Play Services. Se abre con la cámara trasera si existe y, si no, con la frontal. El caso de la frontal no es teórico: el AVD emulado declara su cámara trasera como `LENS_FACING_FRONT` y CameraX rechaza la vinculación si se pide la trasera a ciegas, de ahí que la selección se haga con `hasCamera(DEFAULT_BACK_CAMERA)` en lugar de con un `selector` fijo. En el AVD sin ventana el escenario virtual entrega fotogramas negros y no hay nada que decodificar: eso es una limitación del emulador, no del lector, y la decodificación está cubierta por `QrDecoderTest`.
 - El QR del sticker trae cinco campos (`apName udid password ssid mac`) y el token de fábrica documentado trae cuatro. El parser acepta las dos formas y guarda `ssid` y `mac` cuando están. Ese es el único dato que se usa para el alta: el QR no lleva credenciales de cloud.
 - Las invitaciones solo existen en el snapshot local y su enlace apunta a `example.invalid`, así que el dominio no resuelve en un navegador. El QR sí es escaneable: lo genera ZXing con corrección de errores M y zona de silencio de cuatro módulos, y el escáner de esta misma app lo lee y lo interpreta como invitación. Lo que no hace es funcionar fuera de la app.
 - El QR se dibuja con los módulos alineados a píxeles enteros sobre un fondo blanco fijo, también en tema oscuro, porque un QR sobre superficie oscura no se lee.
