@@ -369,40 +369,32 @@ Sección de evidencia sobre lo que no está resuelto, para que no se repita el t
 
 El envelope de petición lleva un elemento `version` que no es el número de versión de la app (5.1.11) sino la versión del protocolo, `v1.24`, la misma que el servidor declara en sus respuestas. Con `5.1.11` todas las variantes de `dev-bind-register` devolvían `100009`. Con `v1.24` el resultado pasa a `100004` en todas las variantes probadas. Hecho medido contra el servidor real, no deducido del smali.
 
-### 16.2 Contrato del accept observado en el smali
+### 16.2 Contrato del accept: el wire usa XStream, no los nombres Java del smali
 
-El comando se llama `accept-nologin-share-invitation`. La cadena completa, de arriba abajo: `DADeviceBindPresenter.bindDevice(name, DeviceShareInfo)` valida el alias y llama a `DeviceHelper.bindShareDevice`, que acaba en `QvUserAuthCore.noLoginShareInvitationAccept(uid, shareCode, name, from, needCreate, password)`.
+El comando se llama `accept-nologin-share-invitation`. La cadena del app oficial, de arriba abajo: `DADeviceBindPresenter.bindDevice(name, DeviceShareInfo)` valida el alias y llama a `DeviceHelper.bindShareDevice`, que acaba en `QvUserAuthCore.noLoginShareInvitationAccept(uid, shareCode, name, from, needCreate, password)` y emite `POST /auth/nologin;jus_duplex=up`.
 
-`NoLoginShareAcceptReqContent` tiene seis campos: `deviceId`, `code`, `name`, `way`, `needCreate` (entero) y `password`. Se emite en `POST /auth/nologin;jus_duplex=up`, con esta traducción desde la pantalla de alta:
+Punto crítico verificado con tráfico real: el smali muestra los nombres Java camelCase (`deviceId`, `code`, `name`, `way`, `needCreate`), pero el serializador del app oficial es **XStream**, que escribe esos campos con **alias kebab-case** distintos. Un request construido con los nombres Java es rechazado por el servidor. Los nombres REALES del wire, capturados en un accept con `result=0`:
 
-| Campo | Origen |
+| Elemento XML del wire | Valor |
 |---|---|
-| `deviceId` | UID del dispositivo que viene en el QR de la invitación |
-| `code` | `InviteCode` de la invitación |
-| `name` | Alias libre que escribe el usuario |
-| `way` | `From` de la invitación, es decir `QrInvite` |
-| `needCreate` | 1 cuando la app no tiene usuario propio, con `password` igual a un UUID nuevo |
-| `password` | Solo en ese caso de cuenta nueva |
+| `share-code` | `InviteCode` de la invitación |
+| `device-id` | UID del dispositivo del QR |
+| `share-device-memo` | Alias libre que escribe el usuario |
+| `need-create` | 1 cuando la app no tiene usuario propio |
+| `password` | UUID nuevo, solo en ese caso de cuenta nueva |
+| `way-from` | `From` de la invitación, es decir `QrInvite` |
 
-No hay paso previo de consulta: la app emite el accept directamente, sin pedir antes información de la invitación.
+El `content` lleva además el atributo `class` con el bean (`com.quvii.qvweb.userauth.bean.request.NoLoginShareAcceptReqContent`), va ANTES que el `header`, y el `header` lleva `user-data` (kebab) y `version` VACÍO. No hay paso previo de consulta: la app emite el accept directamente.
 
-### 16.3 Resultado 100004
+### 16.3 El 100004 era el formato XML, no el dispositivo
 
-Todas las variantes probadas devuelven `100004`, incluido un código de invitación generado en el momento, así que no es caducidad. Da igual usar la sesión del app oficial que una sesión propia recién abierta en el canal `/auth/user`. La respuesta trae `account`, `id`, `name`, `data-encode-key`, `dynamic-password`, `password-expired` y `powers`, todos vacíos.
+La secuencia medida contra el servidor real: con `version=5.1.11` todos los comandos devolvían `100009` (versión de protocolo incorrecta). Con `version=v1.24` el accept devolvía `100004`. Se descartó que el `100004` fuera caducidad de la invitación (un código fresco también lo daba) o que el dispositivo estuviera ya vinculado.
 
-Hipótesis viva, sin confirmar: el `100004` rechaza el alta porque el dispositivo ya está vinculado a una cuenta, que es el caso de este timbre. Confirmarlo exigiría desvincular el dispositivo de la cuenta real, una acción destructiva que no se ha hecho.
+La causa real, confirmada al capturar el accept correcto del app oficial: el `100004` lo producía el request con los nombres de campo Java (`code`, `deviceId`, `name`, `way`) en lugar de los alias XStream (`share-code`, `device-id`, `share-device-memo`, `way-from`). El servidor no reconocía los campos y rechazaba el alta. Con el formato XStream correcto, el mismo accept devuelve `result=0`.
 
-Consecuencia práctica: el alta de dispositivos nuevos está bloqueada por el servidor para el caso probado, pero un dispositivo ya vinculado no necesita este camino. Para verlo basta con iniciar sesión con la cuenta propietaria y consultar su lista por `/device/status/multi`.
+### 16.4 Accept con éxito capturado
 
-### 16.4 Por qué no hay un accept con éxito capturado
-
-No se ha observado una respuesta de aceptación correcta, así que el documento no puede describir el caso de éxito. El intento de capturarlo desde la app oficial en el emulador se cerró con estas razones, todas verificadas:
-
-- El escáner es `DACaptureActivity`, de scankit de Huawei. Tiene botón de galería e internamente usa `QrCodeUtil.scanLocalPicture`, pero el selector de documentos del emulador no entrega la imagen elegida.
-- La cámara emulada es `emulated` y no lee el QR de la pantalla.
-- El intent hacia `DADeviceBindActivity` viaja con un `Parcelable` (`device_add_info`) que no se puede inyectar desde fuera.
-
-Capturarlo exigiría una cámara virtual real en el emulador (`virtualscene`, webcam o `v4l2loopback`), no un cambio en la app.
+Se capturó un accept real con `result=0` ejecutando el app oficial en el emulador y escaneando una invitación con una webcam real (`-camera-back webcam0`; la cámara virtual `v4l2loopback` no entregó imagen al escáner). El request y la respuesta reales están en la sección 14 junto al resto del contrato duplex. La respuesta de éxito crea la cuenta nologin y devuelve `account`, `id`, `name`, `data-encode-key`, `dynamic-password`, `password-expired`, `transparent-basedata`, `powers` y `model`.
 
 ## 17. Verificación
 
