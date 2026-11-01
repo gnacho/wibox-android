@@ -47,6 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.nacho.wibox.R
 import dev.nacho.wibox.data.CodeParseError
 import dev.nacho.wibox.data.ParsedCode
+import dev.nacho.wibox.ui.scan.CameraScanCard
 
 @Composable
 fun AddTypeScreen(
@@ -163,33 +164,21 @@ fun ScanCodeScreen(
         Column(
             modifier = Modifier
                 .weight(1f)
-                .background(Color.Black)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(Modifier.height(40.dp))
-            Box(
-                modifier = Modifier
-                    .size(180.dp)
-                    .clip(RoundedCornerShape(28.dp))
-                    .border(3.dp, WiboxColors.primary, RoundedCornerShape(28.dp))
-                    .padding(30.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_qr),
-                    contentDescription = stringResource(R.string.scan_qr),
-                    tint = Color.White,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-            Spacer(Modifier.height(20.dp))
-            Text(
-                text = stringResource(R.string.camera_not_implemented),
-                color = Color.White,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
+            Spacer(Modifier.height(16.dp))
+            CameraScanCard(
+                onDecoded = { payload ->
+                    viewModel.updateCodeInput(payload)
+                    when (viewModel.validateCode()) {
+                        is ParsedCode.Device -> onDevice()
+                        is ParsedCode.Invitation -> onInvitation()
+                        null -> Unit
+                    }
+                },
+                modifier = Modifier.testTag("camera_scan_card"),
             )
             Spacer(Modifier.height(20.dp))
             Surface(
@@ -210,7 +199,7 @@ fun ScanCodeScreen(
                 Text(
                     text = codeErrorText(error),
                     modifier = Modifier.padding(top = 10.dp).testTag("code_error"),
-                    color = Color(0xFFFF8A65),
+                    color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                 )
@@ -228,8 +217,11 @@ fun ScanCodeScreen(
                 tag = "validate_code_button",
                 primary = true,
             )
-            TextButton(onClick = { navigator.navigateInventory("device_bind") }) {
-                Text(stringResource(R.string.add_manually), color = WiboxColors.onPrimary)
+            TextButton(
+                onClick = { navigator.navigateInventory("device_bind") },
+                modifier = Modifier.testTag("add_manually_button"),
+            ) {
+                Text(stringResource(R.string.add_manually))
             }
             Spacer(Modifier.height(32.dp))
         }
