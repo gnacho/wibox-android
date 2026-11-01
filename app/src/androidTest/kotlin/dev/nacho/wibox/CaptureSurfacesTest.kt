@@ -227,6 +227,8 @@ class CaptureSurfacesTest {
         compose.awaitTag("screen_share_manage")
         captureSurface("share-manage")
         compose.tag("share_create_invitation").performClick()
+        compose.awaitTag("invitation_save", 30000)
+        compose.tag("invitation_save").performClick()
         compose.awaitTag("screen_share_device")
         captureSurface("share-device")
     }

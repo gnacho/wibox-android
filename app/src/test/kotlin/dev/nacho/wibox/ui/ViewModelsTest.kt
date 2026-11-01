@@ -1,5 +1,6 @@
 package dev.nacho.wibox.ui
 
+import dev.nacho.wibox.core.cloud.DevicePermission
 import androidx.lifecycle.SavedStateHandle
 import dev.nacho.wibox.data.ActionCoordinator
 import dev.nacho.wibox.data.AppScenario
@@ -188,12 +189,48 @@ class ViewModelsTest {
     }
 
     @Test
+    fun updatingAnInvitationKeepsTheChosenPermissions() = runTest {
+        val repository = repository()
+        try {
+            val viewModel = SharingViewModel(repository, SavedStateHandle(), StandardTestDispatcher(testScheduler))
+            repository.prepare()
+            viewModel.createInvitation(
+                deviceId = "DEMO7410001",
+                displayName = "Guest 1",
+                permissions = setOf(DevicePermission.PREVIEW),
+            )
+            val invitationId = awaitFirst { viewModel.state.value.createdInvitationId }
+            assertNotNull(invitationId)
+            val created = awaitFirst {
+                val state = viewModel.state.value.invitations
+                (state as? LoadState.Content)?.value?.firstOrNull { it.id == invitationId }
+            }
+            assertEquals(setOf(DevicePermission.PREVIEW), created.permissions)
+
+            viewModel.updateInvitation(
+                id = invitationId,
+                displayName = "Neighbour",
+                permissions = setOf(DevicePermission.UNLOCK, DevicePermission.CALL_GUARD),
+            )
+            val updated = awaitFirst {
+                val state = viewModel.state.value.invitations
+                (state as? LoadState.Content)?.value?.firstOrNull {
+                    it.id == invitationId && it.displayName == "Neighbour"
+                }
+            }
+            assertEquals(setOf(DevicePermission.UNLOCK, DevicePermission.CALL_GUARD), updated.permissions)
+        } finally {
+            repository.close()
+        }
+    }
+
+    @Test
     fun sharingCreatesConsumesAndDeletesInvitation() = runTest {
         val repository = repository()
         try {
             val viewModel = SharingViewModel(repository, SavedStateHandle(), StandardTestDispatcher(testScheduler))
             repository.prepare()
-            viewModel.createInvitation("DEMO7410001")
+            viewModel.createInvitation("DEMO7410001", "Guest 1", setOf(DevicePermission.PREVIEW))
             val invitationId = awaitFirst { viewModel.state.value.createdInvitationId }
             assertNotNull(invitationId)
             val created = awaitFirst {
