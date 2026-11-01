@@ -1,10 +1,8 @@
 package dev.nacho.wibox
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 
@@ -13,11 +11,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val barColor = Color.rgb(0, 111, 142)
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(barColor),
-            navigationBarStyle = SystemBarStyle.dark(barColor),
-        )
+        enableEdgeToEdge()
         setContent {
             WiboxApp(
                 repository = container.repository,
