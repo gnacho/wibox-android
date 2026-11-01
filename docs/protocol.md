@@ -290,9 +290,28 @@ Capturada el 2026-11-01 en el canal down del app stock, en respuesta a un POST s
 
 Observaciones del wire: la versión del protocolo que declara el servidor en la respuesta es `v1.24` (distinta de la `5.1.11` del cliente); el servidor entregó la misma respuesta dos veces (duplicado del mensaje en dos ciclos de long-poll); el nombre de los elementos (`dynamic-password`, `data-encode-key`, `is-default-out-authcode`) casa 1:1 con los campos del `UserFreeRegisterResp$Content` del smali salvo normalización de nombres. El `result` distinto de cero se interpreta como error; `100009` no aparece como constante en el cliente (definido solo en el servidor).
 
+Respuesta real de `login` (mismo día, POST con `account`=UDID de la etiqueta del dispositivo y la contraseña del dispositivo; rechazado):
+
+```xml
+<envelope>
+  <header>
+    <flag>tdkcloud</flag><version>v1.24</version>
+    <command>login</command><seq>0</seq><result>100009</result>
+  </header>
+  <content>
+    <account-id>0</account-id><nick></nick><expire>0</expire>
+    <token></token><is-guest>0</is-guest><mfa-status>0</mfa-status><mfa-ttl>0</mfa-ttl>
+  </content>
+</envelope>
+```
+
+Que `dev-bind-register` y `login` devuelvan el mismo `100009` apunta a un código de error genérico (parámetros o sesión), no a un rechazo de credenciales específico. El UDID de la etiqueta no sirve como `account` de login: la cuenta es la que crea el registro del app, no el dispositivo.
+
 ### 14.4 Límites
 
-El caso de éxito de registro no se ha observado: `result=100009` se obtuvo con `authCode` vacío y `deviceId` sintético, tanto en formato corto (8 hex) como largo (16 hex), de modo que el bloqueo no es el formato de identificadores sino la falta del `authCode` real que emite el QR del timbre. Sin timbre físico no hay alta de cuenta por este camino: el app no ofrece pantalla de login ni registro independiente. La operación sigue sin estar expuesta en la API pública de `core:cloud`. Cualquier implementación futura debe partir de la sección 12 para decidir qué requiere captura autorizada adicional (un timbre real o un parámetro autorizado por el fabricante).
+El caso de éxito de registro no se ha observado. La secuencia de intentos reales (todos con `result=100009`): deviceId sintético hex8 y hex16 con authCode vacío; login con `account`=UDID de la etiqueta y contraseña del dispositivo; `dev-bind-register` con el UDID real `23123csfewyk` y `authCode=MRNTIVVE` en `plain`; el mismo con `client.id`=token FCM real extraído de las prefs del app; sesión propia y fresca del canal `/auth/user` (duplex completo controlado por curl, respuesta recibida directamente en el down propio); y `authCode=SHA-256(MRNTIVVE)` con `authEncWay=sha2-256` (el cifrado real es `QvEncrypt.EncodeDevicePassword`: si la cadena tiene 64 o más caracteres se devuelve tal cual, si no, SHA-256). El QR de la etiqueta decodifica a `IDS7938ewyk 23123csfewyk MRNTIVVE IDS7938 9803CF9D5364`: no lleva un campo authCode separado, el authCode del flujo es la contraseña del AP del propio QR.
+
+Dado que el servidor devuelve el mismo `100009` para deviceIds inexistentes y para el dispositivo real (que está vinculado a la cuenta del usuario), la hipótesis más plausible es un rechazo genérico de registro, siendo "dispositivo ya vinculado a otra cuenta" la explicación pendiente de confirmar; descartarla requeriría desvincular el timbre de la cuenta real (acción destructiva no autorizada). El app no ofrece pantalla de login ni registro independiente: el alta de cuenta va 100% ligada al alta de un device físico. La operación sigue sin estar expuesta en la API pública de `core:cloud`.
 
 ## 15. Verificación
 
