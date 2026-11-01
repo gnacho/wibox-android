@@ -2,6 +2,7 @@ package dev.nacho.wibox.ui
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import dev.nacho.wibox.core.cloud.ProviderError
 import dev.nacho.wibox.data.AppScenario
@@ -99,6 +100,26 @@ class PairingViewModel(
             },
         ),
     )
+    init {
+    savedStateHandle.get<String>(INVITE_CODE_KEY)?.let { savedInvite ->
+        val restoredUid = mutableState.value.uid
+        if (restoredUid.isNotBlank()) {
+            mutableState.value = mutableState.value.copy(
+                invitation = ParsedInvitation(
+                    inviteCode = savedInvite,
+                    ownerId = "",
+                    oemId = "G0021",
+                    appVersion = "",
+                    deviceId = restoredUid,
+                    from = "QrInvite",
+                    appId = 2021,
+                ),
+                authCode = savedInvite,
+                qrLocked = true,
+            )
+        }
+        }
+    }
     val state: StateFlow<PairingUiState> = mutableState.asStateFlow()
     private var provisionJob: Job? = null
     private var discoveryJob: Job? = null
@@ -106,7 +127,7 @@ class PairingViewModel(
     fun beginNewFlow() {
         provisionJob?.cancel()
         discoveryJob?.cancel()
-        listOf(NAME_KEY, UID_KEY, MODEL_KEY, AP_NAME_KEY, QR_LOCKED_KEY, SSID_KEY).forEach { key ->
+        listOf(NAME_KEY, UID_KEY, MODEL_KEY, AP_NAME_KEY, QR_LOCKED_KEY, SSID_KEY, INVITE_CODE_KEY).forEach { key ->
             savedStateHandle.remove<Any>(key)
         }
         mutableState.value = PairingUiState(
@@ -126,14 +147,17 @@ class PairingViewModel(
         val parsed = DeviceCodeParser.parse(mutableState.value.codeInput)
         when (parsed) {
             is ParsedCode.Device -> applyDeviceQr(parsed.value)
-            is ParsedCode.Invitation -> mutableState.value = mutableState.value.copy(
-                invitation = parsed.value,
-                uid = parsed.value.deviceId,
-                authCode = parsed.value.inviteCode,
-                name = "Shared home",
-                qrLocked = true,
-                codeError = null,
-            )
+            is ParsedCode.Invitation -> {
+                savedStateHandle[INVITE_CODE_KEY] = parsed.value.inviteCode
+                mutableState.value = mutableState.value.copy(
+                    invitation = parsed.value,
+                    uid = parsed.value.deviceId,
+                    authCode = parsed.value.inviteCode,
+                    name = "Shared home",
+                    qrLocked = true,
+                    codeError = null,
+                )
+            }
         }
         parsed
     } catch (error: CodeParseException) {
@@ -225,8 +249,10 @@ class PairingViewModel(
             mutableState.value = mutableState.value.copy(binding = true, bindError = null, provisionStage = ProvisionStage.BINDING)
             try {
                 val device = if (current.invitation == null) {
+                    Log.d("WIBOX-ACCEPT", "BIND: invitation NULL -> DEMO uid=" + current.uid)
                     repository.bind(BindRequest(current.uid, current.name, current.model))
                 } else {
+                    Log.d("WIBOX-ACCEPT", "BIND: invitation PRESENTE -> REAL uid=" + current.uid + " code=" + current.invitation.inviteCode)
                     repository.acceptInvitation(current.invitation, current.name)
                 }
                 mutableState.value = mutableState.value.copy(
@@ -325,6 +351,8 @@ class PairingViewModel(
     }
 
     companion object {
+
+        private const val INVITE_CODE_KEY = "invite_code"
         private const val NAME_KEY = "pairing_name"
         private const val UID_KEY = "pairing_uid"
         private const val MODEL_KEY = "pairing_model"

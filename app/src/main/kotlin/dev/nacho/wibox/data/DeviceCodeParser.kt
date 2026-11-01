@@ -94,7 +94,7 @@ object DeviceCodeParser {
     }
 
     fun parseInvitation(raw: String): ParsedInvitation {
-        val withoutFragment = raw.trim().substringBefore('#')
+        val withoutFragment = raw.trim()
         val query = withoutFragment.substringAfter('?', withoutFragment)
         if (query.isBlank() || !query.contains('=')) {
             throw CodeParseException(CodeParseError.INVALID_INVITATION)

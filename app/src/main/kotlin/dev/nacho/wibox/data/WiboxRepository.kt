@@ -1,6 +1,7 @@
 package dev.nacho.wibox.data
 
 import dev.nacho.wibox.core.cloud.DevicePermission
+import dev.nacho.wibox.core.cloud.DeviceSnapshot
 import dev.nacho.wibox.core.cloud.ActionCommand
 import dev.nacho.wibox.core.cloud.ActionOutcome
 import dev.nacho.wibox.core.cloud.AppUpgradeRequest
@@ -18,6 +19,7 @@ class WiboxRepository(
     val actionCoordinator: ActionCoordinator,
     private val restore: suspend () -> Unit = {},
     private val appUpgradeRequest: (() -> AppUpgradeRequest)? = null,
+    private val realInvitationAcceptor: (suspend (ParsedInvitation, String) -> DeviceSnapshot)? = null,
 ) {
     private val initialization = Mutex()
     private var initialized = false
@@ -47,7 +49,9 @@ class WiboxRepository(
     )
     suspend fun discoverCandidates(): List<DiscoveredRecord> = operations.discoverCandidates()
     suspend fun bind(request: BindRequest) = operations.bind(request)
-    suspend fun acceptInvitation(invitation: ParsedInvitation, displayName: String) = operations.acceptInvitation(invitation, displayName)
+    suspend fun acceptInvitation(invitation: ParsedInvitation, displayName: String): DeviceSnapshot =
+        realInvitationAcceptor?.invoke(invitation, displayName)
+            ?: operations.acceptInvitation(invitation, displayName)
     suspend fun renameDevice(deviceId: String, displayName: String) = operations.renameDevice(deviceId, displayName)
     suspend fun updateDevice(deviceId: String, transform: (dev.nacho.wibox.core.cloud.DeviceSnapshot) -> dev.nacho.wibox.core.cloud.DeviceSnapshot) =
         operations.updateDevice(deviceId, transform)
