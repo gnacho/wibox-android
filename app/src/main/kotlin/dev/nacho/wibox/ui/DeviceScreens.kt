@@ -15,21 +15,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -40,8 +44,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.nacho.wibox.R
 import dev.nacho.wibox.core.cloud.ActionType
-import dev.nacho.wibox.core.cloud.DevicePresence
 import dev.nacho.wibox.core.cloud.DevicePermission
+import dev.nacho.wibox.core.cloud.DevicePresence
 import dev.nacho.wibox.core.cloud.DeviceRole
 import kotlinx.coroutines.delay
 
@@ -63,14 +67,12 @@ fun PreviewScreen(
                     contentDescription = stringResource(R.string.modify_unlock_password),
                     onClick = { navigator.navigateInventory(AppDestinationRequest("password_modify", deviceId = deviceId, mode = "unlock")) },
                     tag = "preview_password",
-                    tint = WiboxColors.onPrimary,
                 )
                 SmallIconButton(
                     painter = R.drawable.ic_settings,
                     contentDescription = stringResource(R.string.device_settings),
                     onClick = { navigator.navigateInventory(AppDestinationRequest("config", deviceId = deviceId)) },
                     tag = "preview_config",
-                    tint = WiboxColors.onPrimary,
                 )
             },
         )
@@ -90,7 +92,7 @@ fun PreviewScreen(
                 }
             } else {
                 Column(modifier = Modifier.fillMaxSize()) {
-                    PreviewArea(state, modifier = Modifier.fillMaxWidth().height(240.dp))
+                    PreviewArea(state, modifier = Modifier.fillMaxWidth().height(240.dp).padding(16.dp).clip(MaterialTheme.shapes.large))
                     PreviewControlBar(state, viewModel)
                     PreviewOperators(state, viewModel, modifier = Modifier.weight(1f))
                     PreviewResult(state)
@@ -118,18 +120,24 @@ private fun PreviewArea(state: PreviewUiState, modifier: Modifier = Modifier) {
             PreviewPanel(state, 1, Modifier.fillMaxSize())
         }
         if (state.recording) {
-            Row(
-                modifier = Modifier.align(Alignment.TopCenter).padding(20.dp).background(Color(0x88000000)).padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
+            Surface(
+                modifier = Modifier.align(Alignment.TopCenter).padding(16.dp),
+                shape = MaterialTheme.shapes.small,
+                color = Color(0xB3000000),
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_record),
-                    contentDescription = stringResource(R.string.recording),
-                    tint = WiboxColors.error,
-                    modifier = Modifier.size(18.dp),
-                )
-                Spacer(Modifier.size(6.dp))
-                Text(formatDuration(state.recordingSeconds), color = Color.White, style = MaterialTheme.typography.bodySmall)
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_record),
+                        contentDescription = stringResource(R.string.recording),
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(16.dp),
+                    )
+                    Spacer(Modifier.size(6.dp))
+                    Text(formatDuration(state.recordingSeconds), color = Color.White, style = MaterialTheme.typography.bodySmall)
+                }
             }
         }
     }
@@ -191,7 +199,7 @@ private fun PreviewPanel(state: PreviewUiState, channel: Int, modifier: Modifier
                 )
             }
             PreviewStatus.ERROR -> {
-                Text(stringResource(R.string.device_not_found), color = WiboxColors.error)
+                Text(stringResource(R.string.device_not_found), color = MaterialTheme.colorScheme.error)
             }
             else -> {
                 Text(stringResource(R.string.loading), color = Color.White)
@@ -199,7 +207,7 @@ private fun PreviewPanel(state: PreviewUiState, channel: Int, modifier: Modifier
         }
         Text(
             text = stringResource(R.string.channel_number, channel),
-            modifier = Modifier.align(Alignment.BottomStart).padding(5.dp),
+            modifier = Modifier.align(Alignment.BottomStart).padding(8.dp),
             color = Color.White,
             style = MaterialTheme.typography.bodySmall,
         )
@@ -209,73 +217,73 @@ private fun PreviewPanel(state: PreviewUiState, channel: Int, modifier: Modifier
 @Composable
 private fun PreviewControlBar(state: PreviewUiState, viewModel: PreviewViewModel) {
     val playing = state.status == PreviewStatus.PLAYING_SIMULATED
-    Row(
-        modifier = Modifier.fillMaxWidth().height(60.dp).background(Color(0xFF424242)),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically,
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surfaceContainer,
     ) {
-        SmallIconButton(
-            painter = if (playing) R.drawable.ic_stop else R.drawable.ic_play,
-            contentDescription = stringResource(if (playing) R.string.stop else R.string.play),
-            onClick = viewModel::togglePlayback,
-            enabled = playing || state.status == PreviewStatus.STOPPED,
-            tag = "preview_play",
-            tint = Color.White,
-        )
-        SmallIconButton(
-            painter = R.drawable.ic_mic,
-            contentDescription = stringResource(R.string.talk),
-            onClick = viewModel::toggleTalking,
-            enabled = playing,
-            tag = "preview_talk",
-            tint = if (state.talking) WiboxColors.primary else Color.White,
-        )
-        SmallIconButton(
-            painter = if (state.listening) R.drawable.ic_volume else R.drawable.ic_volume_off,
-            contentDescription = stringResource(R.string.listen),
-            onClick = viewModel::toggleListening,
-            enabled = playing,
-            tag = "preview_listen",
-            tint = Color.White,
-        )
-        SmallIconButton(
-            painter = R.drawable.ic_record,
-            contentDescription = stringResource(if (state.recording) R.string.stop_recording else R.string.record),
-            onClick = viewModel::toggleRecording,
-            enabled = playing,
-            tag = "preview_record",
-            tint = if (state.recording) WiboxColors.error else Color.White,
-        )
-        SmallIconButton(
-            painter = R.drawable.ic_camera,
-            contentDescription = stringResource(R.string.snapshot),
-            onClick = viewModel::snapshot,
-            enabled = playing,
-            tag = "preview_snapshot",
-            tint = Color.White,
-        )
-        SmallIconButton(
-            painter = R.drawable.ic_grid,
-            contentDescription = stringResource(R.string.toggle_panels),
-            onClick = viewModel::togglePanels,
-            tag = "preview_panels",
-            tint = Color.White,
-        )
-        SmallIconButton(
-            painter = R.drawable.ic_f1,
-            contentDescription = stringResource(R.string.f1_activation),
-            onClick = { viewModel.performAction(ActionType.F1) },
-            enabled = playing && state.device?.permissions?.contains(DevicePermission.F1) == true && state.action.pendingCommandId == null,
-            tag = "preview_f1",
-            tint = Color.White,
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth().height(64.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SmallIconButton(
+                painter = if (playing) R.drawable.ic_stop else R.drawable.ic_play,
+                contentDescription = stringResource(if (playing) R.string.stop else R.string.play),
+                onClick = viewModel::togglePlayback,
+                enabled = playing || state.status == PreviewStatus.STOPPED,
+                tag = "preview_play",
+            )
+            SmallIconButton(
+                painter = R.drawable.ic_mic,
+                contentDescription = stringResource(R.string.talk),
+                onClick = viewModel::toggleTalking,
+                enabled = playing,
+                tag = "preview_talk",
+                tint = if (state.talking) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+            )
+            SmallIconButton(
+                painter = if (state.listening) R.drawable.ic_volume else R.drawable.ic_volume_off,
+                contentDescription = stringResource(R.string.listen),
+                onClick = viewModel::toggleListening,
+                enabled = playing,
+                tag = "preview_listen",
+            )
+            SmallIconButton(
+                painter = R.drawable.ic_record,
+                contentDescription = stringResource(if (state.recording) R.string.stop_recording else R.string.record),
+                onClick = viewModel::toggleRecording,
+                enabled = playing,
+                tag = "preview_record",
+                tint = if (state.recording) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+            )
+            SmallIconButton(
+                painter = R.drawable.ic_camera,
+                contentDescription = stringResource(R.string.snapshot),
+                onClick = viewModel::snapshot,
+                enabled = playing,
+                tag = "preview_snapshot",
+            )
+            SmallIconButton(
+                painter = R.drawable.ic_grid,
+                contentDescription = stringResource(R.string.toggle_panels),
+                onClick = viewModel::togglePanels,
+                tag = "preview_panels",
+            )
+            SmallIconButton(
+                painter = R.drawable.ic_f1,
+                contentDescription = stringResource(R.string.f1_activation),
+                onClick = { viewModel.performAction(ActionType.F1) },
+                enabled = playing && state.device?.permissions?.contains(DevicePermission.F1) == true && state.action.pendingCommandId == null,
+                tag = "preview_f1",
+            )
+        }
     }
 }
 
 @Composable
 private fun PreviewOperators(state: PreviewUiState, viewModel: PreviewViewModel, modifier: Modifier = Modifier) {
     Row(
-        modifier = modifier.fillMaxWidth().background(WiboxColors.background),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -286,6 +294,7 @@ private fun PreviewOperators(state: PreviewUiState, viewModel: PreviewViewModel,
             enabled = state.status == PreviewStatus.PLAYING_SIMULATED &&
                 state.device?.permissions?.contains(DevicePermission.UNLOCK) == true && state.action.pendingCommandId == null,
             tag = "preview_unlock",
+            primary = true,
         )
         LargePreviewButton(
             icon = R.drawable.ic_call_end,
@@ -313,19 +322,17 @@ private fun LargePreviewButton(
     onClick: () -> Unit,
     enabled: Boolean,
     tag: String,
+    primary: Boolean = false,
 ) {
-    IconButton(
+    WiboxCircleAction(
+        painter = icon,
+        contentDescription = description,
         onClick = onClick,
         enabled = enabled,
-        modifier = Modifier.size(100.dp).testTag(tag),
-    ) {
-        Icon(
-            painter = painterResource(icon),
-            contentDescription = description,
-            modifier = Modifier.size(72.dp),
-            tint = if (enabled) WiboxColors.text else WiboxColors.disabled,
-        )
-    }
+        tag = tag,
+        primary = primary,
+        size = 88.dp,
+    )
 }
 
 @Composable
@@ -337,7 +344,7 @@ private fun PreviewResult(state: PreviewUiState) {
                 Text(
                     text = stringResource(R.string.local_media_saved),
                     modifier = Modifier.fillMaxWidth().padding(12.dp),
-                    color = WiboxColors.selected,
+                    color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                 )
@@ -372,33 +379,30 @@ fun DeviceConfigScreen(
                 modifier = Modifier
                     .weight(1f)
                     .verticalScroll(rememberScrollState())
+                    .padding(vertical = 8.dp)
                     .testTag("config_scroll"),
             ) {
                 WiboxOptionRow(
                     device.name,
                     { navigator.navigateInventory(AppDestinationRequest("device_info", deviceId = deviceId)) },
                     tag = "config_info",
-                    topMargin = 15.dp,
                 )
                 if (device.role == DeviceRole.OWNER) {
                     WiboxOptionRow(
                         stringResource(R.string.modify_device_password),
                         { navigator.navigateInventory(AppDestinationRequest("password_modify", deviceId = deviceId, mode = "device")) },
                         tag = "config_password",
-                        topMargin = 15.dp,
                     )
                     WiboxOptionRow(
                         stringResource(R.string.modify_unlock_password),
                         { navigator.navigateInventory(AppDestinationRequest("password_modify", deviceId = deviceId, mode = "unlock")) },
                         tag = "config_unlock_password",
-                        topMargin = 15.dp,
                     )
                 }
                 WiboxOptionRow(
                     stringResource(R.string.unlock_setting),
                     { navigator.navigateInventory(AppDestinationRequest("unlock_setting", deviceId = deviceId)) },
                     tag = "config_unlock_setting",
-                    topMargin = 15.dp,
                 )
                 WiboxOptionRow(
                     text = stringResource(R.string.intercom_way),
@@ -408,8 +412,12 @@ fun DeviceConfigScreen(
                             snapshot.copy(metadata = snapshot.metadata + ("fullDuplex" to (!current).toString()))
                         }
                     },
-                    topMargin = 15.dp,
-                    trailing = { Text(stringResource(if (device.fullDuplex) R.string.full_duplex else R.string.half_duplex)) },
+                    trailing = {
+                        Text(
+                            stringResource(if (device.fullDuplex) R.string.full_duplex else R.string.half_duplex),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    },
                 )
                 WiboxOptionRow(
                     text = stringResource(R.string.preview_mode),
@@ -419,15 +427,18 @@ fun DeviceConfigScreen(
                             snapshot.copy(metadata = snapshot.metadata + ("highQuality" to (!current).toString()))
                         }
                     },
-                    topMargin = 15.dp,
-                    trailing = { Text(stringResource(if (device.highQuality) R.string.high_quality else R.string.low_quality)) },
+                    trailing = {
+                        Text(
+                            stringResource(if (device.highQuality) R.string.high_quality else R.string.low_quality),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    },
                 )
                 if (device.role == DeviceRole.OWNER) {
                     WiboxOptionRow(
                         stringResource(R.string.wifi_setup),
                         { navigator.navigateInventory(AppDestinationRequest("handle_wifi", deviceId = deviceId)) },
                         tag = "config_wifi",
-                        topMargin = 15.dp,
                     )
                 }
                 WiboxOptionRow(
@@ -438,8 +449,12 @@ fun DeviceConfigScreen(
                             snapshot.copy(metadata = snapshot.metadata + ("f1Seconds" to (if (current == 3) 5 else 3).toString()))
                         }
                     },
-                    topMargin = 15.dp,
-                    trailing = { Text(stringResource(R.string.seconds_value, device.f1Seconds)) },
+                    trailing = {
+                        Text(
+                            stringResource(R.string.seconds_value, device.f1Seconds),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    },
                 )
                 if (device.role == DeviceRole.OWNER) {
                     WiboxSwitchRow(
@@ -449,7 +464,6 @@ fun DeviceConfigScreen(
                             viewModel.updateDevice { it.copy(metadata = it.metadata + ("callAlerts" to enabled.toString())) }
                         },
                         tag = "config_call_alerts",
-                        topMargin = 15.dp,
                     )
                     WiboxSwitchRow(
                         text = stringResource(R.string.motion_alerts),
@@ -458,19 +472,16 @@ fun DeviceConfigScreen(
                             viewModel.updateDevice { it.copy(metadata = it.metadata + ("motionAlerts" to enabled.toString())) }
                         },
                         tag = "config_motion_alerts",
-                        topMargin = 15.dp,
                     )
                     WiboxOptionRow(
                         stringResource(R.string.firmware_version),
                         { navigator.navigateInventory(AppDestinationRequest("upgrade", deviceId = deviceId)) },
                         tag = "config_upgrade",
-                        topMargin = 15.dp,
                     )
                     WiboxOptionRow(
                         stringResource(R.string.share_manage_title),
                         { navigator.navigateInventory(AppDestinationRequest("share_manage", deviceId = deviceId)) },
                         tag = "config_share",
-                        topMargin = 15.dp,
                     )
                 }
                 WiboxOptionRow(
@@ -478,7 +489,6 @@ fun DeviceConfigScreen(
                     onClick = {},
                     enabled = false,
                     tag = "config_time_sync",
-                    topMargin = 15.dp,
                     trailing = {},
                 )
                 Spacer(Modifier.height(20.dp))
@@ -526,6 +536,7 @@ fun PasswordModifyScreen(
                 text = stringResource(R.string.password_demo_notice),
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
                 style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             WiboxTextField(
                 value = oldPassword,
@@ -577,21 +588,25 @@ fun PasswordModifyScreen(
                 Text(
                     text = stringResource(R.string.passwords_do_not_match),
                     modifier = Modifier.padding(20.dp).testTag("password_mismatch"),
-                    color = WiboxColors.error,
+                    color = MaterialTheme.colorScheme.error,
                 )
             }
             if (empty && saved) {
-                Text(stringResource(R.string.empty_required_fields), modifier = Modifier.padding(20.dp), color = WiboxColors.error)
+                Text(
+                    stringResource(R.string.empty_required_fields),
+                    modifier = Modifier.padding(20.dp),
+                    color = MaterialTheme.colorScheme.error,
+                )
             }
             if (saved && !empty && !mismatch) {
                 Text(
                     text = stringResource(R.string.local_password_validated),
                     modifier = Modifier.padding(20.dp).testTag("password_validated"),
-                    color = WiboxColors.selected,
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
             Spacer(Modifier.height(20.dp))
-            WiboxButton(stringResource(R.string.confirm), { saved = true }, tag = "password_confirm")
+            WiboxButton(stringResource(R.string.confirm), { saved = true }, tag = "password_confirm", primary = true)
             Spacer(Modifier.height(20.dp))
         }
     }
@@ -608,12 +623,12 @@ fun UnlockSettingScreen(
     WiboxScreen("screen_unlock_setting") {
         WiboxTopBar(stringResource(R.string.unlock_setting), onBack = { navigator.back() })
         LocalDemoBanner()
+        Spacer(Modifier.height(8.dp))
         WiboxSwitchRow(
             text = stringResource(R.string.quick_unlock),
             checked = state.preferences.quickUnlock,
             onCheckedChange = viewModel::setQuickUnlock,
             tag = "quick_unlock_switch",
-            topMargin = 15.dp,
         )
         WiboxSwitchRow(
             text = stringResource(R.string.biometric_unlock),
@@ -621,15 +636,15 @@ fun UnlockSettingScreen(
             onCheckedChange = {},
             enabled = false,
             tag = "biometric_unlock_switch",
-            topMargin = 15.dp,
         )
         Text(
             text = stringResource(R.string.biometric_unavailable_demo),
             modifier = Modifier.padding(20.dp),
             style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(20.dp))
-        WiboxButton(stringResource(R.string.save), { navigator.back() }, tag = "unlock_settings_save")
+        WiboxButton(stringResource(R.string.save), { navigator.back() }, tag = "unlock_settings_save", primary = true)
     }
 }
 
@@ -665,6 +680,7 @@ fun DeviceInfoScreen(
                     onClick = { viewModel.renameDevice(name) },
                     enabled = name.isNotBlank() && name != device.name,
                     tag = "device_info_save",
+                    primary = true,
                 )
             }
         }
@@ -686,29 +702,28 @@ fun UpgradeScreen(
         if (device == null) {
             EmptyContent(stringResource(R.string.device_not_found))
         } else {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize().padding(vertical = 8.dp)) {
                 WiboxOptionRow(
                     text = stringResource(R.string.current_version_value, device.firmwareCurrent),
                     onClick = {},
                     enabled = false,
-                    topMargin = 5.dp,
                     trailing = {},
                 )
                 WiboxOptionRow(
                     text = stringResource(R.string.latest_version_value, device.firmwareLatest),
                     onClick = {},
                     enabled = false,
-                    topMargin = 10.dp,
                     trailing = {},
                 )
                 Spacer(Modifier.weight(1f))
                 if (state.queryingFirmware) {
-                    CircularProgressIndicator(color = WiboxColors.selected, modifier = Modifier.align(Alignment.CenterHorizontally))
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
                 } else {
                     Text(
                         text = stringResource(R.string.firmware_up_to_date),
                         modifier = Modifier.align(Alignment.CenterHorizontally),
-                        color = WiboxColors.selected,
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.bodyMedium,
                     )
                 }
                 Spacer(Modifier.height(20.dp))
@@ -759,16 +774,33 @@ fun PushCallScreen(
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
         )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(Color(0x66000000), Color(0x33000000), Color(0xCC000000)),
+                    ),
+                ),
+        )
         Column(
             modifier = Modifier.fillMaxSize().padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(Modifier.weight(1f))
-            Image(
-                painter = painterResource(R.drawable.ico_logo),
-                contentDescription = stringResource(R.string.app_name),
-                modifier = Modifier.size(80.dp),
-            )
+            Box(
+                modifier = Modifier
+                    .size(96.dp)
+                    .clip(CircleShape)
+                    .background(Color(0x33FFFFFF)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.ico_logo),
+                    contentDescription = stringResource(R.string.app_name),
+                    modifier = Modifier.size(56.dp),
+                )
+            }
             Text(
                 text = state.device?.name ?: stringResource(R.string.unknown_device),
                 modifier = Modifier.padding(top = 20.dp),
@@ -779,7 +811,7 @@ fun PushCallScreen(
             if (state.status == CallStatus.RINGING) {
                 Text(
                     text = stringResource(R.string.local_call_ringing, state.remainingSeconds),
-                    color = Color.White,
+                    color = Color(0xCCFFFFFF),
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(top = 8.dp),
@@ -789,15 +821,39 @@ fun PushCallScreen(
             when (state.status) {
                 CallStatus.RINGING -> {
                     Row(
-                        modifier = Modifier.fillMaxWidth().height(80.dp),
+                        modifier = Modifier.fillMaxWidth().height(96.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        IconButton(onClick = viewModel::refuse, modifier = Modifier.size(72.dp).testTag("call_refuse")) {
-                            Image(painterResource(R.drawable.btn_refuse), contentDescription = stringResource(R.string.refuse_call))
+                        IconButton(
+                            onClick = viewModel::refuse,
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFE53935))
+                                .testTag("call_refuse"),
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_call_end),
+                                contentDescription = stringResource(R.string.refuse_call),
+                                tint = Color.White,
+                                modifier = Modifier.size(32.dp),
+                            )
                         }
-                        IconButton(onClick = viewModel::accept, modifier = Modifier.size(72.dp).testTag("call_accept")) {
-                            Image(painterResource(R.drawable.btn_accept), contentDescription = stringResource(R.string.accept_call))
+                        IconButton(
+                            onClick = viewModel::accept,
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF43A047))
+                                .testTag("call_accept"),
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_call),
+                                contentDescription = stringResource(R.string.accept_call),
+                                tint = Color.White,
+                                modifier = Modifier.size(32.dp),
+                            )
                         }
                     }
                 }

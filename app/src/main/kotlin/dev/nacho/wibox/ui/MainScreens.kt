@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -24,12 +25,15 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -40,17 +44,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.nacho.wibox.R
 import dev.nacho.wibox.core.cloud.ActionType
@@ -78,10 +81,13 @@ fun MainScreen(
     val settingsState by settingsViewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(sessionViewModel) { navigator.setMainTabHandler(sessionViewModel::selectTab) }
     BoxWithConstraints(
-        modifier = Modifier.fillMaxSize().background(WiboxColors.primary).safeDrawingPadding(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .safeDrawingPadding(),
     ) {
         val expanded = maxWidth >= 600.dp
-        Row(modifier = Modifier.fillMaxSize().background(WiboxColors.background)) {
+        Row(modifier = Modifier.fillMaxSize()) {
             if (expanded) {
                 WiboxNavigationRail(sessionState.selectedTab, sessionViewModel::selectTab)
             }
@@ -102,14 +108,12 @@ fun MainScreen(
                                     onClick = devicesViewModel::refresh,
                                     enabled = !devicesState.devices.refreshing,
                                     tag = "refresh_devices",
-                                    tint = Color.White,
                                 )
                                 SmallIconButton(
                                     painter = R.drawable.ic_add,
                                     contentDescription = stringResource(R.string.add_device),
                                     onClick = { navigator.navigateInventory("add_type") },
                                     tag = "add_device_button",
-                                    tint = Color.White,
                                 )
                             }
                             MainTab.EVENTS -> {
@@ -118,7 +122,6 @@ fun MainScreen(
                                     contentDescription = stringResource(R.string.edit),
                                     onClick = eventsViewModel::toggleEditing,
                                     tag = "edit_events",
-                                    tint = Color.White,
                                 )
                             }
                             MainTab.GALLERY -> {
@@ -127,7 +130,6 @@ fun MainScreen(
                                     contentDescription = stringResource(R.string.edit),
                                     onClick = galleryViewModel::toggleEditing,
                                     tag = "edit_gallery",
-                                    tint = Color.White,
                                 )
                             }
                             MainTab.SETTINGS -> Unit
@@ -144,14 +146,12 @@ fun MainScreen(
                     }
                 }
                 when {
-                    eventsState.editing -> SelectionBottomBar(
+                    eventsState.editing -> SelectionBar(
                         onSelectAll = eventsViewModel::selectAll,
                         onDelete = eventsViewModel::deleteSelected,
                         deleteEnabled = eventsState.selected.isNotEmpty(),
-                        showSave = false,
-                        showShare = false,
                     )
-                    galleryState.editing -> SelectionBottomBar(
+                    galleryState.editing -> SelectionBar(
                         onSelectAll = galleryViewModel::selectAll,
                         onDelete = galleryViewModel::deleteSelected,
                         deleteEnabled = galleryState.selected.isNotEmpty(),
@@ -184,31 +184,48 @@ private fun DevicesScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_add_circle),
-                        contentDescription = stringResource(R.string.add_device),
-                        tint = WiboxColors.primary,
-                        modifier = Modifier.size(88.dp),
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Text(stringResource(R.string.add_device), style = MaterialTheme.typography.bodyLarge)
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize().testTag("device_list"),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 5.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    items(devices.value, key = { it.id }) { device ->
-                        DeviceCard(
-                            device = device,
-                            actionInProgress = state.action.pendingCommandId,
-                            onPreview = { navigator.navigateInventory(AppDestinationRequest("preview", deviceId = device.id)) },
-                            onConfig = { navigator.navigateInventory(AppDestinationRequest("config", deviceId = device.id)) },
-                            onAction = { action -> viewModel.performAction(device.id, action) },
+                    Box(
+                        modifier = Modifier
+                            .size(96.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.secondaryContainer),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_add_circle),
+                            contentDescription = stringResource(R.string.add_device),
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.size(48.dp),
                         )
                     }
-                    item { ActionOutcomeText(state.action) }
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        stringResource(R.string.add_device),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            } else {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(
+                        modifier = Modifier.weight(1f).fillMaxWidth().testTag("device_list"),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        items(devices.value, key = { it.id }) { device ->
+                            DeviceCard(
+                                device = device,
+                                actionInProgress = state.action.pendingCommandId,
+                                onPreview = { navigator.navigateInventory(AppDestinationRequest("preview", deviceId = device.id)) },
+                                onConfig = { navigator.navigateInventory(AppDestinationRequest("config", deviceId = device.id)) },
+                                onAction = { action -> viewModel.performAction(device.id, action) },
+                            )
+                        }
+                    }
+                    ActionOutcomeText(
+                        action = state.action,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
                 }
             }
         }
@@ -223,80 +240,104 @@ private fun DeviceCard(
     onConfig: () -> Unit,
     onAction: (ActionType) -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .testTag("device_card_${device.id}"),
+    val online = device.presence == DevicePresence.ONLINE
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth().testTag("device_card_${device.id}"),
+        shape = MaterialTheme.shapes.large,
     ) {
-        Row(
-            modifier = Modifier.height(40.dp).padding(horizontal = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Image(
-                painter = painterResource(if (device.presence == DevicePresence.ONLINE) R.drawable.device_status_online else R.drawable.device_status_offline),
-                contentDescription = stringResource(if (device.presence == DevicePresence.ONLINE) R.string.online else R.string.offline),
-                modifier = Modifier.size(28.dp),
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = device.name,
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.Black,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            if (device.role == DeviceRole.SHARED) {
-                Text(stringResource(R.string.shared_device), style = MaterialTheme.typography.bodySmall)
-            }
-        }
-        Image(
-            painter = painterResource(R.drawable.device_cover_default),
-            contentDescription = stringResource(R.string.cd_device_preview, device.name),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .clickable(role = Role.Button, onClick = onPreview)
-                .testTag("device_preview_${device.id}"),
-            contentScale = ContentScale.Crop,
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            SmallIconButton(
-                painter = R.drawable.ic_settings,
-                contentDescription = stringResource(R.string.device_settings),
-                onClick = onConfig,
-                tag = "device_config_${device.id}",
-            )
-            SmallIconButton(
-                painter = R.drawable.ic_call,
-                contentDescription = stringResource(R.string.concierge_call),
-                onClick = { onAction(ActionType.CALL_GUARD) },
-                enabled = device.presence == DevicePresence.ONLINE,
-                tag = "device_guard_${device.id}",
-            )
-            SmallIconButton(
-                painter = R.drawable.ic_f1,
-                contentDescription = stringResource(R.string.f1_activation),
-                onClick = { onAction(ActionType.F1) },
-                enabled = device.presence == DevicePresence.ONLINE && DevicePermission.F1 in device.permissions && actionInProgress == null,
-                tag = "device_f1_${device.id}",
-            )
-            if (actionInProgress?.startsWith("${device.id}:${ActionType.UNLOCK.name}") == true) {
-                CircularProgressIndicator(modifier = Modifier.size(28.dp), color = WiboxColors.selected)
-                Spacer(Modifier.size(20.dp))
-            } else {
-                SmallIconButton(
-                    painter = R.drawable.ic_lock_open,
-                    contentDescription = stringResource(R.string.unlock),
-                    onClick = { onAction(ActionType.UNLOCK) },
-                    enabled = device.presence == DevicePresence.ONLINE && DevicePermission.UNLOCK in device.permissions && actionInProgress == null,
-                    tag = "action_unlock_${device.id}",
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Image(
+                    painter = painterResource(if (online) R.drawable.device_status_online else R.drawable.device_status_offline),
+                    contentDescription = stringResource(if (online) R.string.online else R.string.offline),
+                    modifier = Modifier.size(26.dp),
                 )
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    text = device.name,
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (device.role == DeviceRole.SHARED) {
+                    Surface(
+                        shape = MaterialTheme.shapes.small,
+                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.shared_device),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        )
+                    }
+                }
+            }
+            val darkSurface = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(horizontal = 12.dp)
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                    .clickable(role = Role.Button, onClick = onPreview)
+                    .testTag("device_preview_${device.id}"),
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.device_cover_default),
+                    contentDescription = stringResource(R.string.cd_device_preview, device.name),
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    alpha = if (darkSurface) 0.32f else 1f,
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                WiboxCircleAction(
+                    painter = R.drawable.ic_settings,
+                    contentDescription = stringResource(R.string.device_settings),
+                    onClick = onConfig,
+                    tag = "device_config_${device.id}",
+                )
+                WiboxCircleAction(
+                    painter = R.drawable.ic_call,
+                    contentDescription = stringResource(R.string.concierge_call),
+                    onClick = { onAction(ActionType.CALL_GUARD) },
+                    enabled = online,
+                    tag = "device_guard_${device.id}",
+                )
+                WiboxCircleAction(
+                    painter = R.drawable.ic_f1,
+                    contentDescription = stringResource(R.string.f1_activation),
+                    onClick = { onAction(ActionType.F1) },
+                    enabled = online && DevicePermission.F1 in device.permissions && actionInProgress == null,
+                    tag = "device_f1_${device.id}",
+                )
+                if (actionInProgress?.startsWith("${device.id}:${ActionType.UNLOCK.name}") == true) {
+                    Box(modifier = Modifier.size(56.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(modifier = Modifier.size(28.dp))
+                    }
+                } else {
+                    WiboxCircleAction(
+                        painter = R.drawable.ic_lock_open,
+                        contentDescription = stringResource(R.string.unlock),
+                        onClick = { onAction(ActionType.UNLOCK) },
+                        enabled = online && DevicePermission.UNLOCK in device.permissions && actionInProgress == null,
+                        tag = "action_unlock_${device.id}",
+                        primary = true,
+                    )
+                }
             }
         }
     }
@@ -310,16 +351,12 @@ private fun EventsScreen(
     navigator: AppNavigator,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.background(Color.White)) {
-            Text(
-                text = stringResource(R.string.all_activity),
-                modifier = Modifier.fillMaxWidth().height(25.dp),
-                color = WiboxColors.selected,
-                fontSize = 13.sp,
-                textAlign = TextAlign.Center,
-            )
-            Box(modifier = Modifier.fillMaxWidth().height(3.dp).background(WiboxColors.selected))
-        }
+        Text(
+            text = stringResource(R.string.all_activity),
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
         when (val events = state.events) {
             is LoadState.Loading -> LoadingContent()
             is LoadState.Error -> ErrorContent(events.error, viewModel::refresh)
@@ -328,13 +365,17 @@ private fun EventsScreen(
                     EmptyContent(stringResource(R.string.empty_events))
                 } else {
                     val visible = events.value.take(state.visibleCount)
-                    LazyColumn(modifier = Modifier.fillMaxSize().testTag("event_list")) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize().testTag("event_list"),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
                         item {
                             Text(
                                 text = stringResource(R.string.events_photo_notice),
-                                modifier = Modifier.fillMaxWidth().background(Color.White).padding(10.dp),
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 6.dp),
                                 style = MaterialTheme.typography.bodySmall,
-                                color = WiboxColors.secondaryText,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                         items(visible, key = { it.id }) { event ->
@@ -384,54 +425,68 @@ private fun EventRow(
     onSelect: () -> Unit,
     onClick: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(55.dp)
-            .background(if (selected) WiboxColors.pressed else Color.White)
-            .clickable(role = Role.Button, onClick = onClick)
-            .testTag("event_${event.id}")
-            .padding(horizontal = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
-        if (editing) {
-            Checkbox(checked = selected, onCheckedChange = { onSelect() })
-        } else {
-            Icon(
-                painter = painterResource(
-                    when (event.type) {
-                        ProviderEventType.INCOMING_CALL, ProviderEventType.CALL_ANSWERED -> R.drawable.ic_call
-                        ProviderEventType.MOTION -> R.drawable.ic_motion
-                        ProviderEventType.UNKNOWN -> R.drawable.ic_photo
-                    },
-                ),
-                contentDescription = null,
-                tint = WiboxColors.selected,
-                modifier = Modifier.size(25.dp),
-            )
-        }
-        Spacer(Modifier.width(10.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = "$deviceName (${event.channel})",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Black,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = formatTimestamp(event.timestampMillis),
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 1,
-            )
-        }
-        if (!editing) {
-            Icon(
-                painter = painterResource(if (event.type == ProviderEventType.INCOMING_CALL) R.drawable.ic_call else R.drawable.ic_photo),
-                contentDescription = stringResource(if (event.type == ProviderEventType.INCOMING_CALL) R.string.answer_call else R.string.open_media),
-                tint = WiboxColors.text,
-                modifier = Modifier.size(26.dp).testTag("event_open_${event.id}"),
-            )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+                .clickable(role = Role.Button, onClick = onClick)
+                .testTag("event_${event.id}")
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (editing) {
+                Checkbox(checked = selected, onCheckedChange = { onSelect() })
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(
+                            when (event.type) {
+                                ProviderEventType.INCOMING_CALL, ProviderEventType.CALL_ANSWERED -> R.drawable.ic_call
+                                ProviderEventType.MOTION -> R.drawable.ic_motion
+                                ProviderEventType.UNKNOWN -> R.drawable.ic_photo
+                            },
+                        ),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "$deviceName (${event.channel})",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = formatTimestamp(event.timestampMillis),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                )
+            }
+            if (!editing) {
+                Icon(
+                    painter = painterResource(if (event.type == ProviderEventType.INCOMING_CALL) R.drawable.ic_call else R.drawable.ic_photo),
+                    contentDescription = stringResource(if (event.type == ProviderEventType.INCOMING_CALL) R.string.answer_call else R.string.open_media),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp).testTag("event_open_${event.id}"),
+                )
+            }
         }
     }
 }
@@ -453,8 +508,9 @@ private fun GalleryScreen(
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
                     modifier = Modifier.fillMaxSize().testTag("gallery_grid"),
-                    horizontalArrangement = Arrangement.spacedBy(3.dp),
-                    verticalArrangement = Arrangement.spacedBy(3.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     groups.forEach { (day, itemsForDay) ->
                         item(span = { GridItemSpan(maxLineSpan) }) {
@@ -462,12 +518,14 @@ private fun GalleryScreen(
                                 text = day,
                                 modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 10.dp),
                                 style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
                         }
                         items(itemsForDay, key = { it.id }) { item ->
                             Box(
                                 modifier = Modifier
                                     .aspectRatio(1f)
+                                    .clip(MaterialTheme.shapes.medium)
                                     .clickable {
                                         if (state.editing) viewModel.toggleSelection(item.id) else navigator.navigateInventory(AppDestinationRequest("image_pager", mediaId = item.id))
                                     }
@@ -479,7 +537,7 @@ private fun GalleryScreen(
                                         painter = painterResource(R.drawable.ic_play),
                                         contentDescription = stringResource(R.string.video),
                                         tint = Color.White,
-                                        modifier = Modifier.align(Alignment.BottomEnd).padding(5.dp).size(22.dp),
+                                        modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp).size(22.dp),
                                     )
                                 }
                                 if (state.editing) {
@@ -499,6 +557,16 @@ private fun GalleryScreen(
 }
 
 @Composable
+private fun SettingsSectionHeader(text: String) {
+    Text(
+        text = text,
+        modifier = Modifier.padding(start = 20.dp, top = 20.dp, bottom = 4.dp),
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.primary,
+    )
+}
+
+@Composable
 private fun SettingsScreen(
     state: SettingsUiState,
     devices: DevicesUiState,
@@ -515,11 +583,7 @@ private fun SettingsScreen(
             .verticalScroll(rememberScrollState())
             .testTag("settings_content"),
     ) {
-        Text(
-            text = stringResource(R.string.call_reception),
-            modifier = Modifier.fillMaxWidth().background(Color.White).padding(horizontal = 20.dp, vertical = 14.dp),
-            style = MaterialTheme.typography.bodyLarge,
-        )
+        SettingsSectionHeader(stringResource(R.string.call_reception))
         WiboxSwitchRow(
             text = stringResource(R.string.sound),
             checked = state.preferences.sound,
@@ -532,23 +596,19 @@ private fun SettingsScreen(
             onCheckedChange = viewModel::setVibration,
             tag = "settings_vibration",
         )
-        WiboxOptionRow(stringResource(R.string.about), { navigator.navigateInventory("about") }, tag = "about_button", topMargin = 15.dp)
-        Text(
-            text = stringResource(R.string.local_demo_title),
-            modifier = Modifier.padding(start = 20.dp, top = 24.dp, bottom = 8.dp),
-            style = MaterialTheme.typography.titleMedium,
-            color = WiboxColors.selected,
-        )
+        WiboxOptionRow(stringResource(R.string.about), { navigator.navigateInventory("about") }, tag = "about_button", topMargin = 10.dp)
+        SettingsSectionHeader(stringResource(R.string.local_demo_title))
         Text(
             text = stringResource(R.string.local_demo_explanation),
             modifier = Modifier.padding(horizontal = 20.dp),
             style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         WiboxOptionRow(
             text = stringResource(R.string.demo_scenario, scenarioLabel(state.preferences.scenario)),
             onClick = { showScenario = true },
             tag = "scenario_selector",
-            topMargin = 15.dp,
+            topMargin = 10.dp,
         )
         WiboxOptionRow(
             text = stringResource(R.string.simulate_incoming_call),
@@ -563,7 +623,7 @@ private fun SettingsScreen(
             onClick = { showReset = true },
             tag = "reset_demo_button",
             trailing = {
-                Icon(painterResource(R.drawable.ic_refresh), contentDescription = null, tint = WiboxColors.text)
+                Icon(painterResource(R.drawable.ic_refresh), contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             },
         )
         Spacer(Modifier.height(24.dp))
@@ -613,57 +673,6 @@ private fun SettingsScreen(
             confirmText = stringResource(R.string.exit),
             onConfirm = onExit,
             onDismiss = { showExit = false },
-        )
-    }
-}
-
-@Composable
-private fun SelectionBottomBar(
-    onSelectAll: () -> Unit,
-    onDelete: () -> Unit,
-    deleteEnabled: Boolean,
-    showSave: Boolean = true,
-    showShare: Boolean = true,
-    onSave: () -> Unit = {},
-    onShare: () -> Unit = {},
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth().height(55.dp).background(WiboxColors.primary),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        SmallIconButton(
-            painter = R.drawable.ic_select_all,
-            contentDescription = stringResource(R.string.select_all),
-            onClick = onSelectAll,
-            tag = "select_all",
-            tint = Color.White,
-        )
-        if (showSave) {
-            SmallIconButton(
-                painter = R.drawable.ic_save,
-                contentDescription = stringResource(R.string.save),
-                onClick = onSave,
-                tag = "save_selection",
-                tint = Color.White,
-            )
-        }
-        if (showShare) {
-            SmallIconButton(
-                painter = R.drawable.ic_share,
-                contentDescription = stringResource(R.string.share),
-                onClick = onShare,
-                tag = "share_selection",
-                tint = Color.White,
-            )
-        }
-        SmallIconButton(
-            painter = R.drawable.ic_delete,
-            contentDescription = stringResource(R.string.delete),
-            onClick = onDelete,
-            enabled = deleteEnabled,
-            tag = "delete_selection",
-            tint = Color.White,
         )
     }
 }

@@ -19,45 +19,46 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import dev.nacho.wibox.R
 import dev.nacho.wibox.core.cloud.ActionAcknowledgementLevel
 import dev.nacho.wibox.core.cloud.ProviderError
@@ -72,15 +73,16 @@ fun WiboxScreen(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Box(
+    Surface(
         modifier = modifier
             .fillMaxSize()
-            .background(WiboxColors.primary)
-            .safeDrawingPadding()
             .testTag(tag),
+        color = MaterialTheme.colorScheme.background,
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().background(WiboxColors.background),
+            modifier = Modifier
+                .fillMaxSize()
+                .safeDrawingPadding(),
             content = content,
         )
     }
@@ -94,39 +96,37 @@ fun WiboxTopBar(
     backContentDescription: String = stringResource(R.string.cd_back),
     actions: @Composable RowScope.() -> Unit = {},
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(60.dp)
-            .background(WiboxColors.primary),
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surfaceContainer,
     ) {
         Row(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxWidth().height(64.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (onBack != null) {
-                IconButton(onClick = onBack, modifier = Modifier.size(60.dp).testTag("top_back")) {
+                IconButton(onClick = onBack, modifier = Modifier.size(64.dp).testTag("top_back")) {
                     Icon(
                         painter = painterResource(R.drawable.ic_back),
                         contentDescription = backContentDescription,
-                        tint = WiboxColors.onPrimary,
-                        modifier = Modifier.size(28.dp),
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(26.dp),
                     )
                 }
             } else {
-                Spacer(Modifier.width(60.dp))
+                Spacer(Modifier.width(64.dp))
             }
             Text(
                 text = title,
                 modifier = Modifier.weight(1f),
-                color = WiboxColors.onPrimary,
+                color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.titleLarge,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Row(
-                modifier = Modifier.widthIn(min = 60.dp),
+                modifier = Modifier.widthIn(min = 64.dp),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically,
                 content = actions,
@@ -136,49 +136,48 @@ fun WiboxTopBar(
 }
 
 @Composable
+private fun MainTabIcon(tab: MainTab, selected: Boolean, modifier: Modifier = Modifier) {
+    val tint = if (selected) {
+        MaterialTheme.colorScheme.onSecondaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Image(
+        painter = painterResource(tabIcon(tab)),
+        contentDescription = null,
+        colorFilter = ColorFilter.tint(tint),
+        modifier = modifier.size(26.dp),
+    )
+}
+
+@Composable
 fun WiboxBottomNavigation(
     selected: MainTab,
     onSelect: (MainTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(55.dp)
-            .background(WiboxColors.primary),
+    NavigationBar(
+        modifier = modifier.fillMaxWidth(),
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
     ) {
         MainTab.entries.forEach { tab ->
             val label = tabLabel(tab)
             val selectedTab = tab == selected
-            Column(
+            NavigationBarItem(
+                selected = selectedTab,
+                onClick = { onSelect(tab) },
                 modifier = Modifier
-                    .weight(1f)
-                    .height(55.dp)
-                    .clickable(
-                        role = Role.Tab,
-                        onClick = { onSelect(tab) },
-                    )
-                    .semantics {
-                        this.selected = selectedTab
-                        contentDescription = label
-                    }
+                    .semantics { contentDescription = label }
                     .testTag("tab_${tab.name.lowercase()}"),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Image(
-                    painter = painterResource(tabIcon(tab, selectedTab)),
-                    contentDescription = null,
-                    modifier = Modifier.size(29.dp),
-                )
-                Text(
-                    text = label,
-                    color = if (selectedTab) WiboxColors.onPrimary else WiboxColors.inactiveTab,
-                    fontSize = 12.sp,
-                    lineHeight = 13.sp,
-                    maxLines = 1,
-                )
-            }
+                icon = { MainTabIcon(tab, selectedTab) },
+                label = {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                    )
+                },
+            )
         }
     }
 }
@@ -188,33 +187,25 @@ fun WiboxNavigationRail(
     selected: MainTab,
     onSelect: (MainTab) -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .width(104.dp)
-            .fillMaxSize()
-            .background(WiboxColors.primary)
-            .padding(vertical = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+    NavigationRail(
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
     ) {
+        Spacer(Modifier.height(8.dp))
         MainTab.entries.forEach { tab ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 64.dp)
-                    .clickable(role = Role.Tab) { onSelect(tab) }
-                    .semantics { this.selected = tab == selected }
-                    .testTag("rail_${tab.name.lowercase()}"),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Image(
-                    painter = painterResource(tabIcon(tab, tab == selected)),
-                    contentDescription = null,
-                    modifier = Modifier.size(30.dp),
-                )
-                Text(tabLabel(tab), color = if (tab == selected) WiboxColors.onPrimary else WiboxColors.inactiveTab, fontSize = 12.sp)
-            }
+            val selectedTab = tab == selected
+            NavigationRailItem(
+                selected = selectedTab,
+                onClick = { onSelect(tab) },
+                modifier = Modifier.testTag("rail_${tab.name.lowercase()}"),
+                icon = { MainTabIcon(tab, selectedTab) },
+                label = {
+                    Text(
+                        text = tabLabel(tab),
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                    )
+                },
+            )
         }
     }
 }
@@ -227,11 +218,11 @@ fun tabLabel(tab: MainTab): String = when (tab) {
     MainTab.SETTINGS -> stringResource(R.string.settings)
 }
 
-private fun tabIcon(tab: MainTab, selected: Boolean): Int = when (tab) {
-    MainTab.DEVICES -> if (selected) R.drawable.main_btn_device_select else R.drawable.main_btn_device
-    MainTab.EVENTS -> if (selected) R.drawable.main_btn_call_log_select else R.drawable.main_btn_call_log
-    MainTab.GALLERY -> if (selected) R.drawable.main_btn_file_select else R.drawable.main_btn_file
-    MainTab.SETTINGS -> if (selected) R.drawable.main_btn_setting_select else R.drawable.main_btn_setting
+private fun tabIcon(tab: MainTab): Int = when (tab) {
+    MainTab.DEVICES -> R.drawable.main_btn_device
+    MainTab.EVENTS -> R.drawable.main_btn_call_log
+    MainTab.GALLERY -> R.drawable.main_btn_file
+    MainTab.SETTINGS -> R.drawable.main_btn_setting
 }
 
 @Composable
@@ -258,23 +249,18 @@ fun WiboxButton(
     tag: String? = null,
     primary: Boolean = false,
 ) {
-    Button(
-        onClick = onClick,
-        modifier = modifier
-            .padding(horizontal = 30.dp)
-            .fillMaxWidth()
-            .heightIn(min = 50.dp)
-            .then(if (tag == null) Modifier else Modifier.testTag(tag)),
-        enabled = enabled,
-        shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (primary) WiboxColors.primary else WiboxColors.surface,
-            contentColor = if (primary) WiboxColors.onPrimary else WiboxColors.text,
-            disabledContainerColor = WiboxColors.disabled,
-            disabledContentColor = WiboxColors.secondaryText,
-        ),
-    ) {
+    val buttonModifier = modifier
+        .padding(horizontal = 30.dp)
+        .fillMaxWidth()
+        .heightIn(min = 52.dp)
+        .then(if (tag == null) Modifier else Modifier.testTag(tag))
+    val label = @Composable {
         Text(text, style = MaterialTheme.typography.labelLarge, maxLines = 2, textAlign = TextAlign.Center)
+    }
+    if (primary) {
+        Button(onClick = onClick, modifier = buttonModifier, enabled = enabled) { label() }
+    } else {
+        FilledTonalButton(onClick = onClick, modifier = buttonModifier, enabled = enabled) { label() }
     }
 }
 
@@ -285,35 +271,42 @@ fun WiboxOptionRow(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     tag: String? = null,
-    topMargin: androidx.compose.ui.unit.Dp = 2.dp,
+    topMargin: androidx.compose.ui.unit.Dp = 6.dp,
     trailing: @Composable RowScope.() -> Unit = {
         Icon(
             painter = painterResource(R.drawable.ic_chevron_right),
             contentDescription = null,
-            tint = WiboxColors.secondaryText,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     },
 ) {
-    Row(
+    Surface(
         modifier = modifier
             .padding(top = topMargin)
+            .padding(horizontal = 16.dp)
             .fillMaxWidth()
-            .heightIn(min = 50.dp)
-            .background(if (enabled) WiboxColors.surface else WiboxColors.disabled)
-            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
-            .then(if (tag == null) Modifier else Modifier.testTag(tag))
-            .padding(start = 20.dp, end = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .then(if (tag == null) Modifier else Modifier.testTag(tag)),
+        shape = MaterialTheme.shapes.medium,
+        color = if (enabled) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
-        Text(
-            text = text,
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodyLarge,
-            color = if (enabled) WiboxColors.text else WiboxColors.secondaryText,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-        )
-        trailing()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 56.dp)
+                .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+                .padding(start = 20.dp, end = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = text,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            trailing()
+        }
     }
 }
 
@@ -325,37 +318,38 @@ fun WiboxSwitchRow(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     tag: String? = null,
-    topMargin: androidx.compose.ui.unit.Dp = 2.dp,
+    topMargin: androidx.compose.ui.unit.Dp = 6.dp,
 ) {
     val stateText = stringResource(if (checked) R.string.enabled_on else R.string.enabled_off)
-    Row(
+    Surface(
         modifier = modifier
             .padding(top = topMargin)
+            .padding(horizontal = 16.dp)
             .fillMaxWidth()
-            .heightIn(min = 50.dp)
-            .background(if (enabled) WiboxColors.surface else WiboxColors.disabled)
-            .padding(start = 20.dp, end = 10.dp)
-            .then(if (tag == null) Modifier else Modifier.testTag(tag))
-            .semantics { this.stateDescription = stateText },
-        verticalAlignment = Alignment.CenterVertically,
+            .then(if (tag == null) Modifier else Modifier.testTag(tag)),
+        shape = MaterialTheme.shapes.medium,
+        color = if (enabled) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
-        Text(
-            text = text,
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodyLarge,
-            color = if (enabled) WiboxColors.text else WiboxColors.secondaryText,
-        )
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            enabled = enabled,
-            colors = SwitchDefaults.colors(
-                checkedTrackColor = WiboxColors.selected,
-                checkedThumbColor = Color.White,
-                uncheckedTrackColor = WiboxColors.divider,
-                uncheckedThumbColor = Color.White,
-            ),
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 56.dp)
+                .semantics { this.stateDescription = stateText }
+                .padding(start = 20.dp, end = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = text,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                enabled = enabled,
+            )
+        }
     }
 }
 
@@ -384,16 +378,7 @@ fun WiboxTextField(
         label = { Text(label) },
         supportingText = supportingText?.let { { Text(it) } },
         visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,
-        shape = RoundedCornerShape(12.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = WiboxColors.surface,
-            unfocusedContainerColor = WiboxColors.surface,
-            disabledContainerColor = WiboxColors.disabled,
-            focusedBorderColor = WiboxColors.selected,
-            unfocusedBorderColor = WiboxColors.divider,
-            focusedTextColor = WiboxColors.text,
-            unfocusedTextColor = WiboxColors.text,
-        ),
+        shape = MaterialTheme.shapes.medium,
         textStyle = if (ltr) {
             MaterialTheme.typography.bodyLarge.copy(textDirection = TextDirection.Ltr)
         } else {
@@ -409,30 +394,33 @@ val LocalProviderStatus = staticCompositionLocalOf {
 @Composable
 fun ProviderStatusBanner(modifier: Modifier = Modifier) {
     val status = LocalProviderStatus.current
-    Row(
+    Surface(
         modifier = modifier
             .fillMaxWidth()
-            .background(WiboxColors.banner)
-            .padding(horizontal = 16.dp, vertical = 10.dp)
             .testTag("provider_status_banner"),
-        verticalAlignment = Alignment.CenterVertically,
+        color = MaterialTheme.colorScheme.secondaryContainer,
     ) {
-        Icon(
-            painter = painterResource(R.drawable.ic_info),
-            contentDescription = null,
-            tint = WiboxColors.selected,
-            modifier = Modifier.size(22.dp),
-        )
-        Spacer(Modifier.width(10.dp))
-        Text(
-            text = if (status.simulated) {
-                stringResource(R.string.provider_demo_banner, status.profileVersion)
-            } else {
-                stringResource(R.string.provider_stock_banner, status.profileVersion)
-            },
-            style = MaterialTheme.typography.bodySmall,
-            color = WiboxColors.bannerText,
-        )
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_info),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.size(20.dp),
+            )
+            Spacer(Modifier.width(10.dp))
+            Text(
+                text = if (status.simulated) {
+                    stringResource(R.string.provider_demo_banner, status.profileVersion)
+                } else {
+                    stringResource(R.string.provider_stock_banner, status.profileVersion)
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+            )
+        }
     }
 }
 
@@ -449,9 +437,14 @@ fun LoadingContent(label: String = stringResource(R.string.loading)) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        CircularProgressIndicator(color = WiboxColors.selected)
+        CircularProgressIndicator()
         Spacer(Modifier.height(16.dp))
-        Text(label, style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
+        Text(
+            label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 
@@ -467,7 +460,7 @@ fun EmptyContent(text: String, modifier: Modifier = Modifier) {
         Text(
             text = text,
             style = MaterialTheme.typography.bodyLarge,
-            color = WiboxColors.text,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
     }
@@ -487,10 +480,17 @@ fun ErrorContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_info),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.error,
+            modifier = Modifier.size(48.dp),
+        )
+        Spacer(Modifier.height(12.dp))
         Text(
             text = cloudErrorText(error),
             style = MaterialTheme.typography.bodyLarge,
-            color = WiboxColors.error,
+            color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.Center,
         )
         if (onRetry != null) {
@@ -532,12 +532,17 @@ fun <T> LoadContent(
             val data = requireNotNull(state.data)
             Column(modifier = Modifier.fillMaxSize()) {
                 if (state.stale || state.error != null) {
-                    Text(
-                        text = stringResource(R.string.stale_content),
-                        modifier = Modifier.fillMaxWidth().background(WiboxColors.banner).padding(8.dp),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = WiboxColors.bannerText,
-                    )
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.stale_content),
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        )
+                    }
                 }
                 if (data is Collection<*> && data.isEmpty()) {
                     EmptyContent(emptyText)
@@ -585,7 +590,7 @@ fun ActionOutcomeText(action: ActionUi, modifier: Modifier = Modifier) {
         Text(
             text = text,
             modifier = modifier.fillMaxWidth().padding(12.dp).testTag("action_outcome_text"),
-            color = if (action.error != null) WiboxColors.error else WiboxColors.selected,
+            color = if (action.error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
         )
@@ -622,8 +627,6 @@ fun PermissionRationale(
                 Text(stringResource(R.string.not_now))
             }
         },
-        containerColor = WiboxColors.surface,
-        shape = RoundedCornerShape(16.dp),
     )
 }
 
@@ -631,7 +634,7 @@ fun PermissionRationale(
 fun PairingProgress(stage: ProvisionStage, modifier: Modifier = Modifier) {
     Column(modifier = modifier.fillMaxWidth().testTag("pairing_progress"), horizontalAlignment = Alignment.CenterHorizontally) {
         if (stage !in setOf(ProvisionStage.READY, ProvisionStage.IDLE, ProvisionStage.FAILED, ProvisionStage.CANCELLED)) {
-            CircularProgressIndicator(color = WiboxColors.selected)
+            CircularProgressIndicator()
             Spacer(Modifier.height(12.dp))
         }
         Text(
@@ -648,7 +651,7 @@ fun PairingProgress(stage: ProvisionStage, modifier: Modifier = Modifier) {
                 ProvisionStage.OUTCOME_UNKNOWN -> stringResource(R.string.action_unknown)
             },
             style = MaterialTheme.typography.titleMedium,
-            color = if (stage == ProvisionStage.FAILED) WiboxColors.error else WiboxColors.text,
+            color = if (stage == ProvisionStage.FAILED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
         )
     }
@@ -665,7 +668,10 @@ fun MediaControls(
     onSeek: (Float) -> Unit,
 ) {
     Column {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(formatDuration(positionSeconds.toInt()), style = MaterialTheme.typography.bodySmall)
             Slider(
                 value = positionSeconds,
@@ -676,7 +682,10 @@ fun MediaControls(
             Text(formatDuration(durationSeconds), style = MaterialTheme.typography.bodySmall)
         }
         Row(
-            modifier = Modifier.fillMaxWidth().height(60.dp).background(WiboxColors.primary),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+                .background(MaterialTheme.colorScheme.surfaceContainer),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -685,14 +694,12 @@ fun MediaControls(
                 contentDescription = stringResource(if (playing) R.string.pause else R.string.play),
                 onClick = onPlayPause,
                 tag = "video_play_pause",
-                tint = WiboxColors.onPrimary,
             )
             SmallIconButton(
                 painter = if (muted) R.drawable.ic_volume_off else R.drawable.ic_volume,
                 contentDescription = stringResource(if (muted) R.string.unmute else R.string.mute),
                 onClick = onMute,
                 tag = "video_mute",
-                tint = WiboxColors.onPrimary,
             )
         }
     }
@@ -706,15 +713,27 @@ fun SelectionBar(
     onSave: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().height(55.dp).background(WiboxColors.primary),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically,
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surfaceContainer,
     ) {
-        SmallIconButton(R.drawable.ic_select_all, stringResource(R.string.select_all), onSelectAll, tag = "select_all", tint = WiboxColors.onPrimary)
-        onSave?.let { SmallIconButton(R.drawable.ic_save, stringResource(R.string.save), it, tag = "save_selection", tint = WiboxColors.onPrimary) }
-        onShare?.let { SmallIconButton(R.drawable.ic_share, stringResource(R.string.share), it, tag = "share_selection", tint = WiboxColors.onPrimary) }
-        SmallIconButton(R.drawable.ic_delete, stringResource(R.string.delete), onDelete, enabled = deleteEnabled, tag = "delete_selection", tint = WiboxColors.onPrimary)
+        Row(
+            modifier = Modifier.fillMaxWidth().height(64.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SmallIconButton(R.drawable.ic_select_all, stringResource(R.string.select_all), onSelectAll, tag = "select_all")
+            onSave?.let { SmallIconButton(R.drawable.ic_save, stringResource(R.string.save), it, tag = "save_selection") }
+            onShare?.let { SmallIconButton(R.drawable.ic_share, stringResource(R.string.share), it, tag = "share_selection") }
+            SmallIconButton(
+                R.drawable.ic_delete,
+                stringResource(R.string.delete),
+                onDelete,
+                enabled = deleteEnabled,
+                tag = "delete_selection",
+                tint = MaterialTheme.colorScheme.error,
+            )
+        }
     }
 }
 
@@ -732,14 +751,12 @@ fun ConfirmDialog(
         text = { Text(text, style = MaterialTheme.typography.bodyMedium) },
         confirmButton = {
             TextButton(onClick = onConfirm, modifier = Modifier.testTag("dialog_confirm")) {
-                Text(confirmText, color = WiboxColors.error)
+                Text(confirmText, color = MaterialTheme.colorScheme.error)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         },
-        containerColor = WiboxColors.surface,
-        shape = RoundedCornerShape(16.dp),
     )
 }
 
@@ -749,7 +766,8 @@ fun DemoMediaArtwork(
     modifier: Modifier = Modifier,
     dark: Boolean = false,
 ) {
-    val background = if (dark) Color.Black else Color(0xFF52636B)
+    val background = if (dark) Color.Black else MaterialTheme.colorScheme.surfaceContainerHigh
+    val foreground = if (dark) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
     Box(
         modifier = modifier.background(background),
         contentAlignment = Alignment.Center,
@@ -758,13 +776,13 @@ fun DemoMediaArtwork(
             Icon(
                 painter = painterResource(if (media.kind == MediaKind.VIDEO) R.drawable.ic_video else R.drawable.ic_photo),
                 contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(52.dp),
+                tint = foreground,
+                modifier = Modifier.size(48.dp),
             )
             Spacer(Modifier.height(8.dp))
             Text(
                 text = stringResource(R.string.local_media_placeholder),
-                color = Color.White,
+                color = foreground,
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
             )
@@ -780,7 +798,7 @@ fun SmallIconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     tag: String? = null,
-    tint: Color = WiboxColors.text,
+    tint: Color = MaterialTheme.colorScheme.onSurface,
     stateDescription: String? = null,
 ) {
     IconButton(
@@ -794,7 +812,47 @@ fun SmallIconButton(
         Icon(
             painter = painterResource(painter),
             contentDescription = contentDescription,
-            tint = if (enabled) tint else WiboxColors.secondaryText,
+            tint = if (enabled) tint else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** Circular tonal action button used for prominent device actions. */
+@Composable
+fun WiboxCircleAction(
+    painter: Int,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    tag: String? = null,
+    primary: Boolean = false,
+    size: androidx.compose.ui.unit.Dp = 56.dp,
+) {
+    val container = when {
+        !enabled -> MaterialTheme.colorScheme.surfaceContainerHigh
+        primary -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.secondaryContainer
+    }
+    val contentColor = when {
+        !enabled -> MaterialTheme.colorScheme.onSurfaceVariant
+        primary -> MaterialTheme.colorScheme.onPrimary
+        else -> MaterialTheme.colorScheme.onSecondaryContainer
+    }
+    Box(
+        modifier = modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(container)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .then(if (tag == null) Modifier else Modifier.testTag(tag)),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = painterResource(painter),
+            contentDescription = contentDescription,
+            tint = contentColor,
+            modifier = Modifier.size(size / 2),
         )
     }
 }
