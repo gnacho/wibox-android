@@ -197,6 +197,16 @@ El modelo conserva QR, enlace, caducidad, owner, dispositivo, permisos `preview`
 
 La compatibilidad OEM no se resuelve copiando la comparación permisiva del APK. Se fija una regla exacta tras prueba con invitaciones válidas, inválidas, usadas, caducadas y de otro OEM. Los enlaces y códigos se tratan como secretos y no se registran.
 
+### 5.8.1 Cuentas y miembros: lo que el proveedor no ofrece
+
+Las rutas capturadas del proveedor son `/auth/user`, `/auth/user/deli`, `/auth/nologin` en modo duplex, `/device/status`, `/device/status/multi`, `/device/status/sub`, `/device/status/unsub` y `/app/version_check.jsp`. Ninguna gestiona cuentas, miembros, roles ni listas de usuarios de una cuenta. Lo único que toca la cuenta es el login y el borrado de la propia sesión.
+
+En el APK stock, las pantallas que parecen de usuarios (`activity_share_manage.xml`, titulada "Users", y `activity_share_device.xml`, titulada "New user") son en realidad la lista de personas con las que se comparte un dispositivo y la pantalla que genera la invitación: QR de 120 dp, enlace, caducidad del tipo "disponible antes de", copiar y hoja de compartir del sistema. No hay alta de cuentas, ni papeles distintos de propietario e invitado, ni invitaciones que existan sin un dispositivo detrás.
+
+La app ya cubre esos dos destinos (`share_manage` y `share_device`, con `share_bind` para aceptar) sobre invitaciones locales. Falta el proveedor real, no el modelo.
+
+Conclusión para el producto: no hay operaciones de cuenta que implementar contra este proveedor. Cualquier pantalla de "usuarios" es la lista de invitaciones de un dispositivo, y debe presentarse así en lugar de prometer una gestión de cuentas que el protocolo no tiene.
+
 ### 5.9 Errores y reintentos
 
 `ProviderError` conserva categoría, operación, capacidad, `retryPolicy`, `outcome`, `providerCode` saneado y `causeSafe`. No copia cuerpos, URLs completas ni tokens.
