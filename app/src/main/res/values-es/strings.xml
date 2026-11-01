@@ -201,7 +201,8 @@
     <string name="invitation_permissions">Permisos de vista previa, reproducción, alarmas, apertura y F1</string>
     <string name="delete_invitation">Borrar invitación</string>
     <string name="delete_invitation_confirmation">¿Borrar esta invitación local?</string>
-    <string name="share_scan_text">Comparte el enlace de invitación local. La demo no genera códigos QR, por lo que no se muestra ningún QR escaneable.</string>
+    <string name="invitation_qr_description">Código QR del enlace de invitación</string>
+    <string name="share_scan_text">Muestra este QR en la pantalla de escaneo de otro teléfono para aceptar la invitación.</string>
     <string name="qr_not_generated">QR no generado</string>
     <string name="qr_save_unsupported">Exportación de QR no disponible</string>
     <string name="copy_link">Copiar enlace</string>

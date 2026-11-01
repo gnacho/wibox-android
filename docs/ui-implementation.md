@@ -60,7 +60,7 @@ La columna de prueba distingue pruebas automatizadas y evidencia visual. `Routes
 | `router` | `router?modify={modify}`, `RouterScreen` | Lista WiFi y formulario propios | Selección, password visible/oculta, preferencia de guardado sin persistir secretos, modo nuevo y modificación | `LocalFlowInstrumentedTest` |
 | `voice` | `voice`, `VoiceProvisioningScreen` | `device_add_sound_waver.png` original | Sending, waiting y ready. Sin emitir audio | `AddDeviceViewModelTest` |
 | `wifi_progress` | `wifi_progress`, `WifiProvisioningScreen` | `device_add_wifi_set.png` original | Connecting, sending, waiting, ready y failure manual | `AddDeviceViewModelTest`, `LocalFlowInstrumentedTest` |
-| `share_device` | `share_device/{invitationId}`, `ShareDeviceScreen` | Enlace local y cuadro QR honesto | Link, copiado, chooser Android, expiración y QR/exportación no disponibles | `SecondaryFlowsInstrumentedTest` |
+| `share_device` | `share_device/{invitationId}`, `ShareDeviceScreen` | QR real sobre fondo blanco, enlace, código y caducidad | QR generado con ZXing que el propio escáner de la app lee, enlace, chooser Android y expiración | `SecondaryFlowsInstrumentedTest`, `QrEncoderTest` |
 | `pairing_fail` | `pairing_fail`, `PairingFailScreen` | Texto y botón propios | Error simulado y regreso a main | `AddDeviceViewModelTest` |
 | `share_manage` | `share_manage/{deviceId}`, `ShareManageScreen` | Filas de invitación propias | Loading, empty, list, create, delete, límite y error | `SecondaryFlowsInstrumentedTest` |
 | `share_bind` | `share_bind`, `DeviceBindScreen(shared=true)` | Formulario propio con UID/código bloqueados | Invitación válida, duplicado, aceptación y alta compartida | `StateAndInvitationInstrumentedTest` |
@@ -102,13 +102,13 @@ Se inspeccionaron las ocho capturas en 1080x2400 y estados de inicio, tabs, prev
 | Estado | Representación | Evidencia |
 |---|---|---|
 | Loading | Portada y `LoadingContent` en listas y pairing | Escenario LOADING en instrumentación |
-| Contenido | Fixtures locales reactivos y persistidos | 42 tests unitarios y flujo E2E |
+| Contenido | Fixtures locales reactivos y persistidos | 34 tests unitarios, 45 en `core:cloud` y flujo E2E |
 | Vacío | Botones/mensajes específicos en devices, events, gallery y usuarios | Escenario EMPTY y borrado de invitación |
 | Error | Mensaje tipado, color `#e73e04` y retry manual | Escenario ERROR y tests de `CloudError` |
 | Deshabilitado | Offline, permisos, biometría, upgrade y QR no disponibles | `StateAndInvitationInstrumentedTest`, capturas de dispositivos |
 | Unsupported | Texto explícito, sin éxito ni reintento | Escenario UNSUPPORTED y tests de fake/ViewModels |
 
-Hay 42 tests unitarios en ocho ficheros: parsers, fake, DataStore, rutas y tres ViewModels. Hay nueve tests instrumentados en cinco ficheros: actividad real, E2E local, estados, invitación y flujos secundarios. Todos usan repositorios en memoria o DataStore temporal y ninguno usa red.
+La app tiene 34 tests unitarios en cinco ficheros: parser de códigos, rutas, ViewModels y el codificador y el decodificador de QR. `core:cloud` suma 45 en siete ficheros. Los instrumentados son 24 en seis clases: actividad real, E2E local, estados, invitación, flujos secundarios, API externa y captura de superficies. Todos usan repositorios en memoria o DataStore temporal y ninguno usa red.
 
 Comandos de referencia:
 
@@ -139,7 +139,8 @@ Todas proceden de la app debug ejecutándose en `emulator-5554`, Android 17/API 
 
 - El escaneo usa CameraX con `com.google.zxing:core`, que decodifica en el propio dispositivo y no habla con Google Play Services. Se abre con la cámara trasera si existe y, si no, con la frontal. En el AVD sin ventana el escenario virtual entrega fotogramas negros y no hay nada que decodificar: eso es una limitación del emulador, no del lector, y la decodificación está cubierta por `QrDecoderTest`.
 - El QR del sticker trae cinco campos (`apName udid password ssid mac`) y el token de fábrica documentado trae cuatro. El parser acepta las dos formas y guarda `ssid` y `mac` cuando están. Ese es el único dato que se usa para el alta: el QR no lleva credenciales de cloud.
-- Las invitaciones usan `example.invalid` y solo existen en el snapshot local. No se genera un QR escaneable porque no hay generador QR en las dependencias disponibles. La UI lo declara y no muestra un QR falso.
+- Las invitaciones solo existen en el snapshot local y su enlace apunta a `example.invalid`, así que el dominio no resuelve en un navegador. El QR sí es escaneable: lo genera ZXing con corrección de errores M y zona de silencio de cuatro módulos, y el escáner de esta misma app lo lee y lo interpreta como invitación. Lo que no hace es funcionar fuera de la app.
+- El QR se dibuja con los módulos alineados a píxeles enteros sobre un fondo blanco fijo, también en tema oscuro, porque un QR sobre superficie oscura no se lee.
 - Preview y galería usan marcadores sintéticos etiquetados. No contienen vídeo, fotos ni audio originales. Capturar o grabar añade una entrada local, no un archivo multimedia real.
 - AP, LAN, audio y WiFi son máquinas de estados locales. No cambian la red del teléfono, no emiten sonido y no prueban compatibilidad de pairing.
 - La aceptación de llamada abre preview local. No registra FCM ni confirma una llamada real.

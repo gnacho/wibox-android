@@ -201,7 +201,8 @@
     <string name="invitation_permissions">Preview, playback, alarms, unlock and F1 permissions</string>
     <string name="delete_invitation">Delete invitation</string>
     <string name="delete_invitation_confirmation">Delete this local invitation?</string>
-    <string name="share_scan_text">Share the local invitation link. QR rendering is unavailable in this demo, so no scannable QR is shown.</string>
+    <string name="invitation_qr_description">QR code of the invitation link</string>
+    <string name="share_scan_text">Show this QR on the scan screen of another phone to accept the invitation.</string>
     <string name="qr_not_generated">QR not generated</string>
     <string name="qr_save_unsupported">QR export unavailable</string>
     <string name="copy_link">Copy link</string>
