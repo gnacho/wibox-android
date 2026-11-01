@@ -229,6 +229,32 @@ La lista se carga de SQLCipher, se contrasta con `getDevList` y se actualiza con
 - Invitaciones con permisos preview/playback/alarm/unlock/F1/callGuard. La UI oculta el botón de crear al llegar a 100 (`ShareManageActivity.java:139-150`).
 - Eventos en páginas de 15, foto asociada, borrado individual/total y galería local (`E051`, `E052`, `E062`).
 
+### 6.4 Ajustes de dispositivo y de la app
+
+Extraído de `res/layout/activity_dm_config.xml` y de `smali_classes2/com/quvii/ubell/device/manage/view/DMConfigActivity.smali`, y contrastado con la pantalla equivalente de esta app. El orden es el que se ve en pantalla.
+
+| Fila | Layout | Comportamiento observado |
+|---|---|---|
+| Nombre del dispositivo | `tv_device_name` | Abre `activity_dm_device_info_edit`, con nombre y UID |
+| Cambiar contraseña del dispositivo | `tv_modify_password` | Formulario de contraseña del AP |
+| Cambiar contraseña de apertura | `tv_modify_unlock_password` | Formulario de contraseña de apertura |
+| Ajustes de apertura | `tv_unlock_setting` | `activity_dm_unlock_setting` con `key_quick_unlock` y `key_biological_unlock`, más `key_biological_unlock_tip` |
+| Intercom Way | `ll_select_voice_model` | Dos valores: `key_hold_talk` y `key_full_duplex_speech` |
+| Modo de visualización | `ll_fps` | Tres valores por índice: `key_video_fps_high`, `key_video_fps_low` y `key_video_fps_picture`. `showFps(I)` mapea 1 a baja, 2 a foto y el resto a alta. Nota `key_record_fail_fps_hint`: en modo foto no se puede grabar vídeo |
+| Lock Number | `ll_select_lock_num` | `android:visibility="gone"`, no se muestra al usuario |
+| Ajustes Wi-Fi | `ll_config_wifi` | `activity_dm_wifi_list` y `activity_dm_wifi_set` |
+| Usuarios | `tv_user` | `activity_share_manage`, `activity_share_device` y `share_dialog_detail` |
+| Tiempo de activación de F1 | `ll_f1_time` | `F1_MIN_TIME=1` y `F1_MAX_TIME=0xa`, es decir de 1 a 10 segundos, con `MyBottomLoopDialog` |
+| Recepción de llamada | `rl_ring_alert` | Switch |
+| Alertas de movimiento | `rl_move_alert` | Switch |
+| Versión de firmware | `ll_upgrade` | `activity_dm_upgrade` con versión actual, disponible y botón de actualizar |
+| Sincronizar fecha y hora | `bt_syn_time` | Botón con `key_time_sync_success` y `key_time_sync_fail` como únicos resultados |
+| Borrar | `bt_del_device` | Elimina el dispositivo de la cuenta |
+
+La pestaña de ajustes de la app sale de `res/layout/fragment_me.xml`. Sus filas visibles son `ll_sound` (sonido), `ll_vibration` (vibración), `ll_about` (información) y `ll_exit` (salir). Las filas `ll_auto_rotate`, `ll_channels_switch_mode` y `ll_preview_time` existen pero están ocultas. La pantalla `activity_me_about` muestra el icono, el nombre, la versión y `bt_privacy_policy` con el texto `key_privacy_policy_url`, que apunta a `http://94.101.81.118/privacy/privacy_policy.html`.
+
+`key_f1_password` aparece en `R$string.smali` y en ningún layout ni en código: es una cadena huérfana y no corresponde a ninguna fila.
+
 ## 7. WebSocket, MQTT, SIP, WebRTC y P2P
 
 | Tecnología | Resultado estático | Evidencia/alcance |

@@ -339,7 +339,60 @@ El QR decodifica (comprobado con `zbarimg --raw`) a `IDS7938pdef tdks97tcpdef MT
 
 Foto de [segator/wibox-media](https://github.com/segator/wibox-media), fichero `docs/img/wibox-hardware.webp` (GPL-3.0), copiada sin recodificar: `sha256 f26bdd36e0357c6e25857621a0326df267c1c30936854d4e63657e7652890dc3`.
 
-## 15. Verificación
+## 15. Invitación de compartición: forma real del enlace
+
+El enlace que la app oficial imprime en la pantalla "Nuevo usuario" se capturó de una pantalla real y se decodificó con `zbarimg`. Su forma es esta:
+
+```
+https://share.qvcloud.net/webs/invite_nologin/page_<OEM>/index.jsp
+  ?InviteCode=<8 caracteres>
+  &OwnerId=<numérico>
+  &OemId=<OEM>
+  &DeviceId=<udid del dispositivo>
+  &From=QrInvite
+  &AppId=<app>
+```
+
+Tres detalles que no se deducen del análisis estático:
+
+- **No lleva `AppVersion`.** El smali lee ese parámetro, pero el enlace que la app genera no lo incluye. Exigirlo rechaza todas las invitaciones reales, que es lo que hacía esta app antes del arreglo del issue #12. El campo se trata como opcional y su ausencia se traduce a cadena vacía.
+- `From` vale `QrInvite`, no el valor que aparece en los ejemplos del APK.
+- `DeviceId` es el UDID del dispositivo del propietario, no el identificador del AP principal, y `OwnerId` es la cuenta del propietario.
+
+El enlace se puede abrir en la app propia porque el parser acepta esa query completa. Fuera de la app no resuelve: el dominio sirve una página del fabricante y el alta exige un `accept` por el canal userauth que se describe en la sección 14.
+
+## 16. Alta por invitación: contrato del accept y resultado 100004
+
+Sección de evidencia sobre lo que no está resuelto, para que no se repita el trabajo de prueba y error.
+
+### 16.1 La versión del protocolo en la petición
+
+El envelope de petición lleva un elemento `version` que no es el número de versión de la app (5.1.11) sino la versión del protocolo, `v1.24`, la misma que el servidor declara en sus respuestas. Con `5.1.11` todas las variantes de `dev-bind-register` devolvían `100009`. Con `v1.24` el resultado pasa a `100004` en todas las variantes probadas. Hecho medido contra el servidor real, no deducido del smali.
+
+### 16.2 Contrato del accept observado en el smali
+
+`NoLoginShareAcceptReqContent` tiene seis campos: `deviceId`, `code`, `name`, `way`, `needCreate` (entero) y `password`. Se emite en `POST /auth/nologin;jus_duplex=up`, con esta traducción desde la pantalla de alta:
+
+| Campo | Origen |
+|---|---|
+| `deviceId` | UID del dispositivo que viene en el QR de la invitación |
+| `code` | `InviteCode` de la invitación |
+| `name` | Alias libre que escribe el usuario |
+| `way` | `From` de la invitación, es decir `QrInvite` |
+| `needCreate` | 1 cuando la app no tiene usuario propio, con `password` igual a un UUID nuevo |
+| `password` | Solo en ese caso de cuenta nueva |
+
+No hay paso previo de consulta: la app emite el accept directamente, sin pedir antes información de la invitación.
+
+### 16.3 Resultado 100004
+
+Todas las variantes probadas devuelven `100004`, incluido un código de invitación generado en el momento, así que no es caducidad. Da igual usar la sesión del app oficial que una sesión propia recién abierta en el canal `/auth/user`. La respuesta trae `account`, `id`, `name`, `data-encode-key`, `dynamic-password`, `password-expired` y `powers`, todos vacíos.
+
+Hipótesis viva, sin confirmar: el `100004` rechaza el alta porque el dispositivo ya está vinculado a una cuenta, que es el caso de este timbre. Confirmarlo exigiría desvincular el dispositivo de la cuenta real, una acción destructiva que no se ha hecho.
+
+Consecuencia práctica: el alta de dispositivos nuevos está bloqueada por el servidor para el caso probado, pero un dispositivo ya vinculado no necesita este camino. Para verlo basta con iniciar sesión con la cuenta propietaria y consultar su lista por `/device/status/multi`.
+
+## 17. Verificación
 
 ```bash
 python3 core/cloud/verify_upgrade_contract.py

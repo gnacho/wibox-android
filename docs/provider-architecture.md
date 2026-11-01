@@ -37,7 +37,7 @@ La matriz normativa de capacidades es `analysis/architecture/provider-matrix.jso
 
 | Acoplamiento observado | Evidencia actual | Riesgo y corrección |
 |---|---|---|
-| Repositorio fijado al fake | `WiboxRepository` declara `val cloud: FakeWiboxCloud` y su única fábrica es `local()` | No se puede seleccionar stock sin cambiar el repositorio. Introducir `WiboxRepository` sobre `WiboxProvider` y una fábrica explícita por perfil |
+| Repositorio fijado al fake | `WiboxRepository` se construye en `AppContainer.local()` con `DemoWiboxProvider`, y `WiboxCloudFactory.create` existe pero no tiene ningún llamador | No se puede seleccionar stock sin cambiar el contenedor. Introducir un perfil explícito en `AppContainer` y una fábrica de repositorio por perfil |
 | Modelos demo en estado y ViewModels | `AppUiState`, `AddDeviceViewModel` y `PreviewViewModel` consumen `DemoSnapshot`, `DemoDevice`, `DemoSettings` y `DemoScenario` | La UI no puede distinguir dominio real de fixture. Crear modelos de presentación neutros y mantener `Demo*` solo en el adaptador demo |
 | Acceso directo al fake desde el ViewModel | `AppViewModel` llama a `repository.cloud.observeEvents()` | El evento debe venir del repositorio neutral, con error y gap modelados |
 | Éxito de acción ligado al fake | Cualquier ack termina en `LOCAL_ACTION_ACKNOWLEDGED`; el fake devuelve `local-demo-ack-no-physical-action` | El texto actual es honesto para demo, pero no sirve para stock. El resultado debe conservar el nivel de ack y nunca traducirlo genéricamente a puerta abierta |
@@ -49,6 +49,17 @@ La matriz normativa de capacidades es `analysis/architecture/provider-matrix.jso
 | Secretos en estado de formulario | `authCode` y `wifiPassword` viven en `AddDeviceUiState` | Son necesarios durante el alta, pero no deben persistirse, registrarse ni aparecer en snapshots de UI. Usar estado efímero acotado y limpieza al terminar |
 
 La app sí acierta en dos límites que deben conservarse: no importa Ktor ni DTOs internos y el modo demo está etiquetado. La modernización no debe eliminar esas protecciones.
+
+### 2.3 Estado del cableado al cerrar la revisión de UI
+
+Se comprobó en código y esto es lo que falta, en orden de dependencia, para que la app deje de correr sobre el demo:
+
+1. `AppContainer` construye `DemoWiboxProvider` sin alternativa. `WiboxCloudFactory.create` devuelve un `StockQvCloudProvider` operativo, pero nadie lo llama.
+2. `StockQvCloudProvider` corta a propósito tres operaciones con `ProviderError.Unsupported`: `listDevices`, `execute` y `observeEvents`. Aunque se cableara hoy, la lista de dispositivos saldría vacía y ninguna acción llegaría al proveedor. `RealWiboxCloud` ya implementa `authenticate`, `listDevices` y `performAction`, así que el trabajo es de puente y no de protocolo.
+3. `WiboxRepository` exige un `AppOperations` completo (invitaciones, ajustes, media, reset) que solo implementa el demo. El perfil real necesita datos degradados, no métodos vacíos.
+4. No hay pantalla de login ni almacén de credenciales reales. El contrato de login está capturado y documentado en `docs/protocol.md` §14.
+
+El alta de dispositivos nuevos sigue bloqueada por el servidor (`docs/protocol.md` §16). Eso no impide ver un dispositivo que ya está vinculado a la cuenta: basta con login y `/device/status/multi`.
 
 ## 3. Frontera provider-neutral sin recortar QVCloud
 
