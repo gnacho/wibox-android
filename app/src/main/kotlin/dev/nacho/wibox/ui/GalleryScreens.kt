@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -110,7 +109,7 @@ fun ImagePagerScreen(
         }
         if (!dark && current != null) {
             Row(
-                modifier = Modifier.fillMaxWidth().height(55.dp).background(WiboxColors.primary),
+                modifier = Modifier.fillMaxWidth().height(64.dp).background(MaterialTheme.colorScheme.surfaceContainer),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -120,14 +119,13 @@ fun ImagePagerScreen(
                     onClick = {},
                     enabled = false,
                     tag = "pager_share",
-                    tint = Color.White,
                 )
                 SmallIconButton(
                     painter = R.drawable.ic_delete,
                     contentDescription = stringResource(R.string.delete),
                     onClick = { confirmDelete = true },
                     tag = "pager_delete",
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.error,
                 )
             }
         }
@@ -224,15 +222,11 @@ fun VideoPlayerScreen(
                     },
                     valueRange = 0f..duration.toFloat(),
                     modifier = Modifier.weight(1f).testTag("video_seek"),
-                    colors = SliderDefaults.colors(
-                        thumbColor = WiboxColors.selected,
-                        activeTrackColor = WiboxColors.selected,
-                    ),
                 )
                 Text(formatDuration(duration), style = MaterialTheme.typography.bodySmall)
             }
             Row(
-                modifier = Modifier.fillMaxWidth().height(60.dp).background(WiboxColors.primary),
+                modifier = Modifier.fillMaxWidth().height(64.dp).background(MaterialTheme.colorScheme.surfaceContainer),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -241,14 +235,12 @@ fun VideoPlayerScreen(
                     contentDescription = stringResource(if (playing) R.string.pause else R.string.play),
                     onClick = { playing = !playing },
                     tag = "video_play_pause",
-                    tint = Color.White,
                 )
                 SmallIconButton(
                     painter = if (muted) R.drawable.ic_volume_off else R.drawable.ic_volume,
                     contentDescription = stringResource(if (muted) R.string.unmute else R.string.mute),
                     onClick = { muted = !muted },
                     tag = "video_mute",
-                    tint = Color.White,
                 )
             }
         }

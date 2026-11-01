@@ -43,6 +43,12 @@ class CaptureSurfacesTest {
     }
 
     private fun captureSurface(name: String) {
+        // Semantics settle before the pixels do: without this the screenshot can
+        // capture the frame of the previous screen.
+        compose.waitForIdle()
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        device.waitForIdle(500)
+        Thread.sleep(400)
         val file = File(captureDir, "CAP-$name-360-font1-light-demo.png")
         val saved = device.takeScreenshot(file)
         assertTrue("screenshot not saved: $file", saved)

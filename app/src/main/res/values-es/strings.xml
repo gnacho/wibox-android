@@ -74,6 +74,10 @@
     <string name="validate_code">Validar código</string>
     <string name="add_online">Añadir por Red</string>
     <string name="add_manually">Añadir Manualmente</string>
+    <string name="add_type_choice_title">Añade un Wi-Box</string>
+    <string name="add_type_choice_body">Configura un portero nuevo o conecta uno que ya esté en tu red.</string>
+    <string name="add_online_choice_title">¿Cómo quieres añadirlo?</string>
+    <string name="add_online_choice_body">Busca el portero en tu red o introduce su código manualmente.</string>
     <string name="select_online_device">Selecciona un Wi-Box demo local de la lista:</string>
     <string name="searching_local_demo">Buscando dispositivos demo locales...</string>
     <string name="no_device_found">Dispositivo no encontrado</string>

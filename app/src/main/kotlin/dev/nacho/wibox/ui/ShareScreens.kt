@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -143,16 +144,21 @@ private fun InvitationRow(
     onOpen: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    Row(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-            .background(WiboxColors.surface)
-            .padding(start = 16.dp, end = 4.dp, top = 10.dp, bottom = 10.dp)
+            .padding(horizontal = 16.dp, vertical = 5.dp)
             .semantics { contentDescription = invitation.displayName }
             .testTag("invitation_row_${invitation.id}"),
-        verticalAlignment = Alignment.CenterVertically,
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 4.dp, top = 10.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = invitation.displayName,
@@ -184,6 +190,7 @@ private fun InvitationRow(
             tag = "invitation_delete_${invitation.id}",
             tint = WiboxColors.error,
         )
+        }
     }
 }
 
