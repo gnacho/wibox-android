@@ -47,11 +47,11 @@ object DeviceCodeParser {
     private val modelPattern = Regex("[A-Za-z0-9_.-]{1,32}")
     private val ssidPattern = Regex("[A-Za-z0-9_.:-]{1,32}")
     private val macPattern = Regex("([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}|[0-9A-Fa-f]{12}")
+    // AppVersion is not part of the invitation the stock app prints, so it stays optional.
     private val requiredInvitationFields = listOf(
         "InviteCode",
         "OwnerId",
         "OemId",
-        "AppVersion",
         "DeviceId",
         "From",
         "AppId",
@@ -123,7 +123,7 @@ object DeviceCodeParser {
             inviteCode = values.getValue("InviteCode"),
             ownerId = values.getValue("OwnerId"),
             oemId = oemId,
-            appVersion = values.getValue("AppVersion"),
+            appVersion = values["AppVersion"].orEmpty(),
             deviceId = values.getValue("DeviceId"),
             from = values.getValue("From"),
             appId = appId,
