@@ -858,7 +858,15 @@ fun PushCallScreen(
                     }
                 }
                 CallStatus.ACCEPT_PENDING, CallStatus.REJECT_PENDING -> {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(60.dp).testTag("call_pending"))
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(60.dp).testTag("call_pending"))
+                        Spacer(Modifier.height(16.dp))
+                        Text(
+                            text = stringResource(R.string.connecting),
+                            color = Color.White,
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                    }
                 }
                 else -> {}
             }
