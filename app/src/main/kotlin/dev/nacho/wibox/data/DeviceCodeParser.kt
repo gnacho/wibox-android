@@ -21,6 +21,8 @@ data class ParsedDeviceQr(
     val uid: String,
     val authCode: String,
     val model: String,
+    val ssid: String? = null,
+    val mac: String? = null,
 )
 
 data class ParsedInvitation(
@@ -43,6 +45,8 @@ object DeviceCodeParser {
     private val authPattern = Regex("[A-Za-z0-9_-]{4,64}")
     private val apPattern = Regex("[A-Za-z0-9_.:-]{1,64}")
     private val modelPattern = Regex("[A-Za-z0-9_.-]{1,32}")
+    private val ssidPattern = Regex("[A-Za-z0-9_.:-]{1,32}")
+    private val macPattern = Regex("([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}|[0-9A-Fa-f]{12}")
     private val requiredInvitationFields = listOf(
         "InviteCode",
         "OwnerId",
@@ -65,13 +69,28 @@ object DeviceCodeParser {
 
     fun parseDeviceQr(raw: String): ParsedDeviceQr {
         val fields = raw.trim().split(Regex("\\s+"))
-        if (fields.size != 4) throw CodeParseException(CodeParseError.DEVICE_FIELD_COUNT)
-        val (apName, uid, authCode, model) = fields
+        return when (fields.size) {
+            4 -> {
+                val (apName, uid, authCode, model) = fields
+                validateDeviceCore(apName, uid, authCode)
+                if (!modelPattern.matches(model)) throw CodeParseException(CodeParseError.INVALID_MODEL)
+                ParsedDeviceQr(apName, uid, authCode, model)
+            }
+            5 -> {
+                val (apName, uid, authCode, ssid, mac) = fields
+                validateDeviceCore(apName, uid, authCode)
+                if (!ssidPattern.matches(ssid)) throw CodeParseException(CodeParseError.INVALID_MODEL)
+                if (!macPattern.matches(mac)) throw CodeParseException(CodeParseError.INVALID_MODEL)
+                ParsedDeviceQr(apName, uid, authCode, model = "", ssid = ssid, mac = mac)
+            }
+            else -> throw CodeParseException(CodeParseError.DEVICE_FIELD_COUNT)
+        }
+    }
+
+    private fun validateDeviceCore(apName: String, uid: String, authCode: String) {
         if (!apPattern.matches(apName)) throw CodeParseException(CodeParseError.INVALID_AP_NAME)
         if (!uidPattern.matches(uid)) throw CodeParseException(CodeParseError.INVALID_UID)
         if (!authPattern.matches(authCode)) throw CodeParseException(CodeParseError.INVALID_AUTH_CODE)
-        if (!modelPattern.matches(model)) throw CodeParseException(CodeParseError.INVALID_MODEL)
-        return ParsedDeviceQr(apName, uid, authCode, model)
     }
 
     fun parseInvitation(raw: String): ParsedInvitation {

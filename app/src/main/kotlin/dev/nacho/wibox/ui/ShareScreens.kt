@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -26,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -34,6 +36,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.nacho.wibox.R
+import dev.nacho.wibox.ui.scan.QrCodeImage
 
 @Composable
 fun ShareManageScreen(
@@ -196,6 +199,7 @@ private fun InvitationRow(
 
 @Composable
 private fun InvitationDetail(invitation: InvitationUi, onShareLink: () -> Unit) {
+    val qrDescription = stringResource(R.string.invitation_qr_description)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -218,6 +222,25 @@ private fun InvitationDetail(invitation: InvitationUi, onShareLink: () -> Unit) 
             style = MaterialTheme.typography.bodyMedium,
             color = WiboxColors.secondaryText,
         )
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center,
+        ) {
+            Surface(
+                modifier = Modifier
+                    .semantics { contentDescription = qrDescription }
+                    .testTag("invitation_qr"),
+                shape = MaterialTheme.shapes.medium,
+                color = Color.White,
+            ) {
+                QrCodeImage(
+                    payload = invitation.link,
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .size(200.dp),
+                )
+            }
+        }
         Text(
             text = invitation.link,
             style = MaterialTheme.typography.bodySmall,
