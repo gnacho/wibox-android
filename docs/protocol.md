@@ -371,6 +371,8 @@ El envelope de petición lleva un elemento `version` que no es el número de ver
 
 ### 16.2 Contrato del accept observado en el smali
 
+El comando se llama `accept-nologin-share-invitation`. La cadena completa, de arriba abajo: `DADeviceBindPresenter.bindDevice(name, DeviceShareInfo)` valida el alias y llama a `DeviceHelper.bindShareDevice`, que acaba en `QvUserAuthCore.noLoginShareInvitationAccept(uid, shareCode, name, from, needCreate, password)`.
+
 `NoLoginShareAcceptReqContent` tiene seis campos: `deviceId`, `code`, `name`, `way`, `needCreate` (entero) y `password`. Se emite en `POST /auth/nologin;jus_duplex=up`, con esta traducción desde la pantalla de alta:
 
 | Campo | Origen |
@@ -391,6 +393,16 @@ Todas las variantes probadas devuelven `100004`, incluido un código de invitaci
 Hipótesis viva, sin confirmar: el `100004` rechaza el alta porque el dispositivo ya está vinculado a una cuenta, que es el caso de este timbre. Confirmarlo exigiría desvincular el dispositivo de la cuenta real, una acción destructiva que no se ha hecho.
 
 Consecuencia práctica: el alta de dispositivos nuevos está bloqueada por el servidor para el caso probado, pero un dispositivo ya vinculado no necesita este camino. Para verlo basta con iniciar sesión con la cuenta propietaria y consultar su lista por `/device/status/multi`.
+
+### 16.4 Por qué no hay un accept con éxito capturado
+
+No se ha observado una respuesta de aceptación correcta, así que el documento no puede describir el caso de éxito. El intento de capturarlo desde la app oficial en el emulador se cerró con estas razones, todas verificadas:
+
+- El escáner es `DACaptureActivity`, de scankit de Huawei. Tiene botón de galería e internamente usa `QrCodeUtil.scanLocalPicture`, pero el selector de documentos del emulador no entrega la imagen elegida.
+- La cámara emulada es `emulated` y no lee el QR de la pantalla.
+- El intent hacia `DADeviceBindActivity` viaja con un `Parcelable` (`device_add_info`) que no se puede inyectar desde fuera.
+
+Capturarlo exigiría una cámara virtual real en el emulador (`virtualscene`, webcam o `v4l2loopback`), no un cambio en la app.
 
 ## 17. Verificación
 
