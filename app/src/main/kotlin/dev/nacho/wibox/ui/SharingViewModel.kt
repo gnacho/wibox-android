@@ -3,6 +3,7 @@ package dev.nacho.wibox.ui
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.nacho.wibox.core.cloud.DevicePermission
 import dev.nacho.wibox.core.cloud.ProviderError
 import dev.nacho.wibox.data.AppScenario
 import dev.nacho.wibox.data.RepositorySnapshot
@@ -34,14 +35,33 @@ class SharingViewModel(
         }
     }
 
-    fun createInvitation(deviceId: String) {
+    fun createInvitation(
+        deviceId: String,
+        displayName: String,
+        permissions: Set<DevicePermission>,
+    ) {
         viewModelScope.launch(dispatcher) {
             try {
-                val invitation = repository.createInvitation(deviceId)
+                val invitation = repository.createInvitation(deviceId, displayName, permissions)
                 mutableState.value = mutableState.value.copy(
                     createdInvitationId = invitation.id,
                     operationError = null,
                 )
+            } catch (error: ProviderError) {
+                mutableState.value = mutableState.value.copy(operationError = error)
+            }
+        }
+    }
+
+    fun updateInvitation(
+        id: String,
+        displayName: String,
+        permissions: Set<DevicePermission>,
+    ) {
+        viewModelScope.launch(dispatcher) {
+            try {
+                repository.updateInvitation(id, displayName, permissions)
+                mutableState.value = mutableState.value.copy(operationError = null)
             } catch (error: ProviderError) {
                 mutableState.value = mutableState.value.copy(operationError = error)
             }

@@ -35,6 +35,7 @@ data class DemoPermissions(
     val alarms: Boolean = true,
     val unlock: Boolean = true,
     val f1: Boolean = true,
+    val callGuard: Boolean = true,
 )
 
 @Serializable

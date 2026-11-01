@@ -95,6 +95,25 @@ internal fun DemoInvitation.toInvitationRecord(): InvitationRecord = InvitationR
     code = code,
     createdAtMillis = createdAtMillis,
     expiresAtMillis = expiresAtMillis,
+    permissions = permissions.toDevicePermissions(),
+)
+
+internal fun DemoPermissions.toDevicePermissions(): Set<DevicePermission> = buildSet {
+    if (preview) add(DevicePermission.PREVIEW)
+    if (playback) add(DevicePermission.PLAYBACK)
+    if (alarms) add(DevicePermission.ALARM)
+    if (unlock) add(DevicePermission.UNLOCK)
+    if (f1) add(DevicePermission.F1)
+    if (callGuard) add(DevicePermission.CALL_GUARD)
+}
+
+internal fun Set<DevicePermission>.toDemoPermissions(): DemoPermissions = DemoPermissions(
+    preview = DevicePermission.PREVIEW in this,
+    playback = DevicePermission.PLAYBACK in this,
+    alarms = DevicePermission.ALARM in this,
+    unlock = DevicePermission.UNLOCK in this,
+    f1 = DevicePermission.F1 in this,
+    callGuard = DevicePermission.CALL_GUARD in this,
 )
 
 internal fun DemoSettings.toAppPreferences(): AppPreferences = AppPreferences(

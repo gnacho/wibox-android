@@ -2,6 +2,7 @@ package dev.nacho.wibox.data
 
 import dev.nacho.wibox.core.cloud.ActionCommand
 import dev.nacho.wibox.core.cloud.ActionOutcome
+import dev.nacho.wibox.core.cloud.DevicePermission
 import dev.nacho.wibox.core.cloud.DeviceSnapshot
 import dev.nacho.wibox.core.cloud.EventEnvelope
 import dev.nacho.wibox.core.cloud.ProviderError
@@ -39,6 +40,7 @@ data class InvitationRecord(
     val code: String,
     val createdAtMillis: Long,
     val expiresAtMillis: Long,
+    val permissions: Set<DevicePermission> = DevicePermission.entries.toSet(),
 )
 
 data class AppPreferences(
@@ -90,7 +92,16 @@ interface AppOperations {
     suspend fun captureMedia(deviceId: String, kind: MediaKind): MediaRecord
     suspend fun deleteEvents(ids: Set<String>)
     suspend fun deleteMedia(ids: Set<String>)
-    suspend fun createInvitation(deviceId: String): InvitationRecord
+    suspend fun createInvitation(
+        deviceId: String,
+        displayName: String,
+        permissions: Set<DevicePermission>,
+    ): InvitationRecord
+    suspend fun updateInvitation(
+        id: String,
+        displayName: String,
+        permissions: Set<DevicePermission>,
+    ): InvitationRecord
     suspend fun deleteInvitation(id: String)
     suspend fun resetDemo()
     suspend fun emitIncomingCall(deviceId: String)

@@ -1,5 +1,6 @@
 package dev.nacho.wibox.data
 
+import dev.nacho.wibox.core.cloud.DevicePermission
 import dev.nacho.wibox.core.cloud.ActionCommand
 import dev.nacho.wibox.core.cloud.ActionOutcome
 import dev.nacho.wibox.core.cloud.AppUpgradeRequest
@@ -56,7 +57,16 @@ class WiboxRepository(
     suspend fun captureMedia(deviceId: String, kind: MediaKind) = operations.captureMedia(deviceId, kind)
     suspend fun deleteEvents(ids: Set<String>) = operations.deleteEvents(ids)
     suspend fun deleteMedia(ids: Set<String>) = operations.deleteMedia(ids)
-    suspend fun createInvitation(deviceId: String) = operations.createInvitation(deviceId)
+    suspend fun createInvitation(
+        deviceId: String,
+        displayName: String,
+        permissions: Set<DevicePermission>,
+    ) = operations.createInvitation(deviceId, displayName, permissions)
+    suspend fun updateInvitation(
+        id: String,
+        displayName: String,
+        permissions: Set<DevicePermission>,
+    ) = operations.updateInvitation(id, displayName, permissions)
     suspend fun deleteInvitation(id: String) = operations.deleteInvitation(id)
     suspend fun resetDemo() = operations.resetDemo()
     suspend fun emitIncomingCall(deviceId: String) = operations.emitIncomingCall(deviceId)
