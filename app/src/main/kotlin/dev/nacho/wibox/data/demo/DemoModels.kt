@@ -1,6 +1,8 @@
 package dev.nacho.wibox.data.demo
 
 import kotlinx.serialization.Serializable
+import dev.nacho.wibox.data.VideoMode
+import dev.nacho.wibox.data.TalkMode
 
 @Serializable
 enum class DemoScenario {
@@ -51,8 +53,8 @@ data class DemoDevice(
     val callAlerts: Boolean = true,
     val motionAlerts: Boolean = true,
     val f1Seconds: Int = 3,
-    val highQuality: Boolean = true,
-    val fullDuplex: Boolean = true,
+    val videoMode: VideoMode = VideoMode.HIGH,
+    val talkMode: TalkMode = TalkMode.FULL_DUPLEX,
 )
 
 @Serializable

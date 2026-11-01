@@ -7,6 +7,8 @@ import dev.nacho.wibox.core.cloud.ProviderDescriptor
 import dev.nacho.wibox.data.InvitationRecord
 import dev.nacho.wibox.data.MediaRecord
 import dev.nacho.wibox.data.toLocalInvitationUrl
+import dev.nacho.wibox.data.VideoMode
+import dev.nacho.wibox.data.TalkMode
 
 object UiMapper {
     fun device(snapshot: DeviceSnapshot): DeviceUi = DeviceUi(
@@ -23,8 +25,12 @@ object UiMapper {
         callAlerts = snapshot.metadata["callAlerts"]?.toBoolean() ?: true,
         motionAlerts = snapshot.metadata["motionAlerts"]?.toBoolean() ?: true,
         f1Seconds = snapshot.metadata["f1Seconds"]?.toIntOrNull() ?: 3,
-        highQuality = snapshot.metadata["highQuality"]?.toBoolean() ?: true,
-        fullDuplex = snapshot.metadata["fullDuplex"]?.toBoolean() ?: true,
+        videoMode = snapshot.metadata["videoMode"]
+            ?.let { value -> VideoMode.entries.firstOrNull { it.name == value } }
+            ?: VideoMode.HIGH,
+        talkMode = snapshot.metadata["talkMode"]
+            ?.let { value -> TalkMode.entries.firstOrNull { it.name == value } }
+            ?: TalkMode.FULL_DUPLEX,
     )
 
     fun event(envelope: EventEnvelope): EventUi = EventUi(

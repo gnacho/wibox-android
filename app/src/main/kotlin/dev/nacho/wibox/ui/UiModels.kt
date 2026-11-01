@@ -8,6 +8,8 @@ import dev.nacho.wibox.core.cloud.PreparationState
 import dev.nacho.wibox.core.cloud.ProviderError
 import dev.nacho.wibox.core.cloud.ProviderEventType
 import dev.nacho.wibox.data.MediaKind
+import dev.nacho.wibox.data.VideoMode
+import dev.nacho.wibox.data.TalkMode
 
 sealed interface LoadState<out T> {
     val data: T?
@@ -76,8 +78,8 @@ data class DeviceUi(
     val callAlerts: Boolean,
     val motionAlerts: Boolean,
     val f1Seconds: Int,
-    val highQuality: Boolean,
-    val fullDuplex: Boolean,
+    val videoMode: VideoMode,
+    val talkMode: TalkMode,
 )
 
 data class EventUi(
