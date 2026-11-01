@@ -4,6 +4,10 @@
     <!-- The external-api module requires API 28 for SigningInfo; this app keeps
          minSdk 26 and the API service answers UNSUPPORTED below API 28. -->
     <uses-sdk tools:overrideLibrary="dev.nacho.wibox.externalapi" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="false" />
     <application
         android:name=".WiboxApplication"
         android:allowBackup="false"

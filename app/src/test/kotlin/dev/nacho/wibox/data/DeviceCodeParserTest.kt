@@ -24,6 +24,39 @@ class DeviceCodeParserTest {
     }
 
     @Test
+    fun parsesFiveFieldLabelQrWithSsidAndMac() {
+        val result = DeviceCodeParser.parseDeviceQr("IDS1111test u1d2test3 MZNTIVVE IDS1111 A1B2C3D4E5F6")
+        assertEquals("IDS1111test", result.apName)
+        assertEquals("u1d2test3", result.uid)
+        assertEquals("MZNTIVVE", result.authCode)
+        assertEquals("", result.model)
+        assertEquals("IDS1111", result.ssid)
+        assertEquals("A1B2C3D4E5F6", result.mac)
+    }
+
+    @Test
+    fun acceptsColonSeparatedMacOnLabelQr() {
+        val result = DeviceCodeParser.parseDeviceQr("IDS1111test u1d2test3 MZNTIVVE IDS1111 a1:b2:c3:d4:e5:f6")
+        assertEquals("a1:b2:c3:d4:e5:f6", result.mac)
+    }
+
+    @Test
+    fun rejectsLabelQrWithBrokenMac() {
+        val error = assertFailsWith<CodeParseException> {
+            DeviceCodeParser.parseDeviceQr("IDS1111test u1d2test3 MZNTIVVE IDS1111 NOT-A-MAC")
+        }
+        assertEquals(CodeParseError.INVALID_MODEL, error.reason)
+    }
+
+    @Test
+    fun rejectsSixFieldQr() {
+        val error = assertFailsWith<CodeParseException> {
+            DeviceCodeParser.parseDeviceQr("IDS1111test u1d2test3 MZNTIVVE IDS1111 A1B2C3D4E5F6 extra")
+        }
+        assertEquals(CodeParseError.DEVICE_FIELD_COUNT, error.reason)
+    }
+
+    @Test
     fun rejectsInvalidUidAndAuthCode() {
         assertEquals(
             CodeParseError.INVALID_UID,
