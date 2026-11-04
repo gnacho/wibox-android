@@ -46,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -63,6 +64,8 @@ import dev.nacho.wibox.core.cloud.DeviceRole
 import dev.nacho.wibox.core.cloud.ProviderEventType
 import dev.nacho.wibox.data.AppScenario
 import dev.nacho.wibox.data.MediaKind
+import dev.nacho.wibox.ui.live.LastFrameStore
+import dev.nacho.wibox.ui.live.LiveActivity
 import android.app.Activity
 import android.app.KeyguardManager
 import android.content.Context
@@ -247,7 +250,7 @@ private fun DevicesScreen(
                             DeviceCard(
                                 device = device,
                                 actionInProgress = state.action.pendingCommandId,
-                                onPreview = { navigator.navigateInventory(AppDestinationRequest("preview", deviceId = device.id)) },
+                                onPreview = { LiveActivity.start(context, device.id) },
                                 onConfig = { navigator.navigateInventory(AppDestinationRequest("config", deviceId = device.id)) },
                                 onAction = { action -> requestAction(device.id, action) },
                             )
@@ -272,8 +275,16 @@ private fun DeviceCard(
     onAction: (ActionType) -> Unit,
 ) {
     val online = device.presence == DevicePresence.ONLINE
+    val context = LocalContext.current
+    val frameRevision by LastFrameStore.revision.collectAsStateWithLifecycle()
+    val lastFrame = remember(device.id, frameRevision) {
+        LastFrameStore.load(context, device.id)?.asImageBitmap()
+    }
     ElevatedCard(
-        modifier = Modifier.fillMaxWidth().testTag("device_card_${device.id}"),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(role = Role.Button, onClick = onPreview)
+            .testTag("device_card_${device.id}"),
         shape = MaterialTheme.shapes.large,
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -320,13 +331,22 @@ private fun DeviceCard(
                     .clickable(role = Role.Button, onClick = onPreview)
                     .testTag("device_preview_${device.id}"),
             ) {
-                Image(
-                    painter = painterResource(R.drawable.device_cover_default),
-                    contentDescription = stringResource(R.string.cd_device_preview, device.name),
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    alpha = if (darkSurface) 0.32f else 1f,
-                )
+                if (lastFrame != null) {
+                    Image(
+                        bitmap = lastFrame,
+                        contentDescription = stringResource(R.string.cd_device_preview, device.name),
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(R.drawable.device_cover_default),
+                        contentDescription = stringResource(R.string.cd_device_preview, device.name),
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        alpha = if (darkSurface) 0.32f else 1f,
+                    )
+                }
             }
             Row(
                 modifier = Modifier
@@ -628,15 +648,15 @@ private fun SettingsScreen(
             tag = "settings_vibration",
         )
         WiboxOptionRow(stringResource(R.string.about), { navigator.navigateInventory("about") }, tag = "about_button", topMargin = 10.dp)
-        SettingsSectionHeader(stringResource(R.string.local_demo_title))
+        SettingsSectionHeader(stringResource(R.string.cloud_title))
         Text(
-            text = stringResource(R.string.local_demo_explanation),
+            text = stringResource(R.string.cloud_explanation),
             modifier = Modifier.padding(horizontal = 20.dp),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         WiboxOptionRow(
-            text = stringResource(R.string.demo_scenario, scenarioLabel(state.preferences.scenario)),
+            text = stringResource(R.string.connection_scenario, scenarioLabel(state.preferences.scenario)),
             onClick = { showScenario = true },
             tag = "scenario_selector",
             topMargin = 10.dp,
@@ -650,9 +670,9 @@ private fun SettingsScreen(
             tag = "simulate_call",
         )
         WiboxOptionRow(
-            text = stringResource(R.string.reset_demo),
+            text = stringResource(R.string.reset_connection),
             onClick = { showReset = true },
-            tag = "reset_demo_button",
+            tag = "reset_connection_button",
             trailing = {
                 Icon(painterResource(R.drawable.ic_refresh), contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             },
@@ -664,7 +684,7 @@ private fun SettingsScreen(
     if (showScenario) {
         AlertDialog(
             onDismissRequest = { showScenario = false },
-            title = { Text(stringResource(R.string.select_demo_scenario)) },
+            title = { Text(stringResource(R.string.select_connection_scenario)) },
             text = {
                 Column {
                     AppScenario.entries.forEach { scenario ->
@@ -687,8 +707,8 @@ private fun SettingsScreen(
     }
     if (showReset) {
         ConfirmDialog(
-            title = stringResource(R.string.reset_demo),
-            text = stringResource(R.string.reset_demo_confirmation),
+            title = stringResource(R.string.reset_connection),
+            text = stringResource(R.string.reset_connection_confirmation),
             confirmText = stringResource(R.string.reset),
             onConfirm = {
                 viewModel.resetDemo()

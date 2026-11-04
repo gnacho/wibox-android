@@ -35,6 +35,17 @@ class SharingViewModel(
         }
     }
 
+    fun refreshInvitations(deviceId: String) {
+        viewModelScope.launch(dispatcher) {
+            try {
+                repository.refreshInvitations(deviceId)
+                mutableState.value = mutableState.value.copy(operationError = null)
+            } catch (error: ProviderError) {
+                mutableState.value = mutableState.value.copy(operationError = error)
+            }
+        }
+    }
+
     fun createInvitation(
         deviceId: String,
         displayName: String,

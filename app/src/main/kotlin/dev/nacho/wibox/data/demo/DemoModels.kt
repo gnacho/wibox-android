@@ -55,6 +55,7 @@ data class DemoDevice(
     val f1Seconds: Int = 3,
     val videoMode: VideoMode = VideoMode.HIGH,
     val talkMode: TalkMode = TalkMode.FULL_DUPLEX,
+    val unlockPassword: String? = null,
 )
 
 @Serializable
@@ -85,6 +86,8 @@ data class DemoInvitation(
     val createdAtMillis: Long,
     val expiresAtMillis: Long,
     val permissions: DemoPermissions = DemoPermissions(),
+    val invitePage: String? = null,
+    val ownerId: String? = null,
 )
 
 @Serializable
@@ -96,6 +99,8 @@ data class DemoSettings(
     val termsAccepted: Boolean = false,
     val androidHintDismissed: Boolean = false,
     val scenario: DemoScenario = DemoScenario.NORMAL,
+    val cloudAccount: String? = null,
+    val cloudPassword: String? = null,
 )
 
 @Serializable
@@ -113,13 +118,13 @@ object DemoFixtures {
 
     fun initial(): DemoSnapshot {
         val frontDoor = DemoDevice(
-            id = "DEMO7410001",
+            id = "WIBOX7410001",
             name = "Front door",
             model = "7410",
             online = true,
         )
         val garage = DemoDevice(
-            id = "DEMO9440002",
+            id = "WIBOX9440002",
             name = "Garage",
             model = "9440",
             online = false,

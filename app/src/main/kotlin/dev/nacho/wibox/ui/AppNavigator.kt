@@ -41,7 +41,7 @@ class AppNavigator {
     }
 
     fun navigateInventory(request: AppDestinationRequest) {
-        val deviceId = request.deviceId ?: "DEMO7410001"
+        val deviceId = request.deviceId ?: "WIBOX7410001"
         val mediaId = request.mediaId ?: "media-001"
         val route = when (request.inventoryId) {
             "loading", "cache" -> Routes.LOADING
@@ -61,7 +61,7 @@ class AppNavigator {
             "about" -> Routes.ABOUT
             "image_pager" -> Routes.imagePager(mediaId)
             "video_player" -> Routes.videoPlayer(mediaId)
-            "push_call" -> Routes.pushCall(request.callId ?: "demo-call-$deviceId")
+            "push_call" -> Routes.pushCall(request.callId ?: "call-$deviceId")
             "debug" -> Routes.DEBUG
             "upgrade" -> Routes.upgrade(deviceId)
             "router" -> Routes.router(request.modify)

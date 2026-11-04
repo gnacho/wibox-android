@@ -49,6 +49,10 @@ class SessionViewModel(
                     providerStatus = mutableState.value.providerStatus.copy(preparation = preparation),
                 )
             } catch (error: ProviderError) {
+                android.util.Log.d(
+                    "WIBOX-LOAD",
+                    "prepare FAIL " + error::class.java.simpleName + ": " + error.message,
+                )
                 mutableState.value = mutableState.value.copy(
                     preparing = false,
                     ready = false,

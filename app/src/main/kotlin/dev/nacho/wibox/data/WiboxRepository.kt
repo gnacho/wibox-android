@@ -20,6 +20,8 @@ class WiboxRepository(
     private val restore: suspend () -> Unit = {},
     private val appUpgradeRequest: (() -> AppUpgradeRequest)? = null,
     private val realInvitationAcceptor: (suspend (ParsedInvitation, String) -> DeviceSnapshot)? = null,
+    private val cloudInvitations: CloudInvitationOperations? = null,
+    private val firmwareInspector: FirmwareInspector? = null,
 ) {
     private val initialization = Mutex()
     private var initialized = false
@@ -29,7 +31,15 @@ class WiboxRepository(
     suspend fun prepare(): PreparationState {
         initialization.withLock {
             if (!initialized) {
-                restore()
+                try {
+                    restore()
+                } catch (error: Exception) {
+                    android.util.Log.d(
+                        "WIBOX-LOAD",
+                        "restore FAIL " + error::class.java.simpleName + ": " + error.message,
+                    )
+                    throw error
+                }
                 actionCoordinator.initialize()
                 initialized = true
             }
@@ -48,6 +58,11 @@ class WiboxRepository(
         ),
     )
     suspend fun discoverCandidates(): List<DiscoveredRecord> = operations.discoverCandidates()
+
+    /** Lee el firmware por el CGI local del timbre. */
+    suspend fun inspectFirmware(deviceId: String): FirmwareResult =
+        firmwareInspector?.inspect(deviceId)
+            ?: FirmwareResult.Unavailable("lectura de firmware no disponible en esta build")
     suspend fun bind(request: BindRequest) = operations.bind(request)
     suspend fun acceptInvitation(invitation: ParsedInvitation, displayName: String): DeviceSnapshot =
         realInvitationAcceptor?.invoke(invitation, displayName)
@@ -65,13 +80,39 @@ class WiboxRepository(
         deviceId: String,
         displayName: String,
         permissions: Set<DevicePermission>,
-    ) = operations.createInvitation(deviceId, displayName, permissions)
+    ): InvitationRecord {
+        if (cloudInvitations == null) return operations.createInvitation(deviceId, displayName, permissions)
+        val created = cloudInvitations.create(deviceId, displayName, permissions)
+        storeInvitations(snapshot.invitations.filterNot { it.id == created.id } + created)
+        return created
+    }
     suspend fun updateInvitation(
         id: String,
         displayName: String,
         permissions: Set<DevicePermission>,
-    ) = operations.updateInvitation(id, displayName, permissions)
-    suspend fun deleteInvitation(id: String) = operations.deleteInvitation(id)
+    ): InvitationRecord {
+        if (cloudInvitations == null) return operations.updateInvitation(id, displayName, permissions)
+        cloudInvitations.update(id, displayName, permissions)
+        val existing = snapshot.invitations.first { it.id == id }
+        val updated = existing.copy(displayName = displayName, permissions = permissions)
+        storeInvitations(snapshot.invitations.map { if (it.id == id) updated else it })
+        return updated
+    }
+    suspend fun deleteInvitation(id: String) {
+        if (cloudInvitations == null) {
+            operations.deleteInvitation(id)
+            return
+        }
+        cloudInvitations.delete(id)
+        storeInvitations(snapshot.invitations.filterNot { it.id == id })
+    }
+    suspend fun refreshInvitations(deviceId: String) {
+        val remote = cloudInvitations?.list(deviceId) ?: return
+        storeInvitations(snapshot.invitations.filterNot { it.deviceId == deviceId } + remote)
+    }
+    private suspend fun storeInvitations(invitations: List<InvitationRecord>) {
+        operations.mergeInvitations(invitations)
+    }
     suspend fun resetDemo() = operations.resetDemo()
     suspend fun emitIncomingCall(deviceId: String) = operations.emitIncomingCall(deviceId)
 

@@ -5,6 +5,11 @@
          minSdk 26 and the API service answers UNSUPPORTED below API 28. -->
     <uses-sdk tools:overrideLibrary="dev.nacho.wibox.externalapi" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-feature
         android:name="android.hardware.camera.any"
         android:required="false" />
@@ -34,6 +39,17 @@
                 <data android:scheme="wibox" android:host="app" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="dev.nacho.wibox.ui.live.LiveActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+
+        <service
+            android:name="dev.nacho.wibox.ui.live.LiveSessionService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
 
         <service
             android:name=".externalapi.WiboxExternalApiService"

@@ -16,3 +16,23 @@ captures/
 # Distribución local
 dist/
 *.idsig
+
+# Credenciales locales del timbre (nunca al repo)
+local.properties.bak
+app/src/main/assets/client.pem
+app/src/main/assets/client.txt
+app/src/main/assets/qv_ca.pem
+
+# SDK propietario del fabricante (no redistribuible)
+app/src/main/jniLibs/
+*.so
+
+# Sondas live locales: credenciales, rutas absolutas de esta maquina
+core/cloud/src/test/kotlin/dev/nacho/wibox/core/cloud/LiveJvmTest.kt
+core/cloud/src/test/kotlin/dev/nacho/wibox/core/cloud/MonitorLiveTest.kt
+core/cloud/src/test/kotlin/dev/nacho/wibox/core/cloud/QuiiLiveWatcher.kt
+core/cloud/src/test/kotlin/dev/nacho/wibox/core/cloud/ShareGroupsLiveTest.kt
+core/cloud/src/test/kotlin/dev/nacho/wibox/core/cloud/UserAcceptLiveTest.kt
+core/cloud/src/test/kotlin/dev/nacho/wibox/core/cloud/UserLoginLiveTest.kt
+core/cloud/src/test/kotlin/dev/nacho/wibox/core/cloud/WakeExperimentLiveTest.kt
+core/cloud/src/test/kotlin/dev/nacho/wibox/core/cloud/WakeVariantLiveTest.kt

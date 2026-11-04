@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,6 +55,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.TextButton
+import dev.nacho.wibox.data.FirmwareResult
 import dev.nacho.wibox.data.TalkMode
 import dev.nacho.wibox.data.VideoMode
 
@@ -89,7 +91,7 @@ fun PreviewScreen(
             val landscape = maxWidth > maxHeight
             if (landscape) {
                 Row(modifier = Modifier.fillMaxSize()) {
-                    PreviewArea(state, modifier = Modifier.weight(1.5f).fillMaxSize())
+                    PreviewArea(state, deviceId, modifier = Modifier.weight(1.5f).fillMaxSize())
                     Column(
                         modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
                     ) {
@@ -100,7 +102,7 @@ fun PreviewScreen(
                 }
             } else {
                 Column(modifier = Modifier.fillMaxSize()) {
-                    PreviewArea(state, modifier = Modifier.fillMaxWidth().height(240.dp).padding(16.dp).clip(MaterialTheme.shapes.large))
+                    PreviewArea(state, deviceId, modifier = Modifier.fillMaxWidth().height(240.dp).padding(16.dp).clip(MaterialTheme.shapes.large))
                     PreviewControlBar(state, viewModel)
                     PreviewOperators(state, viewModel, modifier = Modifier.weight(1f))
                     PreviewResult(state)
@@ -111,21 +113,21 @@ fun PreviewScreen(
 }
 
 @Composable
-private fun PreviewArea(state: PreviewUiState, modifier: Modifier = Modifier) {
+private fun PreviewArea(state: PreviewUiState, deviceId: String, modifier: Modifier = Modifier) {
     Box(modifier = modifier.background(Color.Black).testTag("preview_area")) {
         if (state.fourPanels) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Row(modifier = Modifier.weight(1f)) {
-                    PreviewPanel(state, 1, Modifier.weight(1f))
-                    PreviewPanel(state, 2, Modifier.weight(1f))
+                    PreviewPanel(state, 1, deviceId, Modifier.weight(1f))
+                    PreviewPanel(state, 2, deviceId, Modifier.weight(1f))
                 }
                 Row(modifier = Modifier.weight(1f)) {
-                    PreviewPanel(state, 3, Modifier.weight(1f))
-                    PreviewPanel(state, 4, Modifier.weight(1f))
+                    PreviewPanel(state, 3, deviceId, Modifier.weight(1f))
+                    PreviewPanel(state, 4, deviceId, Modifier.weight(1f))
                 }
             }
         } else {
-            PreviewPanel(state, 1, Modifier.fillMaxSize())
+            PreviewPanel(state, 1, deviceId, Modifier.fillMaxSize())
         }
         if (state.recording) {
             Surface(
@@ -152,7 +154,8 @@ private fun PreviewArea(state: PreviewUiState, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun PreviewPanel(state: PreviewUiState, channel: Int, modifier: Modifier = Modifier) {
+private fun PreviewPanel(state: PreviewUiState, channel: Int, deviceId: String, modifier: Modifier = Modifier) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     Box(
         modifier = modifier.background(Color.Black).padding(1.dp),
         contentAlignment = Alignment.Center,
@@ -171,13 +174,6 @@ private fun PreviewPanel(state: PreviewUiState, channel: Int, modifier: Modifier
                         contentDescription = null,
                         tint = Color.White,
                         modifier = Modifier.size(50.dp),
-                    )
-                    Text(
-                        text = stringResource(R.string.simulated_video),
-                        color = Color.White,
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(8.dp),
                     )
                 }
             }
@@ -219,6 +215,12 @@ private fun PreviewPanel(state: PreviewUiState, channel: Int, modifier: Modifier
             color = Color.White,
             style = MaterialTheme.typography.bodySmall,
         )
+        Button(
+            onClick = { dev.nacho.wibox.ui.live.LiveActivity.start(context, deviceId) },
+            modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp),
+        ) {
+            Text(stringResource(R.string.live_button), color = Color.White)
+        }
     }
 }
 
@@ -582,7 +584,7 @@ fun PasswordModifyScreen(
         LocalDemoBanner()
         Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(vertical = 12.dp)) {
             Text(
-                text = stringResource(R.string.password_demo_notice),
+                text = stringResource(R.string.password_notice),
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -655,7 +657,14 @@ fun PasswordModifyScreen(
                 )
             }
             Spacer(Modifier.height(20.dp))
-            WiboxButton(stringResource(R.string.confirm), { saved = true }, tag = "password_confirm", primary = true)
+            WiboxButton(stringResource(R.string.confirm), {
+                saved = true
+                if (admin && !empty && !mismatch) {
+                    viewModel.updateDevice {
+                        it.copy(metadata = it.metadata + ("unlockPassword" to newUnlock))
+                    }
+                }
+            }, tag = "password_confirm", primary = true)
             Spacer(Modifier.height(20.dp))
         }
     }
@@ -743,7 +752,10 @@ fun UpgradeScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val device = state.device
-    LaunchedEffect(deviceId) { viewModel.load(deviceId) }
+    LaunchedEffect(deviceId) {
+        viewModel.load(deviceId)
+        viewModel.checkFirmware()
+    }
     WiboxScreen("screen_upgrade") {
         WiboxTopBar(stringResource(R.string.firmware_version), onBack = { navigator.back() })
         LocalDemoBanner()
@@ -751,27 +763,50 @@ fun UpgradeScreen(
             EmptyContent(stringResource(R.string.device_not_found))
         } else {
             Column(modifier = Modifier.fillMaxSize().padding(vertical = 8.dp)) {
+                val firmware = state.firmware
+                val available = firmware as? FirmwareResult.Available
                 WiboxOptionRow(
-                    text = stringResource(R.string.current_version_value, device.firmwareCurrent),
+                    text = stringResource(
+                        R.string.current_version_value,
+                        available?.info?.version ?: device.firmwareCurrent,
+                    ),
                     onClick = {},
                     enabled = false,
                     trailing = {},
                 )
-                WiboxOptionRow(
-                    text = stringResource(R.string.latest_version_value, device.firmwareLatest),
-                    onClick = {},
-                    enabled = false,
-                    trailing = {},
-                )
+                val latest = available?.info?.latestVersion
+                if (!latest.isNullOrBlank()) {
+                    WiboxOptionRow(
+                        text = stringResource(R.string.latest_version_value, latest),
+                        onClick = {},
+                        enabled = false,
+                        trailing = {},
+                    )
+                }
                 Spacer(Modifier.weight(1f))
-                if (state.queryingFirmware) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-                } else {
-                    Text(
+                when {
+                    state.queryingFirmware -> CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                    )
+                    available != null -> Text(
                         text = stringResource(R.string.firmware_up_to_date),
                         modifier = Modifier.align(Alignment.CenterHorizontally),
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.bodyMedium,
+                    )
+                    firmware is FirmwareResult.Unavailable -> Text(
+                        text = firmware.reason,
+                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    )
+                    else -> Text(
+                        text = stringResource(R.string.firmware_local_hint),
+                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     )
                 }
                 Spacer(Modifier.height(20.dp))
@@ -844,7 +879,7 @@ fun PushCallScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Image(
-                    painter = painterResource(R.drawable.ico_logo),
+                    painter = painterResource(R.mipmap.ic_launcher),
                     contentDescription = stringResource(R.string.app_name),
                     modifier = Modifier.size(56.dp),
                 )

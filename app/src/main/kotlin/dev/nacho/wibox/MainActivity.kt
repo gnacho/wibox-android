@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        if (isFinishing) container.close()
+        // El container vive en el Application (singleton): no se cierra por ciclo de Activity.
         super.onDestroy()
     }
 }

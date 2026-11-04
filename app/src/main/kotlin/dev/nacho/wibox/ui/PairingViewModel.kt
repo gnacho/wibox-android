@@ -40,6 +40,7 @@ enum class ProvisionStage {
 enum class PairingError {
     EMPTY_FIELDS,
     DUPLICATE,
+    INVITATION_USED,
     INVALID,
     NETWORK,
     UNSUPPORTED,
@@ -65,7 +66,7 @@ data class PairingUiState(
     val uid: String = "",
     val authCode: String = "",
     val model: String = "7410",
-    val apName: String = "WIBOX-DEMO",
+    val apName: String = "WIBOX",
     val qrLocked: Boolean = false,
     val invitation: ParsedInvitation? = null,
     val onlineDevices: LoadState<List<DiscoveredRecord>> = LoadState.Content(emptyList()),
@@ -73,7 +74,7 @@ data class PairingUiState(
     val bindError: PairingError? = null,
     val boundDeviceId: String? = null,
     val provisionStage: ProvisionStage = ProvisionStage.IDLE,
-    val selectedSsid: String = "Demo 2.4 GHz",
+    val selectedSsid: String = "Wibox 2.4 GHz",
     val wifiPassword: String = "",
     val showWifiPassword: Boolean = false,
     val saveWifiPassword: Boolean = false,
@@ -90,9 +91,9 @@ class PairingViewModel(
             name = savedStateHandle[NAME_KEY] ?: "",
             uid = savedStateHandle[UID_KEY] ?: "",
             model = savedStateHandle[MODEL_KEY] ?: "7410",
-            apName = savedStateHandle[AP_NAME_KEY] ?: "WIBOX-DEMO",
+            apName = savedStateHandle[AP_NAME_KEY] ?: "WIBOX",
             qrLocked = savedStateHandle[QR_LOCKED_KEY] ?: false,
-            selectedSsid = savedStateHandle[SSID_KEY] ?: "Demo 2.4 GHz",
+            selectedSsid = savedStateHandle[SSID_KEY] ?: "Wibox 2.4 GHz",
             permission = if (repository.snapshot.preferences.scenario == AppScenario.PERMISSION) {
                 PermissionRationaleState(PermissionKind.CAMERA)
             } else {
@@ -248,12 +249,14 @@ class PairingViewModel(
         viewModelScope.launch(dispatcher) {
             mutableState.value = mutableState.value.copy(binding = true, bindError = null, provisionStage = ProvisionStage.BINDING)
             try {
-                val device = if (current.invitation == null) {
-                    Log.d("WIBOX-ACCEPT", "BIND: invitation NULL -> DEMO uid=" + current.uid)
-                    repository.bind(BindRequest(current.uid, current.name, current.model))
-                } else {
-                    Log.d("WIBOX-ACCEPT", "BIND: invitation PRESENTE -> REAL uid=" + current.uid + " code=" + current.invitation.inviteCode)
-                    repository.acceptInvitation(current.invitation, current.name)
+                val device = kotlinx.coroutines.withTimeout(120_000) {
+                    if (current.invitation == null) {
+                        Log.d("WIBOX-ACCEPT", "BIND: invitation NULL -> DEMO uid=" + current.uid)
+                        repository.bind(BindRequest(current.uid, current.name, current.model))
+                    } else {
+                        Log.d("WIBOX-ACCEPT", "BIND: invitation PRESENTE -> REAL uid=" + current.uid + " code=" + current.invitation.inviteCode)
+                        repository.acceptInvitation(current.invitation, current.name)
+                    }
                 }
                 mutableState.value = mutableState.value.copy(
                     binding = false,
@@ -262,6 +265,16 @@ class PairingViewModel(
                     authCode = "",
                     wifiPassword = "",
                 )
+            } catch (safety: kotlinx.coroutines.TimeoutCancellationException) {
+                Log.d("WIBOX-ACCEPT", "BIND: safety timeout -> OUTCOME_UNKNOWN")
+                mutableState.value = mutableState.value.copy(
+                    binding = false,
+                    bindError = PairingError.OUTCOME_UNKNOWN,
+                    provisionStage = ProvisionStage.OUTCOME_UNKNOWN,
+                )
+            } catch (error: ProviderError.InvitationUsed) {
+                Log.d("WIBOX-ACCEPT", "BIND: invitation already used (100151007)")
+                mutableState.value = mutableState.value.copy(binding = false, bindError = PairingError.INVITATION_USED)
             } catch (error: ProviderError.Conflict) {
                 mutableState.value = mutableState.value.copy(binding = false, bindError = PairingError.DUPLICATE)
             } catch (error: ProviderError.Timeout) {

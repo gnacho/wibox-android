@@ -388,40 +388,11 @@ fun WiboxTextField(
 }
 
 val LocalProviderStatus = staticCompositionLocalOf {
-    ProviderStatusUi(label = "LOCAL DEMO", profileVersion = "local-demo", simulated = true)
+    ProviderStatusUi(label = "LOCAL", profileVersion = "local", simulated = true)
 }
 
 @Composable
 fun ProviderStatusBanner(modifier: Modifier = Modifier) {
-    val status = LocalProviderStatus.current
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag("provider_status_banner"),
-        color = MaterialTheme.colorScheme.secondaryContainer,
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_info),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                modifier = Modifier.size(20.dp),
-            )
-            Spacer(Modifier.width(10.dp))
-            Text(
-                text = if (status.simulated) {
-                    stringResource(R.string.provider_demo_banner, status.profileVersion)
-                } else {
-                    stringResource(R.string.provider_stock_banner, status.profileVersion)
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-            )
-        }
-    }
 }
 
 @Composable

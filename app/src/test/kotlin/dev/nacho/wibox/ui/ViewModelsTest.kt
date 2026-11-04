@@ -58,7 +58,7 @@ class ViewModelsTest {
                 val state = viewModel.state.value.devices
                 (state as? LoadState.Content)?.value
             }
-            assertEquals(setOf("DEMO7410001", "DEMO9440002"), content.map { it.id }.toSet())
+            assertEquals(setOf("WIBOX7410001", "WIBOX9440002"), content.map { it.id }.toSet())
         } finally {
             repository.close()
         }
@@ -195,7 +195,7 @@ class ViewModelsTest {
             val viewModel = SharingViewModel(repository, SavedStateHandle(), StandardTestDispatcher(testScheduler))
             repository.prepare()
             viewModel.createInvitation(
-                deviceId = "DEMO7410001",
+                deviceId = "WIBOX7410001",
                 displayName = "Guest 1",
                 permissions = setOf(DevicePermission.PREVIEW),
             )
@@ -230,14 +230,14 @@ class ViewModelsTest {
         try {
             val viewModel = SharingViewModel(repository, SavedStateHandle(), StandardTestDispatcher(testScheduler))
             repository.prepare()
-            viewModel.createInvitation("DEMO7410001", "Guest 1", setOf(DevicePermission.PREVIEW))
+            viewModel.createInvitation("WIBOX7410001", "Guest 1", setOf(DevicePermission.PREVIEW))
             val invitationId = awaitFirst { viewModel.state.value.createdInvitationId }
             assertNotNull(invitationId)
             val created = awaitFirst {
                 val state = viewModel.state.value.invitations
                 (state as? LoadState.Content)?.value?.firstOrNull { it.id == invitationId }
             }
-            assertEquals("DEMO7410001", created.deviceId)
+            assertEquals("WIBOX7410001", created.deviceId)
             viewModel.consumeCreatedInvitation()
             assertNull(viewModel.state.value.createdInvitationId)
             viewModel.deleteInvitation(invitationId)
@@ -257,13 +257,13 @@ class ViewModelsTest {
         try {
             val viewModel = DeviceDetailViewModel(repository, SavedStateHandle(), StandardTestDispatcher(testScheduler))
             repository.prepare()
-            viewModel.load("DEMO7410001")
+            viewModel.load("WIBOX7410001")
             val device = awaitFirst { viewModel.state.value.device }
             assertEquals("Front door", device.name)
             viewModel.renameDevice("Renamed")
             assertTrue(awaitFirst { viewModel.state.value.deviceInfoSaved.takeIf { it } })
             assertEquals("Renamed", awaitFirst {
-                repository.snapshot.devices.firstOrNull { it.device.id == "DEMO7410001" }?.displayName
+                repository.snapshot.devices.firstOrNull { it.device.id == "WIBOX7410001" }?.displayName
             })
             viewModel.consumeDeviceInfoSaved()
             assertFalse(viewModel.state.value.deviceInfoSaved)

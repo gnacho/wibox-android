@@ -41,6 +41,8 @@ data class InvitationRecord(
     val createdAtMillis: Long,
     val expiresAtMillis: Long,
     val permissions: Set<DevicePermission> = DevicePermission.entries.toSet(),
+    val invitePage: String? = null,
+    val ownerId: String? = null,
 )
 
 enum class VideoMode {
@@ -91,6 +93,7 @@ data class ActionJournalEntry(
 interface AppOperations {
     val snapshots: kotlinx.coroutines.flow.StateFlow<RepositorySnapshot>
     suspend fun replaceSnapshot(snapshot: RepositorySnapshot)
+    suspend fun mergeInvitations(invitations: List<InvitationRecord>)
     suspend fun refreshDevices()
     suspend fun discoverCandidates(): List<DiscoveredRecord>
     suspend fun bind(request: BindRequest): DeviceSnapshot

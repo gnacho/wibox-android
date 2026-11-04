@@ -63,7 +63,7 @@ object UiMapper {
     )
 
     fun providerStatus(descriptor: ProviderDescriptor): ProviderStatusUi = ProviderStatusUi(
-        label = if (descriptor.connectionKind == ProviderConnectionKind.DEMO) "LOCAL DEMO" else "STOCK QVCLOUD",
+        label = if (descriptor.connectionKind == ProviderConnectionKind.DEMO) "LOCAL" else "STOCK QVCLOUD",
         profileVersion = descriptor.profileVersion,
         simulated = descriptor.connectionKind == ProviderConnectionKind.DEMO,
     )

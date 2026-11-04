@@ -300,7 +300,7 @@ fun OnlineDevicesScreen(
             style = MaterialTheme.typography.titleMedium,
         )
         when (val result = state.onlineDevices) {
-            is LoadState.Loading -> LoadingContent(stringResource(R.string.searching_local_demo))
+            is LoadState.Loading -> LoadingContent(stringResource(R.string.searching_devices))
             is LoadState.Error -> ErrorContent(result.error, viewModel::scanOnlineDevices)
             is LoadState.Content -> {
                 if (result.value.isEmpty()) {
@@ -435,13 +435,13 @@ fun HandleWifiScreen(
         Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
             InstructionStep("1", stringResource(R.string.open_wifi_settings))
             Spacer(Modifier.height(3.dp).fillMaxWidth().background(WiboxColors.divider))
-            InstructionStep("2", stringResource(R.string.connect_to_demo_ap, state.apName))
+            InstructionStep("2", stringResource(R.string.connect_to_ap, state.apName))
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = stringResource(R.string.demo_ap_password, state.authCode.ifBlank { "LOCAL-DEMO" }),
+                    text = stringResource(R.string.ap_password, state.authCode.ifBlank { "WIBOX" }),
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.bodyLarge,
                 )
@@ -449,7 +449,7 @@ fun HandleWifiScreen(
                     painter = R.drawable.ic_copy,
                     contentDescription = stringResource(R.string.copy),
                     onClick = {
-                        clipboard.setText(AnnotatedString(state.authCode.ifBlank { "LOCAL-DEMO" }))
+                        clipboard.setText(AnnotatedString(state.authCode.ifBlank { "WIBOX" }))
                         copied = true
                     },
                     tag = "copy_ap_password",
@@ -486,7 +486,7 @@ fun RouterScreen(
     val onAp = { navigator.navigateInventory("wifi_progress") }
     val onVoice = { navigator.navigateInventory("voice") }
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val networks = listOf("Demo 2.4 GHz", "Home 2.4 GHz", "Wibox test LAN")
+    val networks = listOf("Wibox 2.4 GHz", "Wibox 2.4 GHz Alt", "Wibox test LAN")
     WiboxScreen("screen_router") {
         WiboxTopBar(stringResource(R.string.wifi_setup), onBack = onBack)
         LocalDemoBanner()
@@ -536,7 +536,7 @@ fun RouterScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Checkbox(checked = state.saveWifiPassword, onCheckedChange = { viewModel.toggleSaveWifiPassword() })
-                Text(stringResource(R.string.save_password_demo))
+                Text(stringResource(R.string.save_password))
             }
             Spacer(Modifier.height(16.dp))
             WiboxButton(stringResource(R.string.continue_with_ap), onAp, tag = "router_ap_next", primary = true)
@@ -692,6 +692,7 @@ private fun codeErrorText(error: CodeParseError): String = when (error) {
 private fun addDeviceErrorText(error: PairingError): String = when (error) {
     PairingError.EMPTY_FIELDS -> stringResource(R.string.empty_required_fields)
     PairingError.DUPLICATE -> stringResource(R.string.duplicate_device)
+    PairingError.INVITATION_USED -> stringResource(R.string.invitation_used)
     PairingError.UNSUPPORTED -> stringResource(R.string.unsupported_local)
     else -> stringResource(R.string.add_device_failed)
 }

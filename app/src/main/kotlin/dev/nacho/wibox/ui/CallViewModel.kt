@@ -48,7 +48,7 @@ class CallViewModel(
     fun start(callId: String) {
         if (mutableState.value.callId == callId) return
         timeoutJob?.cancel()
-        val deviceId = callId.removePrefix("demo-call-")
+        val deviceId = callId.removePrefix("call-")
         val device = repository.snapshots.value.devices.firstOrNull { it.device.id == deviceId }
         savedStateHandle[CALL_ID_KEY] = callId
         mutableState.value = CallUiState(
@@ -85,7 +85,7 @@ class CallViewModel(
         )
         viewModelScope.launch(dispatcher) {
             try {
-                val outcome = repository.execute(ActionCommand("$callId:${type.name}", DeviceRef(repository.provider.descriptor.id, callId.removePrefix("demo-call-")), 1, type))
+                val outcome = repository.execute(ActionCommand("$callId:${type.name}", DeviceRef(repository.provider.descriptor.id, callId.removePrefix("call-")), 1, type))
                 val newStatus = when {
                     accepting -> CallStatus.ACCEPTED
                     automatic -> CallStatus.AUTO_REFUSED

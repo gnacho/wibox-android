@@ -161,7 +161,7 @@ object DeviceCodeParser {
     }
 }
 
-fun ParsedInvitation.toLocalUrl(): String {
+fun ParsedInvitation.toLocalUrl(baseUrl: String = "https://example.invalid/invite"): String {
     fun encode(value: String): String = buildString {
         value.toByteArray(Charsets.UTF_8).forEach { byte ->
             val unsigned = byte.toInt() and 0xff
@@ -178,7 +178,7 @@ fun ParsedInvitation.toLocalUrl(): String {
             }
         }
     }
-    return "https://example.invalid/invite" +
+    return baseUrl +
         "?InviteCode=${encode(inviteCode)}" +
         "&OwnerId=${encode(ownerId)}" +
         "&OemId=${encode(oemId)}" +

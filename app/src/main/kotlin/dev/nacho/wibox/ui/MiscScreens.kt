@@ -1,5 +1,6 @@
 package dev.nacho.wibox.ui
 
+import dev.nacho.wibox.BuildConfig
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -54,7 +55,7 @@ fun AboutScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Image(
-                painter = painterResource(R.drawable.logo),
+                painter = painterResource(R.mipmap.ic_launcher),
                 contentDescription = stringResource(R.string.app_name),
                 modifier = Modifier.padding(top = 30.dp).size(80.dp),
             )
@@ -65,7 +66,7 @@ fun AboutScreen(
                 color = WiboxColors.text,
             )
             Text(
-                text = stringResource(R.string.version_local),
+                text = stringResource(R.string.version_value, BuildConfig.VERSION_NAME),
                 modifier = Modifier.padding(top = 8.dp),
                 style = MaterialTheme.typography.bodyMedium,
             )
@@ -119,7 +120,7 @@ fun DebugScreen(
                 trailing = {},
             )
             Text(
-                text = stringResource(R.string.select_demo_scenario),
+                text = stringResource(R.string.select_connection_scenario),
                 modifier = Modifier.padding(20.dp),
                 style = MaterialTheme.typography.titleMedium,
             )
@@ -136,7 +137,7 @@ fun DebugScreen(
                 )
             }
             Spacer(Modifier.height(20.dp))
-            WiboxButton(stringResource(R.string.reset_demo), viewModel::resetDemo, tag = "debug_reset")
+            WiboxButton(stringResource(R.string.reset_connection), viewModel::resetDemo, tag = "debug_reset")
             Spacer(Modifier.height(12.dp))
             WiboxButton(stringResource(R.string.restart_loading), { navigator.goLoading() }, tag = "debug_restart")
             Spacer(Modifier.height(20.dp))

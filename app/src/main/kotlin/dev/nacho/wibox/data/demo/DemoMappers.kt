@@ -45,14 +45,15 @@ internal fun DemoDevice.toProviderDevice(scenario: DemoScenario): DeviceSnapshot
         presence = if (online) DevicePresence.ONLINE else DevicePresence.OFFLINE,
         lastObservedAtMillis = DemoFixtures.BASE_TIME,
         firmwareVersion = firmwareCurrent,
-        metadata = mapOf(
-            "firmwareLatest" to firmwareLatest,
-            "callAlerts" to callAlerts.toString(),
-            "motionAlerts" to motionAlerts.toString(),
-            "f1Seconds" to f1Seconds.toString(),
-            "videoMode" to videoMode.name,
-            "talkMode" to talkMode.name,
-        ),
+        metadata = buildMap {
+            put("firmwareLatest", firmwareLatest)
+            put("callAlerts", callAlerts.toString())
+            put("motionAlerts", motionAlerts.toString())
+            put("f1Seconds", f1Seconds.toString())
+            put("videoMode", videoMode.name)
+            put("talkMode", talkMode.name)
+            this@toProviderDevice.unlockPassword?.let { put("unlockPassword", it) }
+        },
         source = DeviceDataSource.LOCAL,
         fresh = scenario != DemoScenario.OFFLINE,
     )
@@ -96,6 +97,20 @@ internal fun DemoInvitation.toInvitationRecord(): InvitationRecord = InvitationR
     createdAtMillis = createdAtMillis,
     expiresAtMillis = expiresAtMillis,
     permissions = permissions.toDevicePermissions(),
+    invitePage = invitePage,
+    ownerId = ownerId,
+)
+
+internal fun InvitationRecord.toDemoInvitation(): DemoInvitation = DemoInvitation(
+    id = id,
+    deviceId = deviceId,
+    name = displayName,
+    code = code,
+    createdAtMillis = createdAtMillis,
+    expiresAtMillis = expiresAtMillis,
+    permissions = permissions.toDemoPermissions(),
+    invitePage = invitePage,
+    ownerId = ownerId,
 )
 
 internal fun DemoPermissions.toDevicePermissions(): Set<DevicePermission> = buildSet {
@@ -152,7 +167,7 @@ internal fun demoCapabilities(): List<CapabilitySnapshot> = ProviderCapabilityCa
         operation = null,
         operationEvidence = if (isUpgrade) CapabilityEvidence.UNSUPPORTED else CapabilityEvidence.LOCAL_ONLY,
         operationOrigin = EvidenceOrigin.DECLARATION_LOCAL,
-        limitations = capability.limitations + "local_demo_only_no_stock_evidence",
+        limitations = capability.limitations + "local_profile_no_stock_evidence",
     )
 }
 

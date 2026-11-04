@@ -339,5 +339,5 @@ private fun userNoticeText(notice: UserNotice): String = when (notice) {
     UserNotice.SAVED_LOCAL -> stringResource(R.string.saved_local)
     UserNotice.MEDIA_EXPORT_UNSUPPORTED -> stringResource(R.string.media_export_unsupported)
     UserNotice.INVITATION_CREATED -> stringResource(R.string.invitation_created)
-    UserNotice.DEMO_RESET -> stringResource(R.string.demo_reset_done)
+    UserNotice.DEMO_RESET -> stringResource(R.string.reset_done)
 }

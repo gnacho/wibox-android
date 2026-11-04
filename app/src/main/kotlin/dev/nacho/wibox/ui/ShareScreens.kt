@@ -53,6 +53,7 @@ fun ShareManageScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     var pendingDelete by remember { mutableStateOf<InvitationUi?>(null) }
     var editor by remember { mutableStateOf<InvitationDraft?>(null) }
+    LaunchedEffect(deviceId) { viewModel.refreshInvitations(deviceId) }
     LaunchedEffect(state.createdInvitationId) {
         val created = state.createdInvitationId ?: return@LaunchedEffect
         navigator.navigateInventory(
@@ -71,7 +72,7 @@ fun ShareManageScreen(
                 Box(modifier = Modifier.weight(1f)) {
                     LoadContent(
                         state = state.invitations,
-                        onRetry = {},
+                        onRetry = { viewModel.refreshInvitations(deviceId) },
                         emptyText = stringResource(R.string.share_empty_invitations),
                     ) { invitations ->
                         LazyColumn(modifier = Modifier.fillMaxSize()) {

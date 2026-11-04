@@ -1,8 +1,24 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
 }
+
+// Credenciales locales del timbre: nunca en el repo. Se leen de local.properties
+// (ignorado por git) o de variables de entorno, y si faltan quedan vacias.
+val localProps = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+fun localOrEnv(property: String, env: String): String =
+    localProps.getProperty(property) ?: System.getenv(env) ?: ""
+
+val wiboxAccount = localOrEnv("wibox.account", "WIBOX_ACCOUNT")
+val wiboxPassword = localOrEnv("wibox.password", "WIBOX_PASSWORD")
+val wiboxClientId = localOrEnv("wibox.clientId", "WIBOX_CLIENT_ID")
+val wiboxUnlockPassword = localOrEnv("wibox.unlockPassword", "WIBOX_UNLOCK_PASSWORD")
 
 android {
     namespace = "dev.nacho.wibox"
@@ -12,9 +28,13 @@ android {
         applicationId = "dev.nacho.wibox"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 3
+        versionName = "0.3.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "WIBOX_ACCOUNT", "\"$wiboxAccount\"")
+        buildConfigField("String", "WIBOX_PASSWORD", "\"$wiboxPassword\"")
+        buildConfigField("String", "WIBOX_CLIENT_ID", "\"$wiboxClientId\"")
+        buildConfigField("String", "WIBOX_UNLOCK_PASSWORD", "\"$wiboxUnlockPassword\"")
     }
 
     buildTypes {

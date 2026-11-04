@@ -7,6 +7,7 @@ import dev.nacho.wibox.core.cloud.DevicePresence
 import dev.nacho.wibox.core.cloud.DeviceSnapshot
 import dev.nacho.wibox.core.cloud.ProviderError
 import dev.nacho.wibox.data.AppPreferences
+import dev.nacho.wibox.data.FirmwareResult
 import dev.nacho.wibox.data.WiboxRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +25,7 @@ data class DeviceDetailUiState(
     val deletedDeviceId: String? = null,
     val operationError: ProviderError? = null,
     val queryingFirmware: Boolean = false,
+    val firmware: FirmwareResult? = null,
     val timeSyncSucceeded: Boolean? = null,
 )
 
@@ -155,10 +157,18 @@ class DeviceDetailViewModel(
     }
 
     fun checkFirmware() {
+        val deviceId = loadedDeviceId ?: return
+        if (mutableState.value.queryingFirmware) return
         viewModelScope.launch(dispatcher) {
-            mutableState.value = mutableState.value.copy(queryingFirmware = true)
-            delay(300)
-            mutableState.value = mutableState.value.copy(queryingFirmware = false)
+            mutableState.value = mutableState.value.copy(queryingFirmware = true, firmware = null)
+            val result = try {
+                repository.inspectFirmware(deviceId)
+            } catch (error: Exception) {
+                FirmwareResult.Unavailable(
+                    "no se pudo leer el firmware: " + (error.message ?: error::class.java.simpleName),
+                )
+            }
+            mutableState.value = mutableState.value.copy(queryingFirmware = false, firmware = result)
         }
     }
 

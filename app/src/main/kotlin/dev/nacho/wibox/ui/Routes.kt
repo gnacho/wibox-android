@@ -50,7 +50,7 @@ object Routes {
     fun imagePager(mediaId: String) = "image_pager/$mediaId"
     fun videoPlayer(mediaId: String) = "video_player/$mediaId"
     fun pushCall(callId: String) = "push_call/$callId"
-    fun pushCallForDevice(deviceId: String) = pushCall("demo-call-$deviceId")
+    fun pushCallForDevice(deviceId: String) = pushCall("call-$deviceId")
     fun router(modify: Boolean = false) = "router?modify=$modify"
 }
 

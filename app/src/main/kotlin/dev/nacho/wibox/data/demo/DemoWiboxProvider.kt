@@ -65,7 +65,7 @@ class DemoWiboxProvider(
 ) : WiboxProvider, SessionPort, DevicePort, EventPort, ActionPort, MaintenancePort, AppOperations {
     override val descriptor = ProviderDescriptor(
         id = ProviderId.DEMO,
-        profileVersion = "local-demo",
+        profileVersion = "local",
         connectionKind = ProviderConnectionKind.DEMO,
     )
     override val capabilities: List<CapabilitySnapshot> = demoCapabilities()
@@ -231,6 +231,10 @@ class DemoWiboxProvider(
         throw ProviderError.Unsupported("replaceSnapshot", CapabilityKey("security.persistence"), "Use initializeDemo for local restore")
     }
 
+    override suspend fun mergeInvitations(invitations: List<InvitationRecord>) = mutate {
+        updateLocked(snapshot.value.copy(invitations = invitations.map { it.toDemoInvitation() }))
+    }
+
     suspend fun initializeDemo(snapshot: DemoSnapshot) {
         ensureOpen("initializeDemo")
         mutex.withLock { updateLocked(snapshot) }
@@ -277,6 +281,52 @@ class DemoWiboxProvider(
         updateLocked(snapshot.value.copy(devices = snapshot.value.devices + device))
         device.toProviderDevice(snapshot.value.settings.scenario)
     }
+
+    /**
+     * Sustituye la lista de dispositivos por los dispositivos reales del cloud Fermax
+     * (get-device-list tras aceptar una invitacion). Limpia eventos/media/invitaciones
+     * de dispositivos que desaparecen. No-op si la lista viene vacia (idempotente).
+     */
+    suspend fun mergeCloudDevices(cloudDevices: List<DemoDevice>) {
+        if (cloudDevices.isEmpty()) return
+        mutate {
+            val ids = cloudDevices.map { it.id }.toSet()
+            val previous = snapshot.value.devices.associateBy { it.id }
+            updateLocked(
+                snapshot.value.copy(
+                    devices = cloudDevices.map { device ->
+                        device.copy(unlockPassword = previous[device.id]?.unlockPassword ?: device.unlockPassword)
+                    },
+                    events = snapshot.value.events.filter { it.deviceId in ids },
+                    media = snapshot.value.media.filter { it.deviceId in ids },
+                    invitations = snapshot.value.invitations.filter { it.deviceId in ids },
+                ),
+            )
+        }
+    }
+
+    /** Guarda las credenciales de la cuenta nologin del cloud (persisten con el snapshot). */
+    suspend fun saveCloudCredentials(account: String, password: String) = mutate {
+        updateLocked(
+            snapshot.value.copy(
+                settings = snapshot.value.settings.copy(
+                    cloudAccount = account,
+                    cloudPassword = password,
+                ),
+            ),
+        )
+    }
+
+    /** Credenciales cloud guardadas (null si todavia no hay accept completado). */
+    fun cloudCredentials(): Pair<String, String>? {
+        val settings = snapshot.value.settings
+        val account = settings.cloudAccount ?: return null
+        val password = settings.cloudPassword ?: return null
+        return account to password
+    }
+
+    fun unlockPassword(deviceId: String): String? =
+        snapshot.value.devices.firstOrNull { it.id == deviceId }?.unlockPassword
 
     override suspend fun renameDevice(deviceId: String, displayName: String): DeviceSnapshot = mutate {
         if (displayName.isBlank()) throw ProviderError.InvalidInput("renameDevice")
@@ -474,4 +524,5 @@ private fun DeviceSnapshot.toDemoDevice(original: DemoDevice): DemoDevice = orig
     f1Seconds = metadata["f1Seconds"]?.toIntOrNull() ?: original.f1Seconds,
     videoMode = metadata["videoMode"]?.let { value -> VideoMode.entries.firstOrNull { it.name == value } } ?: original.videoMode,
     talkMode = metadata["talkMode"]?.let { value -> TalkMode.entries.firstOrNull { it.name == value } } ?: original.talkMode,
+    unlockPassword = metadata["unlockPassword"] ?: original.unlockPassword,
 )
