@@ -52,6 +52,12 @@ class AppContainer(
     /** Servidor HTTP local para otras apps y Home Assistant. */
     private var localApi: dev.nacho.wibox.core.cloud.api.LocalApiServer? = null
 
+    @Volatile
+    private var lanDevices: List<com.quvii.p2pv2.NativeP2PWake.LanDevice> = emptyList()
+
+    @Volatile
+    private var lastLanScanAt = 0L
+
     /** Ultima sesion viva por SDK, para poder cerrarla aunque muera la Activity. */
     @Volatile
     private var activeSdkSession: dev.nacho.wibox.core.cloud.quii.SdkTunnelLiveSession? = null
@@ -203,19 +209,7 @@ class AppContainer(
             portJob?.cancel()
             throw error
         }
-        val port: Int
-        if (fixed > 0) {
-            port = fixed
-            android.util.Log.d("WIBOX-LIVE", "puerto fijo port=$port (sin crear enlace)")
-        } else {
-            val mapped = portJob!!.await()
-            if (!mapped.ok) throw IllegalStateException("tunel SDK no disponible: " + mapped.describe())
-            port = mapped.port
-            android.util.Log.d("WIBOX-LIVE", "SDK tunnel port=$port")
-        }
         val key = access.dataEncodeKey.toByteArray(Charsets.UTF_8).copyOf(32)
-        val transport = dev.nacho.wibox.core.cloud.quii.TcpQuiiTransport("127.0.0.1", port, key)
-        transport.connect()
         val playPassword = if (dev.nacho.wibox.core.cloud.quii.LiveTuning.passwordMode == 1) {
             access.dynamicPassword.ifEmpty {
                 dev.nacho.wibox.core.cloud.quii.QuiiCrypto.encodeDevicePassword(access.authCode)
@@ -227,6 +221,55 @@ class AppContainer(
             "WIBOX-LIVE",
             "play pwd mode=${dev.nacho.wibox.core.cloud.quii.LiveTuning.passwordMode} len=${playPassword.length} dynLen=${access.dynamicPassword.length}",
         )
+        // Via local: si el timbre se ha visto en esta red, se habla QUII directo
+        // contra su IP y el video no pasa por la nube del fabricante.
+        // Sin timbres vistos en LAN se lanza un barrido en segundo plano, para que
+        // la siguiente apertura pueda ir por la via local sin esperar aqui.
+        if (lanDevices.isEmpty() && System.currentTimeMillis() - lastLanScanAt > 60_000) {
+            lastLanScanAt = System.currentTimeMillis()
+            appScope.launch {
+                runCatching { com.quvii.p2pv2.NativeP2PWake.lanScan(context, pem) }
+                    .getOrNull()?.let { lanDevices = it }
+            }
+        }
+        val lan = lanDevices.firstOrNull { it.uid == deviceId }
+        if (lan != null) {
+            val direct = runCatching {
+                val t = dev.nacho.wibox.core.cloud.quii.TcpQuiiTransport(lan.ip, lan.streamPort, key, "WIBOX-LAN")
+                t.connect(5_000)
+                val live = dev.nacho.wibox.core.cloud.quii.QuiiLiveSession(
+                    transport = t,
+                    config = dev.nacho.wibox.core.cloud.quii.QuiiLiveConfig(
+                        username = "adminapp2",
+                        password = playPassword,
+                        channel = channel,
+                        stream = stream,
+                        cryptoKey = key,
+                    ),
+                    scope = appScope,
+                )
+                live.open()
+                dev.nacho.wibox.core.cloud.quii.SdkTunnelLiveSession(t, live, access.unlockPassword, appScope)
+            }
+            if (direct.isSuccess) {
+                android.util.Log.d("WIBOX-LIVE", "LIVE source=lan ${lan.ip}:${lan.streamPort}")
+                portJob?.cancel()
+                return direct.getOrThrow()
+            }
+            android.util.Log.d("WIBOX-LIVE", "LAN no: " + (direct.exceptionOrNull()?.message ?: "error"))
+        }
+        val port: Int
+        if (fixed > 0) {
+            port = fixed
+            android.util.Log.d("WIBOX-LIVE", "puerto fijo port=$port (sin crear enlace)")
+        } else {
+            val mapped = portJob!!.await()
+            if (!mapped.ok) throw IllegalStateException("tunel SDK no disponible: " + mapped.describe())
+            port = mapped.port
+            android.util.Log.d("WIBOX-LIVE", "SDK tunnel port=$port")
+        }
+        val transport = dev.nacho.wibox.core.cloud.quii.TcpQuiiTransport("127.0.0.1", port, key)
+        transport.connect()
         val live = dev.nacho.wibox.core.cloud.quii.QuiiLiveSession(
             transport = transport,
             config = dev.nacho.wibox.core.cloud.quii.QuiiLiveConfig(
@@ -426,6 +469,7 @@ class AppContainer(
                         android.util.Log.d("WIBOX-LIVE", "p2p client precalentado ok=$ok")
                         if (ok) {
                             val found = com.quvii.p2pv2.NativeP2PWake.lanScan(warmContext, warmPem)
+                            lanDevices = found
                             android.util.Log.d(
                                 "WIBOX-LIVE",
                                 "lanScan devices=" + found.size + " " +
