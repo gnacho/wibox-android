@@ -1,49 +1,49 @@
-# v0.3.0 - Vista en vivo por el túnel del SDK
+# v0.3.0 - Live view through the SDK tunnel
 
-4 de noviembre de 2026
+November 4, 2026
 
-Primera versión que consigue abrir la cámara del timbre y pintar vídeo en el móvil. También es la primera que dice la verdad cuando no puede: si el canal está ocupado, lo dice en un segundo en lugar de quedarse en negro.
+First release that manages to open the doorbell camera and paint video on the phone. It is also the first one that tells the truth when it cannot: if the channel is busy, it says so within a second instead of staying black.
 
-## Lo que funciona, verificado en un Honor Magic V5
+## What works, verified on a Honor Magic V5
 
-- Alta por invitación. Se acepta el QR del timbre y el cloud devuelve la cuenta y la contraseña dinámica. El canal `userauth` habla el contrato real del fabricante: POST ascendente y long-poll descendente con cookie, envelope XStream con los campos en kebab-case y versión vacía.
-- Token de dispositivo. `get-device-token` devuelve `authCode` y la `dataEncodeKey` de 32 bytes que usa el canal de vídeo.
-- Túnel al timbre. `createP2PClient` del SDK, espera a que el servicio UST esté listo y `addPortByP2P(deviceId, 0, -1, 0, 9, 1200, 20)` devuelve un puerto local. El SDK escucha en `127.0.0.1` y publica ahí el puerto de media del timbre.
-- QUII sobre TCP. Setup de 32 bytes en claro con `0xA9`, respuesta con estado 0, cifrado 2 y perfil SHA 1. Después el play con usuario `adminapp2`, contraseña derivada del `authCode` y destino `/mode=real&idc=1&ids=1&ap=2`. Llegan frames H264 y G711A y se pintan con `MediaCodec`.
-- Apertura remota. Orden transparente 4 dentro de la sesión QUII, con la contraseña de apertura en SHA-256, cerradura 1 y canal 1. Respuesta `WIBOX-UNLOCK RESP 0000` y `UNLOCK error=0`.
-- CGI local por el mismo túnel. `get.device.status` devuelve MAC, versión de firmware, modelo y zona horaria. También responden `get.product.info`, `get.tfcard.info` y `get.encode.fps`.
-- Aviso de cuelgue. El timbre manda un transparente 0xFE con el motivo. La app lo traduce y lo enseña: canal ocupado, sin permiso, vídeo apagado, batería, etc.
-- Reintento de canal ocupado. Cada 30 segundos, hasta 20 intentos, con cuenta atrás en pantalla.
-- Cierre limpio. La sesión se cierra de forma síncrona al salir de la pantalla y al parar el servicio: socket, códec, audio y puerto P2P. Antes quedaba viva y dejaba al timbre ocupado para todos, incluida la app oficial.
+- Pairing by invitation. The doorbell QR code is accepted and the cloud returns the account and the dynamic password. The `userauth` channel speaks the manufacturer's real contract: upstream POST and downstream long-poll with cookie, XStream envelope with kebab-case fields and an empty version.
+- Device token. `get-device-token` returns the `authCode` and the 32-byte `dataEncodeKey` used by the video channel.
+- Tunnel to the doorbell. The SDK's `createP2PClient`, waits for the UST service to be ready and `addPortByP2P(deviceId, 0, -1, 0, 9, 1200, 20)` returns a local port. The SDK listens on `127.0.0.1` and publishes the doorbell media port there.
+- QUII over TCP. 32-byte plaintext setup with `0xA9`, response with status 0, cipher 2 and SHA profile 1. Then the play with user `adminapp2`, password derived from the `authCode` and target `/mode=real&idc=1&ids=1&ap=2`. H264 and G711A frames arrive and are painted with `MediaCodec`.
+- Remote opening. Transparent order 4 inside the QUII session, with the opening password in SHA-256, lock 1 and channel 1. Response `WIBOX-UNLOCK RESP 0000` and `UNLOCK error=0`.
+- Local CGI through the same tunnel. `get.device.status` returns MAC, firmware version, model and time zone. `get.product.info`, `get.tfcard.info` and `get.encode.fps` also answer.
+- Hang notice. The doorbell sends a transparent 0xFE with the reason. The app translates it and shows it: channel busy, no permission, video off, battery, and so on.
+- Busy channel retry. Every 30 seconds, up to 20 attempts, with an on-screen countdown.
+- Clean close. The session closes synchronously when leaving the screen and when stopping the service: socket, codec, audio and P2P port. Before, it stayed alive and left the doorbell busy for everyone, including the official app.
 
-## Lo que no funciona todavía
+## What does not work yet
 
-- El canal del timbre se queda ocupado con frecuencia. La app oficial dice lo mismo cuando pasa, así que no es un fallo del protocolo. Mientras está ocupado no hay vídeo: ahora se avisa y se reintenta, antes era una pantalla negra sin explicación.
-- Despertar el timbre no está resuelto. Ni el `device-awaken` por MQTT ni el `deviceAwaken` del SDK lo garantizan. Después de despertar, el estado que devuelve el SDK sigue siendo la máscara de reposo y el MQTT lo lista como fuera de línea.
-- La ruta sin SDK (UST, MQTT y túnel RB-UDP en Kotlin puro) abre el túnel pero no recibe candidatos al `p2pconnect` en esta red. Queda como respaldo y no se usa.
-- El color sale con dominante verde o cian en el decodificador Tegra del Shield donde se midió. Los aspectos BT709 lo mejoran y no lo quitan. No se ha medido en el móvil objetivo.
-- La app no puede gestionar la cuenta ni desvincular el timbre. El proveedor no expone esas operaciones y la app oficial no se toca.
+- The doorbell channel is often busy. The official app says the same when it happens, so it is not a protocol failure. While it is busy there is no video: now the app warns and retries, before it was a black screen with no explanation.
+- Waking the doorbell is not solved. Neither `device-awaken` over MQTT nor the SDK's `deviceAwaken` guarantee it. After waking, the state the SDK returns is still the sleep mask and MQTT lists it as offline.
+- The path without the SDK (UST, MQTT and RB-UDP tunnel in pure Kotlin) opens the tunnel but receives no candidates on `p2pconnect` on this network. It remains as a fallback and is not used.
+- Colour comes out with a green or cyan cast on the Shield's Tegra decoder where it was measured. The BT709 aspects improve it and do not remove it. It has not been measured on the target phone.
+- The app cannot manage the account or unpair the doorbell. The provider does not expose those operations and the official app is not touched.
 
-## Lo que no está en el repositorio
+## What is not in the repository
 
-El SDK nativo del fabricante (`libqv-p2p-v2.so`), sus certificados de cliente y las credenciales del timbre no se publican. El binario es propietario y los certificados y contraseñas son datos de un dispositivo real. Sin ellos el proyecto compila y arranca, pero la vista en vivo no puede abrir túnel.
+The manufacturer's native SDK (`libqv-p2p-v2.so`), its client certificates and the doorbell credentials are not published. The binary is proprietary and the certificates and passwords are data from a real device. Without them the project builds and starts, but the live view cannot open a tunnel.
 
-Para usarlo en local hacen falta dos cosas:
+To use it locally two things are needed:
 
-- `app/src/main/assets/client.pem`, `client.txt` y `qv_ca.pem`, extraídos del APK oficial.
-- En `local.properties`: `wibox.account`, `wibox.password`, `wibox.clientId` y `wibox.unlockPassword`.
+- `app/src/main/assets/client.pem`, `client.txt` and `qv_ca.pem`, extracted from the official APK.
+- In `local.properties`: `wibox.account`, `wibox.password`, `wibox.clientId` and `wibox.unlockPassword`.
 
-Las credenciales también se pueden pasar por entorno (`WIBOX_ACCOUNT`, `WIBOX_PASSWORD`, `WIBOX_CLIENT_ID`, `WIBOX_UNLOCK_PASSWORD`).
+The credentials can also be passed through the environment (`WIBOX_ACCOUNT`, `WIBOX_PASSWORD`, `WIBOX_CLIENT_ID`, `WIBOX_UNLOCK_PASSWORD`).
 
-## Cómo se probó
+## How it was tested
 
-- 76 tests deterministas del núcleo en verde, sin red: contrato del envelope, concurrencia del canal `userauth`, protocolo QUII, framing TCP, demux de paquetes, CGI y permisos de dispositivo.
-- Tests de la app en verde.
-- Pruebas en dispositivo real: instalación por ADB, arranque de la vista en vivo, lectura de logs propios y capturas de pantalla. El vídeo se vio con el OSD del timbre en pantalla, y las rondas posteriores devolvieron cuelgue por canal ocupado, que es exactamente lo que decía la app oficial.
+- 76 deterministic core tests green, without network: envelope contract, `userauth` channel concurrency, QUII protocol, TCP framing, packet demux, CGI and device permissions.
+- App tests green.
+- Tests on a real device: installation over ADB, live view startup, reading our own logs and screenshots. The video was seen with the doorbell OSD on screen, and later rounds returned a hang due to a busy channel, which is exactly what the official app said.
 
-## Pendiente
+## Pending
 
-- Confirmar si el canal ocupado se libera solo con el tiempo o si queda una sesión zombi en el timbre. La fuga nuestra está cerrada.
-- Medir el color en el móvil objetivo.
-- Decidir si el SDK nativo se puede sustituir por la ruta UST cuando esa red funcione.
-- Gestionar el dispositivo desde la app cuando el proveedor exponga esas operaciones (issue #19).
+- Confirm whether the busy channel frees itself over time or whether a zombie session remains in the doorbell. Our leak is closed.
+- Measure the colour on the target phone.
+- Decide whether the native SDK can be replaced by the UST path once that network works.
+- Manage the device from the app once the provider exposes those operations (issue #19).

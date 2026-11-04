@@ -1,12 +1,12 @@
-# Evidencia de pantallas y estados
+# Screen and state evidence
 
-Extractos de la salida JADX 1.5.6. No son capturas ni evidencia de ejecución.
+Excerpts from the JADX 1.5.6 output. They are not captures nor execution evidence.
 
 ## loading
 
-Entrada, deep link y llamada.
+Entry, deep link and call.
 
-Origen: `com/quvii/ubell/main/view/LoadingActivity.java:167-203`
+Source: `com/quvii/ubell/main/view/LoadingActivity.java:167-203`
 
 ```java
     @Override // com.qing.mvpart.base.QvActivity
@@ -50,9 +50,9 @@ Origen: `com/quvii/ubell/main/view/LoadingActivity.java:167-203`
 
 ## cache
 
-Relay sin layout.
+Relay without layout.
 
-Origen: `com/quvii/ubell/push/view/CacheActivity.java:11-22`
+Source: `com/quvii/ubell/push/view/CacheActivity.java:11-22`
 
 ```java
 public class CacheActivity extends AppCompatActivity {
@@ -71,9 +71,9 @@ public class CacheActivity extends AppCompatActivity {
 
 ## main_tab
 
-Creación y selección de fragments.
+Creation and selection of fragments.
 
-Origen: `com/quvii/ubell/main/view/MainTabActivity.java:214-256`
+Source: `com/quvii/ubell/main/view/MainTabActivity.java:214-256`
 
 ```java
     public void initView(Bundle bundle) {
@@ -123,9 +123,9 @@ Origen: `com/quvii/ubell/main/view/MainTabActivity.java:214-256`
 
 ## add_type
 
-Alta nueva o en red.
+New or network pairing.
 
-Origen: `com/quvii/ubell/device/add/view/DANewTypeChooseActivity.java:11-46`
+Source: `com/quvii/ubell/device/add/view/DANewTypeChooseActivity.java:11-46`
 
 ```java
 public class DANewTypeChooseActivity extends TitlebarBaseActivity<ActivityDaTypeChooseBinding, IPresenter> {
@@ -168,9 +168,9 @@ public class DANewTypeChooseActivity extends TitlebarBaseActivity<ActivityDaType
 
 ## preview
 
-Vídeo, foco y surface.
+Video, focus and surface.
 
-Origen: `com/quvii/ubell/video/view/PreviewActivity.java:721-746`
+Source: `com/quvii/ubell/video/view/PreviewActivity.java:721-746`
 
 ```java
     private void setDevice(final int i2, final Device device) {
@@ -203,9 +203,9 @@ Origen: `com/quvii/ubell/video/view/PreviewActivity.java:721-746`
 
 ## online_type
 
-Buscar o alta manual.
+Search or manual pairing.
 
-Origen: `com/quvii/ubell/device/add/view/DAOnlineTypeChooseActivity.java:13-50`
+Source: `com/quvii/ubell/device/add/view/DAOnlineTypeChooseActivity.java:13-50`
 
 ```java
 public class DAOnlineTypeChooseActivity extends TitlebarBaseActivity<ActivityDaOnlineTypeChooseBinding, IPresenter> {
@@ -250,9 +250,9 @@ public class DAOnlineTypeChooseActivity extends TitlebarBaseActivity<ActivityDaO
 
 ## product_choose
 
-Tipos de producto.
+Product types.
 
-Origen: `com/quvii/ubell/device/add/view/DANewProduceChooseActivity.java:13-52`
+Source: `com/quvii/ubell/device/add/view/DANewProduceChooseActivity.java:13-52`
 
 ```java
 public class DANewProduceChooseActivity extends TitlebarBaseActivity<ActivityDaNewProduceChooseBinding, IPresenter> {
@@ -299,9 +299,9 @@ public class DANewProduceChooseActivity extends TitlebarBaseActivity<ActivityDaN
 
 ## product_intro
 
-Permisos y escaneo.
+Permissions and scanning.
 
-Origen: `com/quvii/ubell/device/add/view/DANewProduceIntroduceActivity.java:59-75`
+Source: `com/quvii/ubell/device/add/view/DANewProduceIntroduceActivity.java:59-75`
 
 ```java
     /* JADX INFO: Access modifiers changed from: private */
@@ -325,9 +325,9 @@ Origen: `com/quvii/ubell/device/add/view/DANewProduceIntroduceActivity.java:59-7
 
 ## handle_wifi
 
-Comprobación del AP.
+AP check.
 
-Origen: `com/quvii/ubell/device/add/view/DANewHandleWifiActivity.java:26-67`
+Source: `com/quvii/ubell/device/add/view/DANewHandleWifiActivity.java:26-67`
 
 ```java
     private void checkWifi() {
@@ -376,9 +376,9 @@ Origen: `com/quvii/ubell/device/add/view/DANewHandleWifiActivity.java:26-67`
 
 ## wifi_list_legacy
 
-Modos de lista WiFi.
+WiFi list modes.
 
-Origen: `com/quvii/ubell/device/manage/view/DMWifiListActivity.java:51-71`
+Source: `com/quvii/ubell/device/manage/view/DMWifiListActivity.java:51-71`
 
 ```java
     public /* synthetic */ void lambda$setListener$2(AdapterView adapterView, View view, final int i2, long j2) {
@@ -406,9 +406,9 @@ Origen: `com/quvii/ubell/device/manage/view/DMWifiListActivity.java:51-71`
 
 ## wifi_set_legacy
 
-Estados de configuración WiFi.
+WiFi configuration states.
 
-Origen: `com/quvii/ubell/device/manage/view/DMWifiSetActivity.java:126-211`
+Source: `com/quvii/ubell/device/manage/view/DMWifiSetActivity.java:126-211`
 
 ```java
     @Override // com.quvii.ubell.device.manage.contract.DMWifiSetContract.View
@@ -501,9 +501,9 @@ Origen: `com/quvii/ubell/device/manage/view/DMWifiSetActivity.java:126-211`
 
 ## device_bind
 
-Formulario y enlace compartido.
+Form and shared link.
 
-Origen: `com/quvii/ubell/device/add/view/DADeviceBindActivity.java:82-145`
+Source: `com/quvii/ubell/device/add/view/DADeviceBindActivity.java:82-145`
 
 ```java
     /* JADX INFO: Access modifiers changed from: private */
@@ -574,9 +574,9 @@ Origen: `com/quvii/ubell/device/add/view/DADeviceBindActivity.java:82-145`
 
 ## online_devices
 
-Escaneo y lista online.
+Online scan and list.
 
-Origen: `com/quvii/ubell/device/add/view/DAOnlineDeviceListActivity.java:58-100`
+Source: `com/quvii/ubell/device/add/view/DAOnlineDeviceListActivity.java:58-100`
 
 ```java
     @Override // com.quvii.ubell.publico.base.BaseActivity, com.qing.mvpart.base.IActivity
@@ -626,9 +626,9 @@ Origen: `com/quvii/ubell/device/add/view/DAOnlineDeviceListActivity.java:58-100`
 
 ## scan
 
-Resultados QR.
+QR results.
 
-Origen: `com/quvii/ubell/device/add/view/DACaptureActivity.java:270-335`
+Source: `com/quvii/ubell/device/add/view/DACaptureActivity.java:270-335`
 
 ```java
     @Override // com.quvii.ubell.publico.activity.BaseScanQrActivity
@@ -701,9 +701,9 @@ Origen: `com/quvii/ubell/device/add/view/DACaptureActivity.java:270-335`
 
 ## config
 
-Visibilidad según compartición.
+Visibility according to sharing.
 
-Origen: `com/quvii/ubell/device/manage/view/DMConfigActivity.java:207-235`
+Source: `com/quvii/ubell/device/manage/view/DMConfigActivity.java:207-235`
 
 ```java
     @Override // com.quvii.ubell.publico.base.TitlebarBaseDeviceActivity, com.quvii.ubell.publico.base.BaseActivity, com.qing.mvpart.base.IActivity
@@ -739,9 +739,9 @@ Origen: `com/quvii/ubell/device/manage/view/DMConfigActivity.java:207-235`
 
 ## password_modify
 
-Modos de cambio de contraseña.
+Password change modes.
 
-Origen: `com/quvii/ubell/device/manage/view/DMPasswordModifyActivity.java:60-103`
+Source: `com/quvii/ubell/device/manage/view/DMPasswordModifyActivity.java:60-103`
 
 ```java
     @Override // com.quvii.ubell.publico.base.TitlebarBaseDeviceActivity, com.quvii.ubell.publico.base.BaseActivity, com.qing.mvpart.base.IActivity
@@ -792,9 +792,9 @@ Origen: `com/quvii/ubell/device/manage/view/DMPasswordModifyActivity.java:60-103
 
 ## unlock_setting
 
-Quick unlock y biometría.
+Quick unlock and biometrics.
 
-Origen: `com/quvii/ubell/device/manage/view/DMUnlockSettingActivity.java:44-95`
+Source: `com/quvii/ubell/device/manage/view/DMUnlockSettingActivity.java:44-95`
 
 ```java
     private void setSwitchStatus() {
@@ -853,9 +853,9 @@ Origen: `com/quvii/ubell/device/manage/view/DMUnlockSettingActivity.java:44-95`
 
 ## device_info
 
-Lectura, edición y guardado.
+Reading, editing and saving.
 
-Origen: `com/quvii/ubell/device/manage/view/DMDeviceInfoEditActivity.java:34-85`
+Source: `com/quvii/ubell/device/manage/view/DMDeviceInfoEditActivity.java:34-85`
 
 ```java
     private void save() {
@@ -914,9 +914,9 @@ Origen: `com/quvii/ubell/device/manage/view/DMDeviceInfoEditActivity.java:34-85`
 
 ## about
 
-Política local.
+Local policy.
 
-Origen: `com/quvii/ubell/me/view/MeAboutActivity.java:68-86`
+Source: `com/quvii/ubell/me/view/MeAboutActivity.java:68-86`
 
 ```java
     private void showConditionsDialog() {
@@ -942,9 +942,9 @@ Origen: `com/quvii/ubell/me/view/MeAboutActivity.java:68-86`
 
 ## image_pager
 
-Modo claro y visor negro.
+Light mode and black viewer.
 
-Origen: `com/quvii/ubell/fileManage/view/FMImagePagerActivity.java:88-135`
+Source: `com/quvii/ubell/fileManage/view/FMImagePagerActivity.java:88-135`
 
 ```java
     public void changeMode() {
@@ -999,9 +999,9 @@ Origen: `com/quvii/ubell/fileManage/view/FMImagePagerActivity.java:88-135`
 
 ## video_player
 
-Controles y seek.
+Controls and seek.
 
-Origen: `com/quvii/ubell/fileManage/view/FMLocalVideoPlayActivity.java:155-208`
+Source: `com/quvii/ubell/fileManage/view/FMLocalVideoPlayActivity.java:155-208`
 
 ```java
     @Override // com.quvii.ubell.fileManage.contract.FMLocalVideoPlayContract.View
@@ -1062,9 +1062,9 @@ Origen: `com/quvii/ubell/fileManage/view/FMLocalVideoPlayActivity.java:155-208`
 
 ## push_call
 
-Llamada entrante.
+Incoming call.
 
-Origen: `com/quvii/ubell/push/view/PushCallActivity.java:59-120`
+Source: `com/quvii/ubell/push/view/PushCallActivity.java:59-120`
 
 ```java
     @Override // com.quvii.ubell.publico.base.BaseActivity, com.qing.mvpart.base.IActivity
@@ -1133,9 +1133,9 @@ Origen: `com/quvii/ubell/push/view/PushCallActivity.java:59-120`
 
 ## debug
 
-Estado de debug.
+Debug state.
 
-Origen: `com/quvii/ubell/test/view/TestInfoActivity.java:200-220`
+Source: `com/quvii/ubell/test/view/TestInfoActivity.java:200-220`
 
 ```java
     @Override // com.qing.mvpart.base.IActivity
@@ -1163,9 +1163,9 @@ Origen: `com/quvii/ubell/test/view/TestInfoActivity.java:200-220`
 
 ## upgrade
 
-Firmware y progreso.
+Firmware and progress.
 
-Origen: `com/quvii/ubell/device/manage/view/DMUpgradeActivity.java:65-138`
+Source: `com/quvii/ubell/device/manage/view/DMUpgradeActivity.java:65-138`
 
 ```java
     @Override // com.quvii.ubell.device.manage.contract.DMUpgradeContract.View
@@ -1246,9 +1246,9 @@ Origen: `com/quvii/ubell/device/manage/view/DMUpgradeActivity.java:65-138`
 
 ## guide
 
-Guía paginada.
+Paginated guide.
 
-Origen: `com/quvii/ubell/main/view/StartGuideActivity.java:68-133`
+Source: `com/quvii/ubell/main/view/StartGuideActivity.java:68-133`
 
 ```java
     public void initView(Bundle bundle) {
@@ -1321,9 +1321,9 @@ Origen: `com/quvii/ubell/main/view/StartGuideActivity.java:68-133`
 
 ## add_method_legacy
 
-Métodos AP y audio.
+AP and audio methods.
 
-Origen: `com/quvii/ubell/device/add/view/DAAddTypeActivity.java:14-57`
+Source: `com/quvii/ubell/device/add/view/DAAddTypeActivity.java:14-57`
 
 ```java
     /* JADX INFO: Access modifiers changed from: private */
@@ -1374,9 +1374,9 @@ Origen: `com/quvii/ubell/device/add/view/DAAddTypeActivity.java:14-57`
 
 ## router
 
-Configuración y modos del router.
+Router configuration and modes.
 
-Origen: `com/quvii/ubell/device/add/view/DARouterInfoActivity.java:91-113`
+Source: `com/quvii/ubell/device/add/view/DARouterInfoActivity.java:91-113`
 
 ```java
     @Override // com.qing.mvpart.base.IActivity
@@ -1406,9 +1406,9 @@ Origen: `com/quvii/ubell/device/add/view/DARouterInfoActivity.java:91-113`
 
 ## voice
 
-Estados de audio.
+Audio states.
 
-Origen: `com/quvii/ubell/device/add/view/DAVoiceSetActivity.java:91-121`
+Source: `com/quvii/ubell/device/add/view/DAVoiceSetActivity.java:91-121`
 
 ```java
     @Override // com.quvii.ubell.device.add.contract.DAVoiceSetContract.View
@@ -1446,9 +1446,9 @@ Origen: `com/quvii/ubell/device/add/view/DAVoiceSetActivity.java:91-121`
 
 ## wifi_progress
 
-Progreso, fallo y retry.
+Progress, failure and retry.
 
-Origen: `com/quvii/ubell/device/add/view/DAWifiSetActivity.java:107-174`
+Source: `com/quvii/ubell/device/add/view/DAWifiSetActivity.java:107-174`
 
 ```java
     @Override // com.quvii.ubell.device.add.contract.DAWifiSetContract.View
@@ -1523,9 +1523,9 @@ Origen: `com/quvii/ubell/device/add/view/DAWifiSetActivity.java:107-174`
 
 ## share_device
 
-QR, enlace y expiración.
+QR, link and expiry.
 
-Origen: `com/quvii/ubell/share/view/ShareDeviceActivity.java:83-161`
+Source: `com/quvii/ubell/share/view/ShareDeviceActivity.java:83-161`
 
 ```java
     @Override // com.qing.mvpart.base.IActivity
@@ -1611,9 +1611,9 @@ Origen: `com/quvii/ubell/share/view/ShareDeviceActivity.java:83-161`
 
 ## pairing_fail
 
-Fallo de pairing.
+Pairing failure.
 
-Origen: `com/quvii/ubell/device/add/view/DADeviceConfigFailActivity.java:22-46`
+Source: `com/quvii/ubell/device/add/view/DADeviceConfigFailActivity.java:22-46`
 
 ```java
     @Override // com.qing.mvpart.base.IActivity
@@ -1645,9 +1645,9 @@ Origen: `com/quvii/ubell/device/add/view/DADeviceConfigFailActivity.java:22-46`
 
 ## share_manage
 
-Lista y edición de usuarios.
+User list and editing.
 
-Origen: `com/quvii/ubell/share/view/ShareManageActivity.java:85-151`
+Source: `com/quvii/ubell/share/view/ShareManageActivity.java:85-151`
 
 ```java
     @Override // com.qing.mvpart.base.IActivity
@@ -1721,9 +1721,9 @@ Origen: `com/quvii/ubell/share/view/ShareManageActivity.java:85-151`
 
 ## share_bind
 
-Aceptar invitación.
+Accept invitation.
 
-Origen: `com/quvii/ubell/share/view/ShareBindActivity.java:38-88`
+Source: `com/quvii/ubell/share/view/ShareBindActivity.java:38-88`
 
 ```java
     public void processLogic() {
@@ -1781,9 +1781,9 @@ Origen: `com/quvii/ubell/share/view/ShareBindActivity.java:38-88`
 
 ## tab_devices
 
-Vacío y lista.
+Empty and list.
 
-Origen: `com/quvii/ubell/main/view/MainDeviceListFragment.java:149-199`
+Source: `com/quvii/ubell/main/view/MainDeviceListFragment.java:149-199`
 
 ```java
     @Override // com.quvii.ubell.main.contract.MainDeviceListContract.View
@@ -1841,9 +1841,9 @@ Origen: `com/quvii/ubell/main/view/MainDeviceListFragment.java:149-199`
 
 ## tab_events
 
-Pestañas de eventos ocultas.
+Hidden event tabs.
 
-Origen: `com/quvii/ubell/main/view/MainMessageListFragment.java:229-284`
+Source: `com/quvii/ubell/main/view/MainMessageListFragment.java:229-284`
 
 ```java
     @Override // com.qing.mvpart.base.IActivity
@@ -1906,9 +1906,9 @@ Origen: `com/quvii/ubell/main/view/MainMessageListFragment.java:229-284`
 
 ## tab_event_list
 
-Vacío y lista de eventos.
+Empty and event list.
 
-Origen: `com/quvii/ubell/main/view/MainMessageTypeFragment.java:233-277`
+Source: `com/quvii/ubell/main/view/MainMessageTypeFragment.java:233-277`
 
 ```java
     public void showMessageView(List<AlarmInfo> list) {
@@ -1960,9 +1960,9 @@ Origen: `com/quvii/ubell/main/view/MainMessageTypeFragment.java:233-277`
 
 ## tab_gallery
 
-Galería y edición.
+Gallery and editing.
 
-Origen: `com/quvii/ubell/main/view/MainFileFragment.java:226-274`
+Source: `com/quvii/ubell/main/view/MainFileFragment.java:226-274`
 
 ```java
     @Override // com.quvii.ubell.main.contract.MainFileContract.View
@@ -2018,9 +2018,9 @@ Origen: `com/quvii/ubell/main/view/MainFileFragment.java:226-274`
 
 ## tab_settings
 
-Opciones y switches.
+Options and switches.
 
-Origen: `com/quvii/ubell/main/view/MainMeFragment.java:127-213`
+Source: `com/quvii/ubell/main/view/MainMeFragment.java:127-213`
 
 ```java
     @Override // com.qing.mvpart.base.IActivity

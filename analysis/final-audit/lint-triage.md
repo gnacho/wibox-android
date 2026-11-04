@@ -1,20 +1,20 @@
-# Triaje de lint para la auditoría final
+# Lint triage for the final audit
 
-Fuente: `app/build/reports/lint-results-debug.sarif` y `core/cloud/build/reports/lint-results-debug.sarif`, generados con `lintDebug` antes de la modernización. Estado: 0 errores, 38 avisos de app y 1 de core.
+Source: `app/build/reports/lint-results-debug.sarif` and `core/cloud/build/reports/lint-results-debug.sarif`, generated with `lintDebug` before the modernization. Status: 0 errors, 38 app warnings and 1 core warning.
 
-## Correcciones funcionales o de mantenimiento
+## Functional or maintenance fixes
 
-- `PrivateResource`: renombrar el recurso propio `selected` para no sobrescribir un recurso privado de Compose. Actualizar referencias y plural si corresponde.
-- `PluralsCandidate`: convertir el conteo seleccionado en plural ES/EN si la UI conserva ese texto.
-- `DataExtractionRules`: definir política explícita de backup y transferencia acorde con secretos, sesiones y Keystore. No copiar las políticas inseguras del APK original.
-- `TypographyEllipsis`: sustituir tres puntos por el carácter tipográfico de elipsis en recursos propios.
-- `IconMissingDensityFolder`: revisar recursos rasterizados y densidad. No duplicar imágenes sin necesidad; preferir vectores propios o `nodpi` cuando sea correcto.
-- `UseTomlInstead`: mover dependencias de test declaradas manualmente al catálogo cuando se toque cada módulo.
+- `PrivateResource`: rename the own `selected` resource so it does not overwrite a private Compose resource. Update references and the plural if applicable.
+- `PluralsCandidate`: turn the selected count into an ES/EN plural if the UI keeps that text.
+- `DataExtractionRules`: define an explicit backup and transfer policy consistent with secrets, sessions and Keystore. Do not copy the insecure policies of the original APK.
+- `TypographyEllipsis`: replace three dots with the typographic ellipsis character in own resources.
+- `IconMissingDensityFolder`: review rasterized resources and density. Do not duplicate images without need, prefer own vectors or `nodpi` when that is correct.
+- `UseTomlInstead`: move test dependencies declared by hand to the catalog when each module is touched.
 
-## Avisos de versiones
+## Version warnings
 
-Hay avisos para Gradle, AGP, AndroidX, coroutines, serialización y Ktor. No se actualizan automáticamente durante cambios de protocolo o UI. Cada actualización debe ser independiente, con build, tests unitarios, instrumentación y revisión de compatibilidad. Un aviso de versión nueva no demuestra que la versión actual sea insegura o incompatible.
+There are warnings for Gradle, AGP, AndroidX, coroutines, serialization and Ktor. They are not updated automatically during protocol or UI changes. Each update must be independent, with build, unit tests, instrumentation and compatibility review. A new-version warning does not prove that the current version is insecure or incompatible.
 
-## Criterio de cierre
+## Closure criterion
 
-La revisión final debe volver a ejecutar `lintDebug`. Los avisos restantes deben estar clasificados y no puede afirmarse que un warning es irrelevante sin revisar su ubicación y efecto.
+The final review must run `lintDebug` again. The remaining warnings must be classified and it cannot be claimed that a warning is irrelevant without reviewing its location and effect.

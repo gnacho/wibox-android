@@ -1,52 +1,54 @@
 # Wibox Kotlin
 
-Reimplementación Android en Kotlin de los flujos de Wibox (videoportero), construida a partir del análisis de referencias públicas y del APK de fábrica. La arquitectura es provider-neutral: la aplicación no conoce el cloud directamente, solo el puerto `WiboxProvider`, y los límites de cada proveedor se declaran por capacidad en lugar de fingirse soportados.
+Android reimplementation in Kotlin of the Wibox (video intercom) flows, built from the analysis of public references and the factory APK. The architecture is provider-neutral: the application does not know the cloud directly, only the `WiboxProvider` port, and each provider's limits are declared per capability instead of being pretended to be supported.
 
-## Estructura
+[Read this in Spanish](README.es.md).
 
-- `core/cloud`: puerto provider-neutral (`WiboxProvider`), API tipada, modelos de dominio, autenticación OAuth, operaciones Shadow HTTP, `app_upgrade_check` y parsers de eventos con evidencia. No contiene UI.
-- `app`: aplicación Android con Jetpack Compose modernizada (32 superficies visuales, 71 aristas de navegación, capturas reales en emulador). Depende de la API pública de `core:cloud` y del módulo `external-api` para el servicio Binder.
-- `external-api`: API local Binder/AIDL para que otras apps consulten proveedores Wibox: 15 métodos, 43 modelos, SDK Kotlin main-safe y motor de autorización propio.
-- `analysis/rea`, `analysis/apk`, `analysis/dynamic`, `analysis/ui-modernization`, `analysis/final-audit`: inventarios y verificadores con evidencia.
-- `docs/protocol.md`, `docs/provider-architecture.md`, `docs/provider-implementation.md`, `docs/external-api.md`, `docs/external-api-implementation.md`, `docs/ui-modernization-evidence.md`: contratos y decisiones con trazabilidad.
-- `fastlane`: capturas y metadatos de la aplicación.
+## Structure
 
-## Estado funcional
+- `core/cloud`: provider-neutral port (`WiboxProvider`), typed API, domain models, OAuth authentication, HTTP Shadow operations, `app_upgrade_check` and event parsers with evidence. No UI.
+- `app`: Android application with modernized Jetpack Compose (32 visual surfaces, 71 navigation edges, real captures on the emulator). Depends on the public API of `core:cloud` and on the `external-api` module for the Binder service.
+- `external-api`: local Binder/AIDL API so other apps can query Wibox providers: 15 methods, 43 models, main-safe Kotlin SDK and its own authorization engine.
+- `analysis/rea`, `analysis/apk`, `analysis/dynamic`, `analysis/ui-modernization`, `analysis/final-audit`: inventories and verifiers with evidence.
+- `docs/protocol.md`, `docs/provider-architecture.md`, `docs/provider-implementation.md`, `docs/external-api.md`, `docs/external-api-implementation.md`, `docs/ui-modernization-evidence.md`: contracts and decisions with traceability.
+- `fastlane`: screenshots and app metadata.
 
-Adaptador stock QVCloud: solo se implementan operaciones con contrato observado. OAuth (`password`/`refresh_token`), Shadow HTTP (`status`, `multi`, `sub`, `unsub`), alarmas FCM (tipos 2, 19, 20) y `app_upgrade_check`. Alta por invitación con el canal `userauth` real, token de dispositivo, listado unificado, suscripción realtime y CGI local por el túnel del SDK. La vista en vivo abre la cámara por el túnel nativo y habla QUII sobre TCP local.
+## Functional status
 
-## Vista en vivo
+Stock QVCloud adapter: only operations with an observed contract are implemented. OAuth (`password`/`refresh_token`), HTTP Shadow (`status`, `multi`, `sub`, `unsub`), FCM alarms (types 2, 19, 20) and `app_upgrade_check`. Pairing by invitation with the real `userauth` channel, device token, unified listing, realtime subscription and local CGI through the SDK tunnel. The live view opens the camera through the native tunnel and speaks QUII over local TCP.
 
-El camino que funciona es el del SDK del fabricante: se crea el cliente P2P, se espera al servicio UST y se pide el puerto de media con `addPortByP2P`. El SDK lo publica en `127.0.0.1` y ahí se habla QUII: setup de 32 bytes en claro, play con `adminapp2` y la clave derivada del `authCode`, y frames H264 y G711A.
+## Live view
 
-El estado real, lo verificado y lo que sigue pendiente están en [`RELEASE_NOTES.md`](RELEASE_NOTES.md). Resumen honesto: el túnel, el protocolo y la apertura remota funcionan, el timbre rechaza el play con «canal ocupado» buena parte del tiempo (la app oficial dice lo mismo) y despertarlo desde reposo no está resuelto.
+The path that works is the manufacturer SDK's: the P2P client is created, the UST service is awaited and the media port is requested with `addPortByP2P`. The SDK publishes it on `127.0.0.1` and QUII is spoken there: 32-byte plaintext setup, play with `adminapp2` and the key derived from the `authCode`, and H264 and G711A frames.
 
-El binario nativo del fabricante, sus certificados de cliente y las credenciales del timbre no se versionan. Sin ellos el proyecto compila y arranca, pero no puede abrir túnel. Ver «Requisitos».
+The real state, what has been verified and what is still pending are in [`RELEASE_NOTES.md`](RELEASE_NOTES.md). Honest summary: the tunnel, the protocol and remote opening work, the doorbell rejects the play with "channel busy" a good part of the time (the official app says the same) and waking it from sleep is not solved.
 
-Proveedor demo local: implementa los mismos flujos con datos sintéticos etiquetados (`simulated=true`, origen demo) para probar navegación, estados y acciones con ack local honesto.
+The manufacturer's native binary, its client certificates and the doorbell credentials are not versioned. Without them the project builds and starts, but it cannot open a tunnel. See "Requirements".
 
-API externa para otras apps: servicio Binder (`dev.nacho.wibox.externalapi`) con denegación por defecto, autorización por UID + paquete + SHA-256 del conjunto de firmantes con allowlist revocable, handshake obligatorio, límites de tasa y tamaño, y Unsupported honesto heredado de las capacidades del proveedor. Los acks nunca superan lo realmente observado (máximo `LOCAL_ACCEPTED` en demo).
+Local demo provider: implements the same flows with labelled synthetic data (`simulated=true`, demo origin) to test navigation, states and actions with an honest local ack.
+
+External API for other apps: Binder service (`dev.nacho.wibox.externalapi`) with denial by default, authorization by UID + package + SHA-256 of the signer set with a revocable allowlist, mandatory handshake, rate and size limits, and honest Unsupported inherited from the provider capabilities. Acks never exceed what was actually observed (at most `LOCAL_ACCEPTED` in demo).
 
 ## Hardware
 
-El Wi-Box es un módulo Fermax que se instala detrás del telefonillo y levanta su propio punto de acceso mientras no está emparejado. Todo lo que necesita el alta por red está en la etiqueta de fábrica: nombre del AP, su contraseña, la MAC y el UDID, agrupados además en un QR.
+The Wi-Box is a Fermax module installed behind the door phone that brings up its own access point while it is not paired. Everything the network pairing needs is on the factory label: the AP name, its password, the MAC and the UDID, also grouped in a QR code.
 
-![Módulo Wi-Box de Fermax con la etiqueta de fábrica](docs/img/wibox-hardware.webp)
+![Fermax Wi-Box module with the factory label](docs/img/wibox-hardware.webp)
 
-El detalle de esos campos, el orden en que aparecen en el QR y su papel en el registro están en `docs/protocol.md` §14.5. Foto de [segator/wibox-media](https://github.com/segator/wibox-media) (GPL-3.0), copiada sin recodificar.
+The detail of those fields, the order in which they appear in the QR code and their role in registration are in `docs/protocol.md` §14.5. Photo from [segator/wibox-media](https://github.com/segator/wibox-media) (GPL-3.0), copied without re-encoding.
 
-## Requisitos
+## Requirements
 
 - JDK 17.
-- Android SDK en `~/Android/Sdk` o configurado mediante `ANDROID_HOME`.
-- Platform Android 37.0 y Build Tools 37.0.0.
-- Para pruebas instrumentadas, un emulador o dispositivo Android visible mediante ADB.
-- Para la vista en vivo, el SDK nativo del fabricante en `app/src/main/jniLibs/arm64-v8a/` y sus certificados de cliente en `app/src/main/assets/`. No se versionan: son propietarios y llevan credenciales de un timbre real.
-- Credenciales del timbre en `local.properties` (`wibox.account`, `wibox.password`, `wibox.clientId`, `wibox.unlockPassword`) o en el entorno. También vale aceptar una invitación desde la app, que guarda una cuenta temporal.
+- Android SDK in `~/Android/Sdk` or configured through `ANDROID_HOME`.
+- Android platform 37.0 and Build Tools 37.0.0.
+- For instrumented tests, an emulator or Android device visible through ADB.
+- For the live view, the manufacturer's native SDK in `app/src/main/jniLibs/arm64-v8a/` and its client certificates in `app/src/main/assets/`. They are not versioned: they are proprietary and carry the credentials of a real doorbell.
+- Doorbell credentials in `local.properties` (`wibox.account`, `wibox.password`, `wibox.clientId`, `wibox.unlockPassword`) or in the environment. Accepting an invitation from the app also works, which stores a temporary account.
 
-`local.properties`, credenciales y tokens no se versionan.
+`local.properties`, credentials and tokens are not versioned.
 
-## Comandos
+## Commands
 
 ```bash
 ./gradlew :core:cloud:test :external-api:testDebugUnitTest :app:testDebugUnitTest
@@ -56,9 +58,9 @@ python3 analysis/final-audit/verify_final_audit.py
 python3 analysis/final-audit/verify_release.py
 ```
 
-Los tests usan respuestas simuladas y no contactan con el cloud real. El selector `ANDROID_SERIAL` es obligatorio en tests instrumentados si hay otros dispositivos conectados.
+The tests use simulated responses and do not contact the real cloud. The `ANDROID_SERIAL` selector is mandatory in instrumented tests when other devices are connected.
 
-## Verificación
+## Verification
 
 ```bash
 python3 scripts/verify_architecture.py
@@ -69,11 +71,15 @@ python3 analysis/final-audit/verify_release.py
 python3 scripts/verify_project.py
 ```
 
-La auditoría final cubre 64 capacidades, 38 pantallas y 71 aristas de navegación con límites documentados. La verificación de release comprueba firma, alineación, instalación, arranque y captura de la APK.
+The final audit covers 64 capabilities, 38 screens and 71 navigation edges with documented limits. The release verification checks signing, alignment, installation, startup and APK capture.
 
-## Límites honestos
+## Honest limits
 
-- Compatibilidad cloud declarada por capacidad: la única operación stock con contrato dinámico observado es `app_upgrade_check`.
-- Sin hardware real verificado: llamadas, preview y acciones físicas no están certificadas.
-- Realtime, discovery, media y acciones físicas permanecen `Unsupported` hasta disponer de evidencia dinámica autorizada.
-- La API externa no expone secretos ni promete operaciones que el proveedor activo no soporte.
+- Cloud compatibility declared per capability: the only stock operation with an observed dynamic contract is `app_upgrade_check`.
+- No verified real hardware: calls, preview and physical actions are not certified.
+- Realtime, discovery, media and physical actions remain `Unsupported` until authorized dynamic evidence is available.
+- The external API does not expose secrets and does not promise operations that the active provider does not support.
+
+## Related projects
+
+- [wibox-daemon](https://github.com/gnacho/wibox-daemon): Go daemon for Linux that opens the doorbell over the local network.

@@ -1,80 +1,80 @@
-# Implementación de la API local para otras apps
+# Local API implementation for other apps
 
-Este documento describe la implementación real del servicio Binder/AIDL expuesto por Wibox a otras apps. El diseño de referencia es `docs/external-api.md` y el contrato congelado es `analysis/external-api/api-contract.json`. La verificación automática vive en `analysis/external-api-runtime/verify_external_api_runtime.py`.
+This document describes the real implementation of the Binder/AIDL service exposed by Wibox to other apps. The reference design is `docs/external-api.md` and the frozen contract is `analysis/external-api/api-contract.json`. The automated verification lives in `analysis/external-api-runtime/verify_external_api_runtime.py`.
 
-## Qué se implementó
+## What was implemented
 
-- Servicio `dev.nacho.wibox.externalapi.WiboxExternalApiService` en el módulo `app`, que devuelve una instancia de `IWiboxExternalService.Stub` por conexión. Registrado en `app/src/main/AndroidManifest.xml` como servicio `exported="true"` con la acción `dev.nacho.wibox.externalapi.BIND` y sin atributo `android:permission`: la autorización se decide por llamada, no por un permiso declarativo.
-- Motor de autorización puro en el módulo `external-api`, paquete `dev.nacho.wibox.externalapi.server`: resolución de identidad, allowlist, revocación y límites de solicitudes pendientes. Es Kotlin sin Android, cubierto por tests unitarios.
-- Persistencia de la allowlist en la app con `SharedPreferencesAuthorizationStore`, esquema versionado (v1) y escritura atómica con `commit()`. No guarda secretos: uid, package, digest del conjunto de firmantes, scopes, dispositivos, generación, nombre visible y estado.
-- Runtime del servicio (`ExternalApiRuntime`) con límites de ráfaga por uid (`TokenBucket`), presupuesto de operaciones one-shot por app y globales, y un journal acotado de acciones para deduplicación, cancelación y consulta de resultados.
-- Mappers propios en la app de `core.cloud` a los parcelables Wire (`ExternalApiMappers`), con etiquetado honesto: origen y `simulated=true` cuando el provider es demo.
-- SDK Kotlin ya existente en `external-api/src/main/kotlin/.../sdk/` sin cambios de contrato.
-- Tests: 24 unitarios en `external-api` (autorización completa y hash de firmantes) y 3 instrumentados en `app/src/androidTest` que ejercitan el servicio Binder real.
+- `dev.nacho.wibox.externalapi.WiboxExternalApiService` service in the `app` module, which returns an instance of `IWiboxExternalService.Stub` per connection. Registered in `app/src/main/AndroidManifest.xml` as an `exported="true"` service with the `dev.nacho.wibox.externalapi.BIND` action and without an `android:permission` attribute: authorization is decided per call, not by a declarative permission.
+- Pure authorization engine in the `external-api` module, package `dev.nacho.wibox.externalapi.server`: identity resolution, allowlist, revocation and pending request limits. It is Kotlin without Android, covered by unit tests.
+- Allowlist persistence in the app with `SharedPreferencesAuthorizationStore`, versioned schema (v1) and atomic write with `commit()`. It stores no secrets: uid, package, digest of the signer set, scopes, devices, generation, display name and state.
+- Service runtime (`ExternalApiRuntime`) with per-uid burst limits (`TokenBucket`), a per-app and global budget of one-shot operations, and a bounded action journal for deduplication, cancellation and result queries.
+- App-specific mappers from `core.cloud` to the Wire parcelables (`ExternalApiMappers`), with honest labelling: origin and `simulated=true` when the provider is demo.
+- Existing Kotlin SDK in `external-api/src/main/kotlin/.../sdk/` with no contract changes.
+- Tests: 24 unit tests in `external-api` (full authorization and signer hash) and 3 instrumented tests in `app/src/androidTest` that exercise the real Binder service.
 
-## Cómo autoriza el servicio
+## How the service authorizes
 
-En cada transacción Binder el servicio deriva la identidad del llamante, nunca la acepta del cliente:
+On every Binder transaction the service derives the caller identity, it never accepts it from the client:
 
-1. Obtiene el uid real con `Binder.getCallingUid()` dentro de la transacción. Las corrutinas en segundo plano reciben esa identidad capturada, no vuelven a preguntar.
-2. Rechaza uids por debajo de `FIRST_APPLICATION_UID` y el rango de uids aislados (99000..99999).
-3. Resuelve los packages del uid con `PackageManager.getPackagesForUid(uid)`. Más de un package termina en `SHARED_UID_UNSUPPORTED`.
-4. El package reclamado en `ClientHello` se contrasta con el derivado del uid. Desajuste termina en `PACKAGE_UID_MISMATCH`.
-5. Lee los certificados firmantes actuales con `PackageInfo.signingInfo` y `GET_SIGNING_CERTIFICATES` (`apkContentsSigners`), calcula SHA-256 en hex minúsculo sin separadores de cada certificado, ordena el conjunto y calcula el digest final del conjunto ordenado. Dos conjuntos de firmantes distintos producen siempre dos digests distintos.
-6. Busca una entrada activa con la tupla exacta (uid, package, digest de firmantes) en la allowlist. La ausencia de entrada deniega: denegación por defecto.
-7. Comprueba el scope pedido y, si la operación va ligada a un dispositivo, que ese dispositivo esté en la lista concedida. Una lista vacía significa acceso a cero dispositivos.
+1. It gets the real uid with `Binder.getCallingUid()` inside the transaction. Background coroutines receive that captured identity, they do not ask again.
+2. It rejects uids below `FIRST_APPLICATION_UID` and the isolated uid range (99000..99999).
+3. It resolves the packages of the uid with `PackageManager.getPackagesForUid(uid)`. More than one package ends in `SHARED_UID_UNSUPPORTED`.
+4. The package claimed in `ClientHello` is checked against the one derived from the uid. A mismatch ends in `PACKAGE_UID_MISMATCH`.
+5. It reads the current signing certificates with `PackageInfo.signingInfo` and `GET_SIGNING_CERTIFICATES` (`apkContentsSigners`), computes SHA-256 in lowercase hex without separators for each certificate, sorts the set and computes the final digest of the sorted set. Two different signer sets always produce two different digests.
+6. It looks for an active entry with the exact tuple (uid, package, signer digest) in the allowlist. The absence of an entry denies: denial by default.
+7. It checks the requested scope and, if the operation is bound to a device, that the device is in the granted list. An empty list means access to zero devices.
 
-La primera operación válida de cada conexión es `handshake`; el resto devuelve `HANDSHAKE_REQUIRED`. El handshake negocia `minor = min(cliente, servidor)` con major 1 y devuelve el estado de autorización actual sin conceder nada. Por debajo de Android 9 el handshake devuelve `UNSUPPORTED`, porque `SigningInfo` no existe antes de la API 28.
+The first valid operation of each connection is `handshake`, the rest return `HANDSHAKE_REQUIRED`. The handshake negotiates `minor = min(client, server)` with major 1 and returns the current authorization state without granting anything. Below Android 9 the handshake returns `UNSUPPORTED`, because `SigningInfo` does not exist before API 28.
 
-## Cómo se revoca
+## How it is revoked
 
-La revocación, la aprobación y el deniego son decisiones del usuario desde Ajustes de Wibox y se materializan en el motor: `approve`, `deny` y `revoke` sobre la tupla (uid, package, digest). `revoke` incrementa la generación del grant y marca el estado `REVOKED`. Como el servicio revalida la tupla en cada llamada, la revocación aplica a la siguiente llamada sin necesidad de notificaciones. `unsubscribeEvents` y la cancelación de operaciones propias quedan disponibles para limpieza. El historial de firmas no autoriza por sí solo: un cambio de firma produce `SIGNATURE_CHANGED` y exige reaprobación, igual que un cambio de uid produce `UID_CHANGED`.
+Revocation, approval and denial are user decisions from Wibox Settings and are materialized in the engine: `approve`, `deny` and `revoke` over the tuple (uid, package, digest). `revoke` increments the grant generation and marks the `REVOKED` state. Since the service revalidates the tuple on every call, revocation applies to the next call with no need for notifications. `unsubscribeEvents` and the cancellation of own operations remain available for cleanup. The signature history does not authorize by itself: a signature change produces `SIGNATURE_CHANGED` and requires reapproval, just as a uid change produces `UID_CHANGED`.
 
-Una app no autorizada puede llamar a `requestAuthorization` y queda `PENDING` con sus scopes y dispositivos solicitados. Ningún camino de la API concede acceso por sí mismo: la aprobación solo existe en el motor, invocada desde Ajustes. Los límites de solicitudes pendientes son 3 por package y 50 globales; el exceso responde `RATE_LIMITED`.
+An unauthorized app can call `requestAuthorization` and stays `PENDING` with its requested scopes and devices. No path of the API grants access by itself: approval only exists in the engine, invoked from Settings. The pending request limits are 3 per package and 50 global, excess responds `RATE_LIMITED`.
 
-## Límites reales aplicados
+## Real limits applied
 
-- Request 32 KiB y response 64 KiB, aplicados por el presupuesto de `BoundedParcelable`. El batch de eventos queda acotado a 10 eventos y 48 KiB por su propio parcelable.
-- Páginas: dispositivos y capabilities limitados a 20 elementos por petición (el parcelable `PageRequest` limita el `limit` a 20 y las páginas de respuesta validan su máximo). Batch de sombras de 20 consultas. IDs de dispositivo de 128 bytes UTF-8. Sin truncado silencioso.
-- Operaciones one-shot pendientes: 20 por app y 100 globales; el exceso responde `BUSY`.
-- Suscripciones de eventos: 4 por app, comprobadas en el registro. Hoy es inalcanzable porque realtime no está disponible, pero el camino existe para providers futuros.
-- Lecturas: 30 por minuto con ráfaga de 10 por uid. Acciones: 6 por minuto con ráfaga de 2 por uid. El exceso responde `RATE_LIMITED` con `retryAfterMs` acotado.
-- Request ID de acción duplicado por la misma identidad devuelve la operación pendiente o el resultado registrado, nunca re-ejecuta. Reutilización con otro payload devuelve `CONFLICT`. Los resultados de acciones quedan en un journal acotado a 256 entradas con limpieza de las terminadas.
+- Request 32 KiB and response 64 KiB, applied by the `BoundedParcelable` budget. The event batch is bounded to 10 events and 48 KiB by its own parcelable.
+- Pages: devices and capabilities limited to 20 items per request (the `PageRequest` parcelable limits `limit` to 20 and the response pages validate their maximum). Shadow batch of 20 queries. Device IDs of 128 UTF-8 bytes. No silent truncation.
+- Pending one-shot operations: 20 per app and 100 global, excess responds `BUSY`.
+- Event subscriptions: 4 per app, checked at registration. Today it is unreachable because realtime is not available, but the path exists for future providers.
+- Reads: 30 per minute with a burst of 10 per uid. Actions: 6 per minute with a burst of 2 per uid. Excess responds `RATE_LIMITED` with a bounded `retryAfterMs`.
+- A duplicate action request ID from the same identity returns the pending operation or the recorded result, it never re-executes. Reuse with another payload returns `CONFLICT`. Action results remain in a journal bounded to 256 entries with cleanup of the finished ones.
 
-## Qué queda Unsupported y por qué
+## What remains Unsupported and why
 
-- `subscribeEvents`: devuelve `UNSUPPORTED` (o `CAPABILITY_UNKNOWN` si el provider no tiene fila en el catálogo). Ningún provider del repo ofrece hoy un stream realtime con cursores exactos, y devolver un stream conectado falso rompería la honestidad de gaps y reanudación. El catálogo marca `events.realtime` como `unsupported`.
-- `checkAppUpgrade` en demo: el repositorio lanza `ProviderError.Unsupported` porque no existe configuración real de upgrade en la demo local. Se mapea a `UNSUPPORTED` sin inventar versiones.
-- `listDevices` y `getDevice` en un provider stock: delegan en el puerto de devices, cuyo comportamiento por defecto lanza `ProviderError.Unsupported` que se mapea a `UNSUPPORTED`. En demo funcionan con etiquetado `simulated=true` y origen `DEMO`, tal como permite el contrato (`unsupported_now` con simulación demo permitida).
-- Media, P2P, llamadas por Binder, login, pairing y configuración: no expuestos en v1, sin método externo.
+- `subscribeEvents`: returns `UNSUPPORTED` (or `CAPABILITY_UNKNOWN` if the provider has no row in the catalog). No provider in the repo offers a realtime stream with exact cursors today, and returning a fake connected stream would break the honesty of gaps and resumption. The catalog marks `events.realtime` as `unsupported`.
+- `checkAppUpgrade` in demo: the repository throws `ProviderError.Unsupported` because there is no real upgrade configuration in the local demo. It is mapped to `UNSUPPORTED` without inventing versions.
+- `listDevices` and `getDevice` in a stock provider: they delegate to the devices port, whose default behaviour throws `ProviderError.Unsupported` which is mapped to `UNSUPPORTED`. In demo they work with `simulated=true` labelling and `DEMO` origin, as the contract allows (`unsupported_now` with demo simulation allowed).
+- Media, P2P, calls over Binder, login, pairing and configuration: not exposed in v1, no external method.
 
-Las sombras (`getDeviceShadow` y `getDeviceShadows`) delegan en el puerto de devices. En demo devuelven el estado local etiquetado como simulado. Los campos desconocidos se describen con nombre y tipo observado, nunca con su valor.
+Shadows (`getDeviceShadow` and `getDeviceShadows`) delegate to the devices port. In demo they return the local state labelled as simulated. Unknown fields are described by name and observed type, never by their value.
 
-## Cómo probarlo
+## How to test it
 
-Comandos de verificación, todos ejecutados contra el emulador `emulator-5558` cuando aplica:
+Verification commands, all run against the `emulator-5558` emulator when applicable:
 
 ```bash
-# Verificador runtime (G1)
+# Runtime verifier (G1)
 python3 analysis/external-api-runtime/verify_external_api_runtime.py
 
-# Tests unitarios, lint y build (G2)
+# Unit tests, lint and build (G2)
 ./gradlew :external-api:testDebugUnitTest :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
 
-# Tests instrumentados, incluida la denegación por defecto (G3)
+# Instrumented tests, including denial by default (G3)
 ANDROID_SERIAL=emulator-5558 ./gradlew :app:connectedDebugAndroidTest
 ```
 
-El test instrumentado `ExternalApiDenyByDefaultTest` se vincula al servicio con la firma de la propia app y sin entrada en la allowlist, y comprueba que handshake funciona sin grant, que `requestAuthorization` queda `PENDING` sin acceso, que `getDevice`, `getDeviceShadow` y `performAction` devuelven `NOT_AUTHORIZED`, y que toda llamada sin handshake devuelve `HANDSHAKE_REQUIRED`.
+The `ExternalApiDenyByDefaultTest` instrumented test binds to the service with the app's own signature and no allowlist entry, and checks that handshake works without a grant, that `requestAuthorization` stays `PENDING` without access, that `getDevice`, `getDeviceShadow` and `performAction` return `NOT_AUTHORIZED`, and that every call without handshake returns `HANDSHAKE_REQUIRED`.
 
-Para una integración externa real: la app consumidora se vincula al componente explícito `dev.nacho.wibox.externalapi.WiboxExternalApiService`, hace handshake, llama a `requestAuthorization` y espera la aprobación en Ajustes de Wibox. La aprobación programática del motor (`approve`/`revoke`) todavía no tiene pantalla propia: es la pieza E7 del plan de implementación del diseño.
+For a real external integration: the consuming app binds to the explicit component `dev.nacho.wibox.externalapi.WiboxExternalApiService`, performs the handshake, calls `requestAuthorization` and waits for approval in Wibox Settings. Programmatic approval from the engine (`approve`/`revoke`) does not have its own screen yet: it is piece E7 of the design implementation plan.
 
-## Desviaciones del diseño original
+## Deviations from the original design
 
-- La app declara `tools:overrideLibrary="dev.nacho.wibox.externalapi"` para mantener su `minSdk 26` junto a la librería con `minSdk 28`. El diseño exige API 28 para `SigningInfo`; el servicio lo cubre devolviendo `UNSUPPORTED` en el handshake por debajo de Android 9.
-- `app/build.gradle.kts` añade `implementation(project(":external-api"))`: el servicio necesita las clases Stub del contrato AIDL y los tipos Wire del módulo.
-- El motor de autorización vive en `external-api/src/main/kotlin/.../server/` en lugar de un módulo futuro `core:external-auth`: mantiene la pieza testeable sin Android y sin crear un módulo nuevo en esta hoja.
+- The app declares `tools:overrideLibrary="dev.nacho.wibox.externalapi"` to keep its `minSdk 26` alongside the library with `minSdk 28`. The design requires API 28 for `SigningInfo`, the service covers it by returning `UNSUPPORTED` in the handshake below Android 9.
+- `app/build.gradle.kts` adds `implementation(project(":external-api"))`: the service needs the Stub classes of the AIDL contract and the Wire types of the module.
+- The authorization engine lives in `external-api/src/main/kotlin/.../server/` instead of a future `core:external-auth` module: it keeps the piece testable without Android and without creating a new module in this sheet.
 
-## Estado
+## Status
 
-Servicio, allowlist revocable, denegación por defecto, límites, journal de acciones y pruebas con dos firmas: implementados y verificados con evidencia medida. La UI de Ajustes para aprobar solicitudes y la suite con dos apps de prueba con firmas distintas reales quedan para las fases E7 y E8 del diseño.
+Service, revocable allowlist, denial by default, limits, action journal and tests with two signatures: implemented and verified with measured evidence. The Settings UI to approve requests and the suite with two test apps with different real signatures are left for phases E7 and E8 of the design.

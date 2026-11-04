@@ -1,12 +1,12 @@
-# Evidencia de código estático
+# Static code evidence
 
-Los extractos se han copiado sin alterar de la salida JADX 1.5.6. Cada bloque incluye la ruta y el rango original. No son pruebas de ejecución.
+The excerpts have been copied unchanged from the JADX 1.5.6 output. Each block includes the original path and range. They are not execution tests.
 
 ## E001 app_config
 
-Servidor, OEM, IDs y capacidades de Wibox.
+Server, OEM, IDs and Wibox capabilities.
 
-Origen: `com/quvii/ubell/publico/common/AppConfig.java:13-40`
+Source: `com/quvii/ubell/publico/common/AppConfig.java:13-40`
 
 ```java
     public static final int APP_DA_DEFAULT_CHANNELS = 1;
@@ -41,9 +41,9 @@ Origen: `com/quvii/ubell/publico/common/AppConfig.java:13-40`
 
 ## E002 app_release_debug
 
-Flags HTTP/debug y arranque de base de datos, push y actualizador.
+HTTP/debug flags and startup of database, push and updater.
 
-Origen: `com/quvii/ubell/publico/App.java:185-220`
+Source: `com/quvii/ubell/publico/App.java:185-220`
 
 ```java
     @Override // com.quvii.qvlib.base.QvBaseApp, android.app.Application
@@ -86,9 +86,9 @@ Origen: `com/quvii/ubell/publico/App.java:185-220`
 
 ## E003 app_log_account
 
-Contenido de log con cuenta y servidor.
+Log content with account and server.
 
-Origen: `com/quvii/ubell/publico/App.java:148-151`
+Source: `com/quvii/ubell/publico/App.java:148-151`
 
 ```java
     /* JADX INFO: Access modifiers changed from: private */
@@ -99,9 +99,9 @@ Origen: `com/quvii/ubell/publico/App.java:148-151`
 
 ## E004 sdk_user
 
-Inicialización de usuario y migración de credenciales.
+User initialization and credential migration.
 
-Origen: `com/quvii/ubell/publico/sdk/SdkManager.java:90-111`
+Source: `com/quvii/ubell/publico/sdk/SdkManager.java:90-111`
 
 ```java
     private User initUser() {
@@ -130,9 +130,9 @@ Origen: `com/quvii/ubell/publico/sdk/SdkManager.java:90-111`
 
 ## E005 sdk_init
 
-Inicialización P2P, rutas, AES y servicio principal.
+P2P initialization, paths, AES and main service.
 
-Origen: `com/quvii/ubell/publico/sdk/SdkManager.java:283-318`
+Source: `com/quvii/ubell/publico/sdk/SdkManager.java:283-318`
 
 ```java
         QvCore.getInstance().setAesKey(QvEncryptKeyStoreUtil.get());
@@ -175,9 +175,9 @@ Origen: `com/quvii/ubell/publico/sdk/SdkManager.java:283-318`
 
 ## E006 loading_timeout
 
-Temporizador de arranque.
+Startup timer.
 
-Origen: `com/quvii/ubell/main/presenter/LoadingPresenter.java:29-51`
+Source: `com/quvii/ubell/main/presenter/LoadingPresenter.java:29-51`
 
 ```java
     private void setTimeOut() {
@@ -207,9 +207,9 @@ Origen: `com/quvii/ubell/main/presenter/LoadingPresenter.java:29-51`
 
 ## E007 qr_pairing
 
-Interpretación del QR de alta.
+Interpretation of the pairing QR code.
 
-Origen: `com/quvii/ubell/publico/sdk/DeviceHelper.java:187-210`
+Source: `com/quvii/ubell/publico/sdk/DeviceHelper.java:187-210`
 
 ```java
     public static void dealWithQrInfo(String str, QrInfoCallBack qrInfoCallBack) {
@@ -240,9 +240,9 @@ Origen: `com/quvii/ubell/publico/sdk/DeviceHelper.java:187-210`
 
 ## E008 share_parse
 
-Campos del enlace de invitación y filtro OEM.
+Invitation link fields and OEM filter.
 
-Origen: `com/quvii/ubell/publico/sdk/DeviceHelper.java:248-287`
+Source: `com/quvii/ubell/publico/sdk/DeviceHelper.java:248-287`
 
 ```java
     public static DeviceShareInfo getShareInfo(String str) {
@@ -289,9 +289,9 @@ Origen: `com/quvii/ubell/publico/sdk/DeviceHelper.java:248-287`
 
 ## E009 bind_retry
 
-Condición de reintento de vinculación.
+Binding retry condition.
 
-Origen: `com/quvii/ubell/publico/sdk/DeviceHelper.java:339-355`
+Source: `com/quvii/ubell/publico/sdk/DeviceHelper.java:339-355`
 
 ```java
     /* JADX INFO: Access modifiers changed from: private */
@@ -315,9 +315,9 @@ Origen: `com/quvii/ubell/publico/sdk/DeviceHelper.java:339-355`
 
 ## E010 bind_flow
 
-Registro anónimo, aceptación de invitación y timeouts.
+Anonymous registration, invitation acceptance and timeouts.
 
-Origen: `com/quvii/ubell/publico/sdk/DeviceHelper.java:685-785`
+Source: `com/quvii/ubell/publico/sdk/DeviceHelper.java:685-785`
 
 ```java
     private boolean saveDevice(QvDevice qvDevice, DeviceAddInfo deviceAddInfo) {
@@ -425,9 +425,9 @@ Origen: `com/quvii/ubell/publico/sdk/DeviceHelper.java:685-785`
 
 ## E011 preview_urls
 
-URLs quii de vídeo y audio con credenciales.
+Video and audio quii URLs with credentials.
 
-Origen: `com/quvii/ubell/publico/sdk/DeviceHelper.java:846-915`
+Source: `com/quvii/ubell/publico/sdk/DeviceHelper.java:846-915`
 
 ```java
     public String generatePreviewUrl(Device device) {
@@ -504,9 +504,9 @@ Origen: `com/quvii/ubell/publico/sdk/DeviceHelper.java:846-915`
 
 ## E012 qr_format
 
-Formato de cuatro campos del QR.
+Four-field QR format.
 
-Origen: `com/quvii/ubell/publico/sdk/DeviceHelper.java:936-945`
+Source: `com/quvii/ubell/publico/sdk/DeviceHelper.java:936-945`
 
 ```java
     public DeviceQrCodeInfo getDeviceQrCodeInfo(String str) {
@@ -523,9 +523,9 @@ Origen: `com/quvii/ubell/publico/sdk/DeviceHelper.java:936-945`
 
 ## E013 bind_save
 
-Persistencia del dispositivo y valores iniciales.
+Device persistence and initial values.
 
-Origen: `com/quvii/ubell/publico/sdk/DeviceHelper.java:1223-1267`
+Source: `com/quvii/ubell/publico/sdk/DeviceHelper.java:1223-1267`
 
 ```java
     private boolean saveDevice(QvDevice qvDevice, String str, String str2, String str3) {
@@ -577,9 +577,9 @@ Origen: `com/quvii/ubell/publico/sdk/DeviceHelper.java:1223-1267`
 
 ## E014 wifi_defaults
 
-Fallback AP local y credenciales por defecto.
+Local AP fallback and default credentials.
 
-Origen: `com/quvii/ubell/device/add/model/DAWifiSetModel.java:51-100`
+Source: `com/quvii/ubell/device/add/model/DAWifiSetModel.java:51-100`
 
 ```java
         public void onNext(@NonNull List<QvDevice> list) {
@@ -636,9 +636,9 @@ Origen: `com/quvii/ubell/device/add/model/DAWifiSetModel.java:51-100`
 
 ## E015 wifi_payload
 
-SSID y contraseña codificados en Base64.
+SSID and password encoded in Base64.
 
-Origen: `com/quvii/ubell/device/add/model/DAWifiSetModel.java:119-139`
+Source: `com/quvii/ubell/device/add/model/DAWifiSetModel.java:119-139`
 
 ```java
     public void sendDate(QvDevice qvDevice, DeviceAddInfo deviceAddInfo, final LoadListener<Throwable> loadListener) {
@@ -666,9 +666,9 @@ Origen: `com/quvii/ubell/device/add/model/DAWifiSetModel.java:119-139`
 
 ## E016 voice_payload
 
-Frecuencias y emisión acústica del alta.
+Frequencies and acoustic emission of pairing.
 
-Origen: `com/quvii/ubell/device/add/model/DAVoiceSetModel.java:48-81`
+Source: `com/quvii/ubell/device/add/model/DAVoiceSetModel.java:48-81`
 
 ```java
     private void init() {
@@ -709,9 +709,9 @@ Origen: `com/quvii/ubell/device/add/model/DAVoiceSetModel.java:48-81`
 
 ## E017 wifi_timeout
 
-Cuenta atrás y condiciones de pairing.
+Countdown and pairing conditions.
 
-Origen: `com/quvii/ubell/device/add/presenter/DAWifiSetPresenter.java:156-200`
+Source: `com/quvii/ubell/device/add/presenter/DAWifiSetPresenter.java:156-200`
 
 ```java
     /* JADX INFO: Access modifiers changed from: private */
@@ -763,9 +763,9 @@ Origen: `com/quvii/ubell/device/add/presenter/DAWifiSetPresenter.java:156-200`
 
 ## E018 wifi_retry
 
-Polling de estado y recuperación de red.
+Status polling and network recovery.
 
-Origen: `com/quvii/ubell/device/add/presenter/DAWifiSetPresenter.java:243-294`
+Source: `com/quvii/ubell/device/add/presenter/DAWifiSetPresenter.java:243-294`
 
 ```java
     /* JADX INFO: Access modifiers changed from: private */
@@ -824,9 +824,9 @@ Origen: `com/quvii/ubell/device/add/presenter/DAWifiSetPresenter.java:243-294`
 
 ## E019 device_actions
 
-Desbloqueo y F1 con biometría o contraseña.
+Unlock and F1 with biometrics or password.
 
-Origen: `com/quvii/ubell/main/presenter/MainDeviceListPresenter.java:190-258`
+Source: `com/quvii/ubell/main/presenter/MainDeviceListPresenter.java:190-258`
 
 ```java
     @Override // com.quvii.ubell.main.contract.MainDeviceListContract.Presenter
@@ -902,9 +902,9 @@ Origen: `com/quvii/ubell/main/presenter/MainDeviceListPresenter.java:190-258`
 
 ## E020 device_list
 
-Estados vacío, lista y refresco de dispositivos.
+Empty, list and refresh device states.
 
-Origen: `com/quvii/ubell/main/presenter/MainDeviceListPresenter.java:283-333`
+Source: `com/quvii/ubell/main/presenter/MainDeviceListPresenter.java:283-333`
 
 ```java
     @Override // com.quvii.ubell.main.contract.MainDeviceListContract.Presenter
@@ -962,9 +962,9 @@ Origen: `com/quvii/ubell/main/presenter/MainDeviceListPresenter.java:283-333`
 
 ## E021 preview_start
 
-Apertura P2P y reproducción con clave de datos.
+P2P opening and playback with data key.
 
-Origen: `com/quvii/ubell/video/model/PreviewModel.java:126-182`
+Source: `com/quvii/ubell/video/model/PreviewModel.java:126-182`
 
 ```java
     public /* synthetic */ void lambda$startPlay$3(PlayerItem playerItem, int i2) {
@@ -1028,9 +1028,9 @@ Origen: `com/quvii/ubell/video/model/PreviewModel.java:126-182`
 
 ## E022 preview_password
 
-Renovación de contraseña dinámica expirada.
+Renewal of an expired dynamic password.
 
-Origen: `com/quvii/ubell/video/model/PreviewModel.java:241-272`
+Source: `com/quvii/ubell/video/model/PreviewModel.java:241-272`
 
 ```java
     public int play(final int i2, final PlayerItem playerItem) {
@@ -1069,9 +1069,9 @@ Origen: `com/quvii/ubell/video/model/PreviewModel.java:241-272`
 
 ## E023 talk_audio
 
-Escucha y habla sobre AudioPlayerManager.
+Listen and talk over AudioPlayerManager.
 
-Origen: `com/quvii/ubell/video/model/PreviewModel.java:322-379`
+Source: `com/quvii/ubell/video/model/PreviewModel.java:322-379`
 
 ```java
     public void talkSwitch(boolean z2, Device device, PreviewContract.OnControlListener onControlListener) {
@@ -1136,9 +1136,9 @@ Origen: `com/quvii/ubell/video/model/PreviewModel.java:322-379`
 
 ## E024 preview_timeout
 
-Temporizador de autoencendido.
+Auto power-on timer.
 
-Origen: `com/quvii/ubell/video/presenter/PreviewPresenter.java:513-550`
+Source: `com/quvii/ubell/video/presenter/PreviewPresenter.java:513-550`
 
 ```java
     private void previewTimeout(final int i2, boolean z2) {
@@ -1183,9 +1183,9 @@ Origen: `com/quvii/ubell/video/presenter/PreviewPresenter.java:513-550`
 
 ## E025 unlock_timeout
 
-Envío y timeout de apertura.
+Sending and opening timeout.
 
-Origen: `com/quvii/ubell/video/presenter/PreviewPresenter.java:673-696`
+Source: `com/quvii/ubell/video/presenter/PreviewPresenter.java:673-696`
 
 ```java
     /* JADX INFO: Access modifiers changed from: private */
@@ -1216,9 +1216,9 @@ Origen: `com/quvii/ubell/video/presenter/PreviewPresenter.java:673-696`
 
 ## E026 preview_retry
 
-Reanudación de previews.
+Preview resumption.
 
-Origen: `com/quvii/ubell/video/presenter/PreviewPresenter.java:948-965`
+Source: `com/quvii/ubell/video/presenter/PreviewPresenter.java:948-965`
 
 ```java
     @Override // com.quvii.ubell.video.contract.PreviewContract.Presenter
@@ -1243,9 +1243,9 @@ Origen: `com/quvii/ubell/video/presenter/PreviewPresenter.java:948-965`
 
 ## E027 http_logging
 
-Logging HTTP BODY en release.
+HTTP BODY logging in release.
 
-Origen: `com/quvii/qvweb/publico/utils/OkHttpUtil.java:67-90`
+Source: `com/quvii/qvweb/publico/utils/OkHttpUtil.java:67-90`
 
 ```java
     static {
@@ -1276,9 +1276,9 @@ Origen: `com/quvii/qvweb/publico/utils/OkHttpUtil.java:67-90`
 
 ## E028 http_bks
 
-Carga de almacenes BKS y contraseñas embebidas.
+Loading of BKS stores and embedded passwords.
 
-Origen: `com/quvii/qvweb/publico/utils/OkHttpUtil.java:367-389`
+Source: `com/quvii/qvweb/publico/utils/OkHttpUtil.java:367-389`
 
 ```java
     private static void initSSL() {
@@ -1308,9 +1308,9 @@ Origen: `com/quvii/qvweb/publico/utils/OkHttpUtil.java:367-389`
 
 ## E029 http_token
 
-Header token para APIs OAuth.
+Token header for OAuth APIs.
 
-Origen: `com/quvii/qvweb/publico/utils/OkHttpUtil.java:406-414`
+Source: `com/quvii/qvweb/publico/utils/OkHttpUtil.java:406-414`
 
 ```java
     /* JADX INFO: Access modifiers changed from: private */
@@ -1326,9 +1326,9 @@ Origen: `com/quvii/qvweb/publico/utils/OkHttpUtil.java:406-414`
 
 ## E030 http_trust_all
 
-HostnameVerifier permisivo y TrustManager vacío.
+Permissive HostnameVerifier and empty TrustManager.
 
-Origen: `com/quvii/qvweb/publico/utils/OkHttpUtil.java:562-588`
+Source: `com/quvii/qvweb/publico/utils/OkHttpUtil.java:562-588`
 
 ```java
     public static OkHttpClient.Builder createBuilder(int i2) {
@@ -1362,9 +1362,9 @@ Origen: `com/quvii/qvweb/publico/utils/OkHttpUtil.java:562-588`
 
 ## E031 digest_auth
 
-Digest MD5 de dispositivo.
+Device Digest MD5.
 
-Origen: `com/quvii/qvweb/publico/intercept/DeviceAuthHeaderInterceptor.java:24-44`
+Source: `com/quvii/qvweb/publico/intercept/DeviceAuthHeaderInterceptor.java:24-44`
 
 ```java
     public String digestAuthForUsername(QvDevice qvDevice, Map<String, String> map) {
@@ -1392,9 +1392,9 @@ Origen: `com/quvii/qvweb/publico/intercept/DeviceAuthHeaderInterceptor.java:24-4
 
 ## E032 digest_retry
 
-Respuesta 401 y segundo intento Authorization.
+401 response and second Authorization attempt.
 
-Origen: `com/quvii/qvweb/publico/intercept/DeviceAuthHeaderInterceptor.java:47-93`
+Source: `com/quvii/qvweb/publico/intercept/DeviceAuthHeaderInterceptor.java:47-93`
 
 ```java
     @Override // okhttp3.Interceptor
@@ -1448,9 +1448,9 @@ Origen: `com/quvii/qvweb/publico/intercept/DeviceAuthHeaderInterceptor.java:47-9
 
 ## E033 oauth_grant
 
-JWT, password grant y almacenamiento de tokens.
+JWT, password grant and token storage.
 
-Origen: `com/quvii/qvweb/oauth/QvOAuthManager.java:74-113`
+Source: `com/quvii/qvweb/oauth/QvOAuthManager.java:74-113`
 
 ```java
     private long getTimeout(String str) {
@@ -1497,9 +1497,9 @@ Origen: `com/quvii/qvweb/oauth/QvOAuthManager.java:74-113`
 
 ## E034 oauth_refresh
 
-Caché, refresh y endpoint descubierto.
+Cache, refresh and discovered endpoint.
 
-Origen: `com/quvii/qvweb/oauth/QvOAuthManager.java:151-219`
+Source: `com/quvii/qvweb/oauth/QvOAuthManager.java:151-219`
 
 ```java
     public /* synthetic */ void lambda$startGetAccessToken$1(String str, String str2, String str3, ObservableEmitter observableEmitter) throws Exception {
@@ -1575,9 +1575,9 @@ Origen: `com/quvii/qvweb/oauth/QvOAuthManager.java:151-219`
 
 ## E035 oauth_retry
 
-Reintento único y tratamiento 403.
+Single retry and 403 handling.
 
-Origen: `com/quvii/qvweb/oauth/QvOAuthManager.java:290-320`
+Source: `com/quvii/qvweb/oauth/QvOAuthManager.java:290-320`
 
 ```java
     public Observable<String> getAccessToken(final String str, String str2, String str3) {
@@ -1615,9 +1615,9 @@ Origen: `com/quvii/qvweb/oauth/QvOAuthManager.java:290-320`
 
 ## E036 oauth_storage
 
-Tokens cifrados en SharedPreferences oauth.
+Tokens encrypted in the oauth SharedPreferences.
 
-Origen: `com/quvii/qvweb/oauth/QvOAuthSpUtil.java:23-47`
+Source: `com/quvii/qvweb/oauth/QvOAuthSpUtil.java:23-47`
 
 ```java
     public void clearAccountInfo(String str) {
@@ -1649,9 +1649,9 @@ Origen: `com/quvii/qvweb/oauth/QvOAuthSpUtil.java:23-47`
 
 ## E037 mqtt_connect
 
-Cliente MQTT, SSL, topics y QoS.
+MQTT client, SSL, topics and QoS.
 
-Origen: `com/quvii/shadow/mqtt/QvMqttManager.java:170-245`
+Source: `com/quvii/shadow/mqtt/QvMqttManager.java:170-245`
 
 ```java
     private final void initMqtt(String str) {
@@ -1734,9 +1734,9 @@ Origen: `com/quvii/shadow/mqtt/QvMqttManager.java:170-245`
 
 ## E038 mqtt_retry
 
-OAuth como contraseña y reconexión.
+OAuth as password and reconnection.
 
-Origen: `com/quvii/shadow/mqtt/QvMqttManager.java:248-297`
+Source: `com/quvii/shadow/mqtt/QvMqttManager.java:248-297`
 
 ```java
     public final void realConnect(int i2) {
@@ -1793,9 +1793,9 @@ Origen: `com/quvii/shadow/mqtt/QvMqttManager.java:248-297`
 
 ## E039 mqtt_backoff
 
-Espera incremental acotada.
+Bounded incremental wait.
 
-Origen: `com/quvii/shadow/mqtt/QvMqttManager.java:329-343`
+Source: `com/quvii/shadow/mqtt/QvMqttManager.java:329-343`
 
 ```java
     /* JADX INFO: Access modifiers changed from: private */
@@ -1817,9 +1817,9 @@ Origen: `com/quvii/shadow/mqtt/QvMqttManager.java:329-343`
 
 ## E040 mqtt_scheme
 
-Derivación mqtts ssl o mqtt tcp.
+mqtts ssl or mqtt tcp derivation.
 
-Origen: `com/quvii/shadow/mqtt/QvMqttManager.java:416-438`
+Source: `com/quvii/shadow/mqtt/QvMqttManager.java:416-438`
 
 ```java
     public final void initMqttClient() {
@@ -1849,9 +1849,9 @@ Origen: `com/quvii/shadow/mqtt/QvMqttManager.java:416-438`
 
 ## E041 shadow_api
 
-Rutas HTTP y topics shadow.
+HTTP routes and shadow topics.
 
-Origen: `com/quvii/shadow/QvShadowConfig.java:4-18`
+Source: `com/quvii/shadow/QvShadowConfig.java:4-18`
 
 ```java
 public final class QvShadowConfig {
@@ -1873,9 +1873,9 @@ public final class QvShadowConfig {
 
 ## E042 p2p_native
 
-Creación del cliente P2P nativo.
+Creation of the native P2P client.
 
-Origen: `com/quvii/p2pv2/QvP2PClientV2.java:249-256`
+Source: `com/quvii/p2pv2/QvP2PClientV2.java:249-256`
 
 ```java
     @Override // com.quvii.p2p.QvP2PManager
@@ -1890,9 +1890,9 @@ Origen: `com/quvii/p2pv2/QvP2PClientV2.java:249-256`
 
 ## E043 prefs_crypto
 
-Preferencias cifradas con AES.
+Preferences encrypted with AES.
 
-Origen: `com/quvii/ubell/publico/util/SpUtil.java:61-91`
+Source: `com/quvii/ubell/publico/util/SpUtil.java:61-91`
 
 ```java
     private String getEncryptValue(String str) {
@@ -1930,9 +1930,9 @@ Origen: `com/quvii/ubell/publico/util/SpUtil.java:61-91`
 
 ## E044 prefs_passwords
 
-Credenciales y guardado de WiFi por defecto.
+WiFi credentials and saving by default.
 
-Origen: `com/quvii/ubell/publico/util/SpUtil.java:180-214`
+Source: `com/quvii/ubell/publico/util/SpUtil.java:180-214`
 
 ```java
     public String getPassword() {
@@ -1974,9 +1974,9 @@ Origen: `com/quvii/ubell/publico/util/SpUtil.java:180-214`
 
 ## E045 sqlcipher
 
-Clave SQLCipher y migración.
+SQLCipher key and migration.
 
-Origen: `com/quvii/ubell/publico/database/SQLCipherHelperImpl.java:15-36`
+Source: `com/quvii/ubell/publico/database/SQLCipherHelperImpl.java:15-36`
 
 ```java
     public SQLCipherHelperImpl(DatabaseDefinition databaseDefinition, DatabaseHelperListener databaseHelperListener) {
@@ -2005,9 +2005,9 @@ Origen: `com/quvii/ubell/publico/database/SQLCipherHelperImpl.java:15-36`
 
 ## E046 keystore
 
-Generación AES 128.
+AES 128 generation.
 
-Origen: `com/quvii/qvlib/util/QvEncryptKeyStoreUtil.java:240-251`
+Source: `com/quvii/qvlib/util/QvEncryptKeyStoreUtil.java:240-251`
 
 ```java
     private static byte[] createAesKey() {
@@ -2026,9 +2026,9 @@ Origen: `com/quvii/qvlib/util/QvEncryptKeyStoreUtil.java:240-251`
 
 ## E047 keystore_init
 
-Clave AES protegida con RSA AndroidKeyStore.
+AES key protected with RSA AndroidKeyStore.
 
-Origen: `com/quvii/qvlib/util/QvEncryptKeyStoreUtil.java:452-498`
+Source: `com/quvii/qvlib/util/QvEncryptKeyStoreUtil.java:452-498`
 
 ```java
     private static void initAesKey() {
@@ -2082,9 +2082,9 @@ Origen: `com/quvii/qvlib/util/QvEncryptKeyStoreUtil.java:452-498`
 
 ## E048 crypto_hashes
 
-SHA-256 de dispositivo y HMAC-SHA1.
+Device SHA-256 and HMAC-SHA1.
 
-Origen: `com/quvii/publico/utils/QvEncrypt.java:15-26`
+Source: `com/quvii/publico/utils/QvEncrypt.java:15-26`
 
 ```java
     private static final String MAC_NAME = "HmacSHA1";
@@ -2103,9 +2103,9 @@ Origen: `com/quvii/publico/utils/QvEncrypt.java:15-26`
 
 ## E049 update_tls
 
-TrustManager del actualizador.
+Updater TrustManager.
 
-Origen: `com/quvii/ubell/publico/version/AppVersionManager.java:101-126`
+Source: `com/quvii/ubell/publico/version/AppVersionManager.java:101-126`
 
 ```java
     private SSLSocketFactory getSSLSocketFactory() {
@@ -2138,9 +2138,9 @@ Origen: `com/quvii/ubell/publico/version/AppVersionManager.java:101-126`
 
 ## E050 update_endpoint
 
-Endpoint, headers y timeout de actualización.
+Update endpoint, headers and timeout.
 
-Origen: `com/quvii/ubell/publico/version/AppVersionManager.java:272-313`
+Source: `com/quvii/ubell/publico/version/AppVersionManager.java:272-313`
 
 ```java
     public void getVersion() {
@@ -2189,9 +2189,9 @@ Origen: `com/quvii/ubell/publico/version/AppVersionManager.java:272-313`
 
 ## E051 alarm_pagination
 
-Consulta de alarmas en páginas de 15.
+Alarm query in pages of 15.
 
-Origen: `com/quvii/ubell/main/model/MainMessageListModel.java:85-99`
+Source: `com/quvii/ubell/main/model/MainMessageListModel.java:85-99`
 
 ```java
     public /* synthetic */ ObservableSource lambda$getMessageList$0(String str, int i2, Integer num) throws Exception {
@@ -2213,9 +2213,9 @@ Origen: `com/quvii/ubell/main/model/MainMessageListModel.java:85-99`
 
 ## E052 alarm_errors
 
-Errores de consulta de eventos.
+Event query errors.
 
-Origen: `com/quvii/ubell/main/model/MainMessageListModel.java:206-253`
+Source: `com/quvii/ubell/main/model/MainMessageListModel.java:206-253`
 
 ```java
     public void getMessageList(final String str, final int i2, final MainMessageListContract.OnGetMessageListener onGetMessageListener) {
@@ -2270,9 +2270,9 @@ Origen: `com/quvii/ubell/main/model/MainMessageListModel.java:206-253`
 
 ## E053 main_tabs
 
-Navegación e iconos de cuatro pestañas.
+Navigation and icons of four tabs.
 
-Origen: `com/quvii/ubell/main/view/MainTabActivity.java:161-211`
+Source: `com/quvii/ubell/main/view/MainTabActivity.java:161-211`
 
 ```java
     private void switchFragment(BaseFragment baseFragment, int i2) {
@@ -2330,9 +2330,9 @@ Origen: `com/quvii/ubell/main/view/MainTabActivity.java:161-211`
 
 ## E054 device_empty
 
-Vista vacía, lista y acciones de dispositivo.
+Empty view, list and device actions.
 
-Origen: `com/quvii/ubell/main/view/MainDeviceListFragment.java:149-199`
+Source: `com/quvii/ubell/main/view/MainDeviceListFragment.java:149-199`
 
 ```java
     @Override // com.quvii.ubell.main.contract.MainDeviceListContract.View
@@ -2390,9 +2390,9 @@ Origen: `com/quvii/ubell/main/view/MainDeviceListFragment.java:149-199`
 
 ## E055 shared_config
 
-Restricciones de ajustes para dispositivo compartido.
+Settings restrictions for shared device.
 
-Origen: `com/quvii/ubell/device/manage/view/DMConfigActivity.java:223-235`
+Source: `com/quvii/ubell/device/manage/view/DMConfigActivity.java:223-235`
 
 ```java
         if (this.device.isShareDevice()) {
@@ -2412,9 +2412,9 @@ Origen: `com/quvii/ubell/device/manage/view/DMConfigActivity.java:223-235`
 
 ## E056 fcm_payload
 
-Payload FCM y token.
+FCM payload and token.
 
-Origen: `com/quvii/ubell/push/fcm/MyFirebaseMessagingService.java:13-55`
+Source: `com/quvii/ubell/push/fcm/MyFirebaseMessagingService.java:13-55`
 
 ```java
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
@@ -2464,9 +2464,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
 ## E057 push_flow
 
-Eventos push, FCM y registro.
+Push, FCM and registration events.
 
-Origen: `com/quvii/ubell/push/PushHelper.java:55-119`
+Source: `com/quvii/ubell/push/PushHelper.java:55-119`
 
 ```java
     public static void HandlePush(AlarmMessageInfo alarmMessageInfo, Context context) {
@@ -2538,9 +2538,9 @@ Origen: `com/quvii/ubell/push/PushHelper.java:55-119`
 
 ## E058 push_notifications
 
-Notificación de llamada y foreground service.
+Call notification and foreground service.
 
-Origen: `com/quvii/ubell/push/PushHelper.java:227-280`
+Source: `com/quvii/ubell/push/PushHelper.java:227-280`
 
 ```java
     public static void notifyCall(Context context, Intent intent, String str, String str2, String str3) {
@@ -2601,9 +2601,9 @@ Origen: `com/quvii/ubell/push/PushHelper.java:227-280`
 
 ## E059 push_timeout
 
-Auto-rechazo a 30 segundos.
+Auto-reject at 30 seconds.
 
-Origen: `com/quvii/ubell/push/presenter/PushCallPresenter.java:33-49`
+Source: `com/quvii/ubell/push/presenter/PushCallPresenter.java:33-49`
 
 ```java
     public PushCallPresenter(PushCallContract.Model model, PushCallContract.View view) {
@@ -2627,9 +2627,9 @@ Origen: `com/quvii/ubell/push/presenter/PushCallPresenter.java:33-49`
 
 ## E060 hidden_settings
 
-Ajustes visibles y opciones ocultas.
+Visible settings and hidden options.
 
-Origen: `com/quvii/ubell/main/view/MainMeFragment.java:127-183`
+Source: `com/quvii/ubell/main/view/MainMeFragment.java:127-183`
 
 ```java
     @Override // com.qing.mvpart.base.IActivity
@@ -2693,9 +2693,9 @@ Origen: `com/quvii/ubell/main/view/MainMeFragment.java:127-183`
 
 ## E061 about_debug
 
-Acceso oculto a TestInfo.
+Hidden access to TestInfo.
 
-Origen: `com/quvii/ubell/me/view/MeAboutActivity.java:45-56`
+Source: `com/quvii/ubell/me/view/MeAboutActivity.java:45-56`
 
 ```java
     /* JADX INFO: Access modifiers changed from: private */
@@ -2714,9 +2714,9 @@ Origen: `com/quvii/ubell/me/view/MeAboutActivity.java:45-56`
 
 ## E062 file_provider
 
-Compartición FileProvider.
+FileProvider sharing.
 
-Origen: `com/quvii/ubell/main/model/MainFileModel.java:111-151`
+Source: `com/quvii/ubell/main/model/MainFileModel.java:111-151`
 
 ```java
     public boolean shareFiles(Activity activity, List<String> list) {
@@ -2764,9 +2764,9 @@ Origen: `com/quvii/ubell/main/model/MainFileModel.java:111-151`
 
 ## E063 sdk_flags
 
-Flags CGI y login del SDK.
+CGI flags and SDK login.
 
-Origen: `com/quvii/publico/common/SDKConfig.java:4-58`
+Source: `com/quvii/publico/common/SDKConfig.java:4-58`
 
 ```java
 public class SDKConfig {
@@ -2828,9 +2828,9 @@ public class SDKConfig {
 
 ## E064 privacy_url
 
-Modo push y URL de privacidad HTTP.
+Push mode and HTTP privacy URL.
 
-Origen: `com/quvii/ubell/publico/common/AppConst.java:63-70`
+Source: `com/quvii/ubell/publico/common/AppConst.java:63-70`
 
 ```java
     public static final int PUSH_MODE_ALL = 10;
@@ -2845,9 +2845,9 @@ Origen: `com/quvii/ubell/publico/common/AppConst.java:63-70`
 
 ## E065 connectivity_probe
 
-Sondas externas de conectividad.
+External connectivity probes.
 
-Origen: `com/quvii/qvlib/util/QvNetUtil.java:225-240`
+Source: `com/quvii/qvlib/util/QvNetUtil.java:225-240`
 
 ```java
     public static void isGoogleNetAvailable(final CallBack callBack) {
@@ -2870,9 +2870,9 @@ Origen: `com/quvii/qvlib/util/QvNetUtil.java:225-240`
 
 ## E066 start_guide
 
-Recursos de guía declarada.
+Resources of the declared guide.
 
-Origen: `com/quvii/ubell/main/view/StartGuideActivity.java:18-26`
+Source: `com/quvii/ubell/main/view/StartGuideActivity.java:18-26`
 
 ```java
 public class StartGuideActivity extends BaseActivity<ActivityStartGuideBinding, IPresenter> {
@@ -2888,9 +2888,9 @@ public class StartGuideActivity extends BaseActivity<ActivityStartGuideBinding, 
 
 ## E067 test_advanced
 
-Puerta de opciones avanzadas.
+Advanced options gate.
 
-Origen: `com/quvii/ubell/test/view/TestInfoActivity.java:92-100`
+Source: `com/quvii/ubell/test/view/TestInfoActivity.java:92-100`
 
 ```java
     public /* synthetic */ void lambda$showAdvanced$11(MyDialog myDialog) {
@@ -2906,9 +2906,9 @@ Origen: `com/quvii/ubell/test/view/TestInfoActivity.java:92-100`
 
 ## E068 device_ports
 
-Mapeo de puertos P2P CGI y vídeo.
+P2P, CGI and video port mapping.
 
-Origen: `com/quvii/ubell/publico/common/DeviceList.java:47-95`
+Source: `com/quvii/ubell/publico/common/DeviceList.java:47-95`
 
 ```java
     public static void getDevCgiPort(Device device) {
@@ -2964,9 +2964,9 @@ Origen: `com/quvii/ubell/publico/common/DeviceList.java:47-95`
 
 ## E069 app_database
 
-Nombre y versión de base de datos.
+Database name and version.
 
-Origen: `com/quvii/ubell/publico/database/AppDatabase.java:14-17`
+Source: `com/quvii/ubell/publico/database/AppDatabase.java:14-17`
 
 ```java
 public class AppDatabase {
@@ -2977,9 +2977,9 @@ public class AppDatabase {
 
 ## E070 error_map
 
-Mapeo reducido de errores.
+Reduced error mapping.
 
-Origen: `com/quvii/ubell/publico/common/ErrorCode.java:6-16`
+Source: `com/quvii/ubell/publico/common/ErrorCode.java:6-16`
 
 ```java
 public class ErrorCode {
@@ -2997,9 +2997,9 @@ public class ErrorCode {
 
 ## E071 root_detection
 
-Función de detección root declarada, sin llamadas encontradas en com.quvii.ubell.
+Root detection function declared, with no calls found in com.quvii.ubell.
 
-Origen: `com/quvii/ubell/publico/util/Utils.java:245-255`
+Source: `com/quvii/ubell/publico/util/Utils.java:245-255`
 
 ```java
     public static boolean isRooted() {
@@ -3017,9 +3017,9 @@ Origen: `com/quvii/ubell/publico/util/Utils.java:245-255`
 
 ## E072 private_key_asset
 
-El asset es una clave privada PEM. Solo se registran tipo, tamaño y hash, no su contenido.
+The asset is a private PEM key. Only type, size and hash are recorded, not its content.
 
-Origen: `assets/client.txt; file y sha256sum`
+Source: `assets/client.txt; file and sha256sum`
 
 ```text
 assets/client.txt: PEM RSA private key, 1679 bytes
@@ -3028,9 +3028,9 @@ Evidencia adicional: analysis/apk/evidence/asset-hashes.txt y security-search.tx
 ```
 ## E073 shadow_gating
 
-La inicialización shadow está condicionada por un flag que es false por defecto. No se encontró override en el código propio.
+Shadow initialization is gated by a flag that is false by default. No override was found in the own code.
 
-Origen: `com/quvii/openapi/QvOpenSDK.java:2160-2163`
+Source: `com/quvii/openapi/QvOpenSDK.java:2160-2163`
 
 ```java
         if (SDKConfig.SUPPORT_DEVICE_SHADOW) {
@@ -3040,9 +3040,9 @@ Origen: `com/quvii/openapi/QvOpenSDK.java:2160-2163`
 ```
 ## E074 legacy_http_schemes
 
-La ruta de unbind fuerza HTTP y el selector general depende del dispositivo y cgiScheme. No se afirma conexión exitosa en runtime.
+The unbind route forces HTTP and the general selector depends on the device and cgiScheme. A successful runtime connection is not claimed.
 
-Origen: `com/quvii/qvweb/publico/utils/RetrofitUtil.java:299-309,433-482`
+Source: `com/quvii/qvweb/publico/utils/RetrofitUtil.java:299-309,433-482`
 
 ```java
     public static DeviceApi getUnbindDeviceApiUrl(QvDevice qvDevice) {
@@ -3110,13 +3110,13 @@ Origen: `com/quvii/qvweb/publico/utils/RetrofitUtil.java:299-309,433-482`
 ```
 ## E075 file_provider_paths
 
-FileProvider no está exportado, pero permite URI grants y su configuración incluye raíz y external-path amplio. No se afirma explotación.
+FileProvider is not exported, but it allows URI grants and its configuration includes a broad root and external-path. Exploitation is not claimed.
 
-Origen: `res/xml/provider_paths.xml:3-17` y `res/xml/permission_file_paths.xml:3-20`
+Source: `res/xml/provider_paths.xml:3-17` and `res/xml/permission_file_paths.xml:3-20`
 
 ```xml
 <files-path name="hm_private_cache" path="logs_out"/>
 <external-path name="external_files" path="."/>
 <root-path name="root_path" path=""/>
-<!-- permission_file_paths: files-path, cache-path, external-path, external-files-path, external-cache-path y external-media-path, todos con path="." -->
+<!-- permission_file_paths: files-path, cache-path, external-path, external-files-path, external-cache-path and external-media-path, all with path="." -->
 ```
