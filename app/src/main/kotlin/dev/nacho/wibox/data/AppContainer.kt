@@ -72,6 +72,52 @@ class AppContainer(
         val unlockPassword: String,
     )
 
+    /**
+     * Arranca el servidor HTTP local si hay token configurado. Idempotente, para
+     * poder llamarlo desde el servicio en primer plano sin duplicar el socket.
+     */
+    fun startLocalApi() {
+        if (localApi?.isRunning == true) return
+        val apiToken = dev.nacho.wibox.BuildConfig.WIBOX_API_TOKEN
+        if (apiToken.isEmpty()) return
+        val api = dev.nacho.wibox.core.cloud.api.LocalApiServer(
+            port = dev.nacho.wibox.BuildConfig.WIBOX_API_PORT,
+            token = apiToken,
+            backend = object : dev.nacho.wibox.core.cloud.api.LocalApiBackend {
+                override suspend fun devices(): List<dev.nacho.wibox.core.cloud.api.ApiDevice> =
+                    runCatching { provider.listDevices() }.getOrDefault(emptyList()).map { d ->
+                        dev.nacho.wibox.core.cloud.api.ApiDevice(
+                            id = d.device.id,
+                            name = d.displayName ?: d.device.id,
+                            model = d.declaredModel ?: "",
+                            online = d.presence == dev.nacho.wibox.core.cloud.DevicePresence.ONLINE,
+                            shared = d.role != dev.nacho.wibox.core.cloud.DeviceRole.OWNER,
+                        )
+                    }
+
+                override suspend fun openDoor(deviceId: String): Int {
+                    val session = openSdkTunnelLive(deviceId)
+                    return try {
+                        session.unlockDoor()
+                    } finally {
+                        runCatching { session.close() }
+                    }
+                }
+            },
+            scope = appScope,
+            log = { android.util.Log.d("WIBOX-API", it) },
+        )
+        localApi = api
+        val started = api.start()
+        android.util.Log.d("WIBOX-API", "start ok=" + started + " puerto=" + dev.nacho.wibox.BuildConfig.WIBOX_API_PORT)
+    }
+
+    /** Para el servidor HTTP local. */
+    fun stopLocalApi() {
+        runCatching { localApi?.stop() }
+        localApi = null
+    }
+
     private suspend fun resolveAccess(deviceId: String): CloudAccess {
         val auth = userAuthCloud
         if (provider.cloudCredentials() == null && REAL_CLOUD_ACCOUNT.isEmpty()) {
@@ -393,41 +439,7 @@ class AppContainer(
             // login + get-device-list en segundo plano (el timbre aparece al abrir).
             // Sin credenciales aceptadas en este movil se usan las de local.properties,
             // si no la lista se queda con los dispositivos de demo y el timbre real no aparece.
-            // Servidor HTTP local: otras apps, scripts y Home Assistant.
-            // Escucha en la red local con token, asi que no necesita nube.
-            val apiToken = dev.nacho.wibox.BuildConfig.WIBOX_API_TOKEN
-            if (apiToken.isNotEmpty()) {
-                val api = dev.nacho.wibox.core.cloud.api.LocalApiServer(
-                    port = dev.nacho.wibox.BuildConfig.WIBOX_API_PORT,
-                    token = apiToken,
-                    backend = object : dev.nacho.wibox.core.cloud.api.LocalApiBackend {
-                        override suspend fun devices(): List<dev.nacho.wibox.core.cloud.api.ApiDevice> =
-                            runCatching { provider.listDevices() }.getOrDefault(emptyList()).map { d ->
-                                dev.nacho.wibox.core.cloud.api.ApiDevice(
-                                    id = d.device.id,
-                                    name = d.displayName ?: d.device.id,
-                                    model = d.declaredModel ?: "",
-                                    online = d.presence == dev.nacho.wibox.core.cloud.DevicePresence.ONLINE,
-                                    shared = d.role != dev.nacho.wibox.core.cloud.DeviceRole.OWNER,
-                                )
-                            }
-
-                        override suspend fun openDoor(deviceId: String): Int {
-                            val session = openSdkTunnelLive(deviceId)
-                            return try {
-                                session.unlockDoor()
-                            } finally {
-                                runCatching { session.close() }
-                            }
-                        }
-                    },
-                    scope = appScope,
-                    log = { android.util.Log.d("WIBOX-API", it) },
-                )
-                localApi = api
-                val started = api.start()
-                android.util.Log.d("WIBOX-API", "start ok=" + started + " puerto=" + dev.nacho.wibox.BuildConfig.WIBOX_API_PORT)
-            }
+            startLocalApi()
 
             val startup = provider.cloudCredentials() ?: (REAL_CLOUD_ACCOUNT to REAL_CLOUD_PASSWORD)
             if (startup.first.isNotEmpty() && startup.second.isNotEmpty()) {

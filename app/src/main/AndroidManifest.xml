@@ -48,6 +48,11 @@
             android:resizeableActivity="true" />
 
         <service
+            android:name="dev.nacho.wibox.ApiService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <service
             android:name="dev.nacho.wibox.ui.live.LiveSessionService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
