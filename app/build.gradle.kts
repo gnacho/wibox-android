@@ -19,6 +19,8 @@ val wiboxAccount = localOrEnv("wibox.account", "WIBOX_ACCOUNT")
 val wiboxPassword = localOrEnv("wibox.password", "WIBOX_PASSWORD")
 val wiboxClientId = localOrEnv("wibox.clientId", "WIBOX_CLIENT_ID")
 val wiboxUnlockPassword = localOrEnv("wibox.unlockPassword", "WIBOX_UNLOCK_PASSWORD")
+val wiboxApiToken = localOrEnv("wibox.apiToken", "WIBOX_API_TOKEN")
+val wiboxApiPort = localOrEnv("wibox.apiPort", "WIBOX_API_PORT").ifEmpty { "8087" }
 
 android {
     namespace = "dev.nacho.wibox"
@@ -35,6 +37,8 @@ android {
         buildConfigField("String", "WIBOX_PASSWORD", "\"$wiboxPassword\"")
         buildConfigField("String", "WIBOX_CLIENT_ID", "\"$wiboxClientId\"")
         buildConfigField("String", "WIBOX_UNLOCK_PASSWORD", "\"$wiboxUnlockPassword\"")
+        buildConfigField("String", "WIBOX_API_TOKEN", "\"$wiboxApiToken\"")
+        buildConfigField("int", "WIBOX_API_PORT", wiboxApiPort)
     }
 
     buildTypes {
