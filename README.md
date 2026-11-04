@@ -13,7 +13,15 @@ Reimplementación Android en Kotlin de los flujos de Wibox (videoportero), const
 
 ## Estado funcional
 
-Adaptador stock QVCloud: solo se implementan operaciones con contrato observado. OAuth (`password`/`refresh_token`), Shadow HTTP (`status`, `multi`, `sub`, `unsub`), alarmas FCM (tipos 2, 19, 20) y `app_upgrade_check` (única operación con request y respuesta dinámicos observados). Descubrimiento regional, listado unificado de dispositivos, suscripción realtime, media P2P y acciones físicas devuelven errores `Unsupported` explícitos: falta evidencia de contrato dinámico y no hay hardware verificado.
+Adaptador stock QVCloud: solo se implementan operaciones con contrato observado. OAuth (`password`/`refresh_token`), Shadow HTTP (`status`, `multi`, `sub`, `unsub`), alarmas FCM (tipos 2, 19, 20) y `app_upgrade_check`. Alta por invitación con el canal `userauth` real, token de dispositivo, listado unificado, suscripción realtime y CGI local por el túnel del SDK. La vista en vivo abre la cámara por el túnel nativo y habla QUII sobre TCP local.
+
+## Vista en vivo
+
+El camino que funciona es el del SDK del fabricante: se crea el cliente P2P, se espera al servicio UST y se pide el puerto de media con `addPortByP2P`. El SDK lo publica en `127.0.0.1` y ahí se habla QUII: setup de 32 bytes en claro, play con `adminapp2` y la clave derivada del `authCode`, y frames H264 y G711A.
+
+El estado real, lo verificado y lo que sigue pendiente están en [`RELEASE_NOTES.md`](RELEASE_NOTES.md). Resumen honesto: el túnel, el protocolo y la apertura remota funcionan, el timbre rechaza el play con «canal ocupado» buena parte del tiempo (la app oficial dice lo mismo) y despertarlo desde reposo no está resuelto.
+
+El binario nativo del fabricante, sus certificados de cliente y las credenciales del timbre no se versionan. Sin ellos el proyecto compila y arranca, pero no puede abrir túnel. Ver «Requisitos».
 
 Proveedor demo local: implementa los mismos flujos con datos sintéticos etiquetados (`simulated=true`, origen demo) para probar navegación, estados y acciones con ack local honesto.
 
@@ -33,6 +41,8 @@ El detalle de esos campos, el orden en que aparecen en el QR y su papel en el re
 - Android SDK en `~/Android/Sdk` o configurado mediante `ANDROID_HOME`.
 - Platform Android 37.0 y Build Tools 37.0.0.
 - Para pruebas instrumentadas, un emulador o dispositivo Android visible mediante ADB.
+- Para la vista en vivo, el SDK nativo del fabricante en `app/src/main/jniLibs/arm64-v8a/` y sus certificados de cliente en `app/src/main/assets/`. No se versionan: son propietarios y llevan credenciales de un timbre real.
+- Credenciales del timbre en `local.properties` (`wibox.account`, `wibox.password`, `wibox.clientId`, `wibox.unlockPassword`) o en el entorno. También vale aceptar una invitación desde la app, que guarda una cuenta temporal.
 
 `local.properties`, credenciales y tokens no se versionan.
 
