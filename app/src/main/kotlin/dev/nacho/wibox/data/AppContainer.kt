@@ -375,6 +375,14 @@ class AppContainer(
                     runCatching {
                         val ok = com.quvii.p2pv2.NativeP2PWake.ensureClient(warmContext, warmPem)
                         android.util.Log.d("WIBOX-LIVE", "p2p client precalentado ok=$ok")
+                        if (ok) {
+                            val found = com.quvii.p2pv2.NativeP2PWake.lanScan(warmContext, warmPem)
+                            android.util.Log.d(
+                                "WIBOX-LIVE",
+                                "lanScan devices=" + found.size + " " +
+                                    found.joinToString { "${it.ip}:${it.streamPort} ${it.type}" },
+                            )
+                        }
                     }
                 }
             }

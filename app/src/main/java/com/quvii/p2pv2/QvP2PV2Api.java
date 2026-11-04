@@ -120,4 +120,12 @@ public final class QvP2PV2Api {
         }
         return state;
     }
+
+    static native void lanSearchDeviceClear();
+
+    static native com.quvii.publico.entity.QvLanSearchInfo[] lanSearchDeviceGet();
+
+    static native int lanSearchDeviceStart();
+
+    static native int lanSearchDeviceStop();
 }

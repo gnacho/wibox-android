@@ -211,4 +211,59 @@ object NativeP2PWake {
         }
         return target
     }
+
+    /** Un timbre visto por el descubrimiento LAN del SDK. */
+    data class LanDevice(
+        val ip: String,
+        val streamPort: Int,
+        val cgiPort: Int,
+        val uid: String,
+        val type: String,
+        val version: String,
+    )
+
+    /**
+     * Pregunta a la red local si hay timbres. El SDK escucha el anuncio del
+     * aparato y devuelve ip, puerto de video y puerto CGI. Solo tiene sentido
+     * estando en la misma red que el timbre.
+     */
+    fun lanScan(context: Context, caPem: ByteArray, timeoutMs: Long = 5_000): List<LanDevice> {
+        if (!ensureClient(context, caPem)) return emptyList()
+        return runCatching {
+            QvP2PV2Api.lanSearchDeviceClear()
+            val rc = QvP2PV2Api.lanSearchDeviceStart()
+            Log.d(TAG, "lanSearch start rc=$rc")
+            val found = LinkedHashMap<String, LanDevice>()
+            val deadline = System.currentTimeMillis() + timeoutMs
+            while (System.currentTimeMillis() < deadline) {
+                Thread.sleep(500)
+                val list = runCatching { QvP2PV2Api.lanSearchDeviceGet() }.getOrNull() ?: continue
+                for (info in list) {
+                    val ip = intToIp(info.ip)
+                    found[ip] = LanDevice(
+                        ip = ip,
+                        streamPort = info.streamPort,
+                        cgiPort = info.cgiPort,
+                        uid = info.uid ?: "",
+                        type = info.type ?: "",
+                        version = info.version ?: "",
+                    )
+                }
+            }
+            runCatching { QvP2PV2Api.lanSearchDeviceStop() }
+            Log.d(TAG, "lanScan found=${found.size} " + found.values.joinToString { "${it.ip}:${it.streamPort}" })
+            found.values.toList()
+        }.getOrElse {
+            Log.d(TAG, "lanScan fail ${it.javaClass.simpleName}: ${it.message}")
+            emptyList()
+        }
+    }
+
+    private fun intToIp(value: Int): String = listOf(
+        value and 0xFF,
+        (value shr 8) and 0xFF,
+        (value shr 16) and 0xFF,
+        (value shr 24) and 0xFF,
+    ).joinToString(".")
+
 }
