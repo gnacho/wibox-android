@@ -16,7 +16,7 @@ class UserAuthEnvelopeTest {
             UserAuthHeader(command = "accept-nologin-share-invitation", clientId = "003-2021-abc"),
             linkedMapOf(
                 "share-code" to "VVzde8PP",
-                "device-id" to "<UDID>",
+                "device-id" to "testdevice01",
                 "share-device-memo" to "Device1",
                 "need-create" to "1",
                 "password" to "uuid-value",
@@ -35,7 +35,7 @@ class UserAuthEnvelopeTest {
         assertTrue(xml.contains("<app>2021</app>"))
         assertTrue(xml.contains("<user-data></user-data>"))
         assertTrue(xml.contains("<share-code>VVzde8PP</share-code>"))
-        assertTrue(xml.contains("<device-id><UDID></device-id>"))
+        assertTrue(xml.contains("<device-id>testdevice01</device-id>"))
         assertTrue(xml.contains("<share-device-memo>Device1</share-device-memo>"))
         assertTrue(xml.contains("<need-create>1</need-create>"))
         assertTrue(xml.contains("<way-from>QrInvite</way-from>"))
@@ -86,5 +86,15 @@ class UserAuthEnvelopeTest {
         val parsed = UserAuthEnvelope.parse(xml)
         assertNull(parsed.result)
         assertFalse(parsed.isSuccess)
+    }
+
+    @Test
+    fun `parse conserva los share groups anidados`() {
+        val xml = """<envelope><header><command>get-share-group-list</command><result>0</result></header><content><share-groups><share-group><share-group-id>g1</share-group-id><share-group-memo>Ana</share-group-memo><powers>1,1001</powers><share-code>ABC</share-code><expire-time>123</expire-time></share-group><share-group><share-group-id>g2</share-group-id><share-group-memo>Pepe</share-group-memo><powers>1,3</powers></share-group></share-groups></content></envelope>"""
+        val parsed = UserAuthEnvelope.parse(xml)
+        assertEquals(2, parsed.shareGroups.size)
+        assertEquals("Ana", parsed.shareGroups[0]["share-group-memo"])
+        assertEquals("1,1001", parsed.shareGroups[0]["powers"])
+        assertEquals("g2", parsed.shareGroups[1]["share-group-id"])
     }
 }

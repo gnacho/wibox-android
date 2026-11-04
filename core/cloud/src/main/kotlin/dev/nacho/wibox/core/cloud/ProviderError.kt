@@ -33,6 +33,15 @@ sealed class ProviderError(
     class Conflict(operation: String, capability: CapabilityKey? = null) :
         ProviderError("Provider conflict", operation, capability, ProviderRetryPolicy.MANUAL_RETRY)
 
+    class InvitationUsed(operation: String, capability: CapabilityKey? = null) :
+        ProviderError(
+            "Invitation already used or linked",
+            operation,
+            capability,
+            ProviderRetryPolicy.DO_NOT_RETRY,
+            providerCode = 100151007,
+        )
+
     class RateLimit(operation: String, capability: CapabilityKey? = null) :
         ProviderError("Provider rate limit", operation, capability, ProviderRetryPolicy.SAFE_READ_RETRY)
 

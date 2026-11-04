@@ -6,6 +6,9 @@ plugins {
 android {
     namespace = "dev.nacho.wibox.core.cloud"
     compileSdk = 37
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 
     defaultConfig {
         minSdk = 26
@@ -18,12 +21,20 @@ android {
     }
 }
 
+tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
+    testLogging {
+        showStandardStreams = true
+        events("standard_out", "standard_error", "failed")
+    }
+}
+
 dependencies {
     api(libs.kotlinx.coroutines.android)
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)
+    implementation("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
 
     testImplementation(libs.junit)
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:2.4.21")

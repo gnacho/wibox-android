@@ -26,6 +26,10 @@ data class UserAuthResponse(
     val seq: Int?,
     val result: Int?,
     val content: Map<String, String>,
+    val devices: List<Map<String, String>> = emptyList(),
+    val shareGroups: List<Map<String, String>> = emptyList(),
+    /** Token de sesion del header (anidado <session><id>..</id></session> o texto plano). */
+    val session: String? = null,
 ) {
     val isSuccess: Boolean get() = result == 0
 }
@@ -74,18 +78,42 @@ internal object UserAuthEnvelope {
     }
 
     fun parse(xml: String): UserAuthResponse {
+        // El parser XML de Android (Harmony) no soporta NINGUNA de las features/hardening
+        // opcionales del factory: setFeature (ParserConfigurationException), setXIncludeAware
+        // (UnsupportedOperationException "specification Unknown version 0.0"). Como el payload
+        // viene del server propio por TLS, el endurecimiento se hace SANITIZANDO la entrada:
+        // se elimina DOCTYPE y declaraciones ENTITY antes de parsear con un factory vanilla.
+        val safe = xml
+            .replace(Regex("(?is)<!DOCTYPE[^>]*>"), "")
+            .replace(Regex("(?is)<!ENTITY[^>]*>"), "")
         val factory = DocumentBuilderFactory.newInstance()
-        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
-        factory.setFeature("http://xml.org/sax/features/external-general-entities", false)
-        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false)
-        factory.isXIncludeAware = false
-        factory.isExpandEntityReferences = false
-        val doc = factory.newDocumentBuilder().parse(xml.byteInputStream(Charsets.UTF_8))
+        val doc = factory.newDocumentBuilder().parse(safe.byteInputStream(Charsets.UTF_8))
         val root = doc.documentElement
         val headerEl = firstChild(root, "header")
         val contentEl = firstChild(root, "content")
         val headerMap = headerEl?.let { childTextMap(it) } ?: emptyMap()
         val contentMap = contentEl?.let { childTextMap(it) } ?: emptyMap()
+        // Token de sesion: el login lo devuelve anidado (<session><id>TOKEN</id><timeout>0</timeout></session>)
+        // y los requests autenticados lo llevan como texto plano. childTextMap concatenaria los
+        // hijos (textContent = "TOKEN0"), asi que se extrae del elemento directamente.
+        val sessionToken = headerEl?.let { h ->
+            firstChild(h, "session")?.let { s ->
+                firstChild(s, "id")?.textContent?.takeIf { it.isNotBlank() }
+                    ?: s.textContent?.takeIf { it.isNotBlank() }
+            }
+        }
+        // Entradas <device> anidadas en el content (get-device-list): childTextMap las aplanaria,
+        // asi que se extraen por separado conservando sus campos.
+        val devices = contentEl?.let { el ->
+            val out = mutableListOf<Map<String, String>>()
+            val nodes = el.childNodes
+            for (i in 0 until nodes.length) {
+                val n = nodes.item(i)
+                if (n is Element && n.tagName == "device") out.add(childTextMap(n))
+            }
+            out
+        } ?: emptyList()
+        val shareGroups = contentEl?.let { descendantsByTag(it, "share-group").map(::childTextMap) } ?: emptyList()
         return UserAuthResponse(
             flag = headerMap["flag"],
             version = headerMap["version"],
@@ -93,6 +121,9 @@ internal object UserAuthEnvelope {
             seq = headerMap["seq"]?.toIntOrNull(),
             result = headerMap["result"]?.toIntOrNull(),
             content = contentMap,
+            devices = devices,
+            shareGroups = shareGroups,
+            session = sessionToken,
         )
     }
 
@@ -103,6 +134,19 @@ internal object UserAuthEnvelope {
             if (n is Element && n.tagName == tag) return n
         }
         return null
+    }
+
+    private fun descendantsByTag(parent: Element, tag: String): List<Element> {
+        val result = mutableListOf<Element>()
+        val nodes = parent.childNodes
+        for (i in 0 until nodes.length) {
+            val node = nodes.item(i)
+            if (node is Element) {
+                if (node.tagName == tag) result.add(node)
+                result.addAll(descendantsByTag(node, tag))
+            }
+        }
+        return result
     }
 
     private fun childTextMap(parent: Element): Map<String, String> {

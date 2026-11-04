@@ -11,7 +11,11 @@ import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import okhttp3.OkHttpClient
+
+private const val LOGIN_CACHE_TTL_MS = 10 * 60 * 1000L
 
 /**
  * Fachada del canal userauth duplex (registro / login / compartición de dispositivos).
@@ -22,6 +26,18 @@ import okhttp3.OkHttpClient
 class UserAuthCloud internal constructor(
     private val wire: UserAuthWire,
 ) {
+
+    private data class CachedLogin(
+        val account: String,
+        val password: String,
+        val login: UserAuthLogin,
+        val completedAtMs: Long,
+    )
+
+    private val loginMutex = Mutex()
+
+    @Volatile
+    private var cachedLogin: CachedLogin? = null
 
     /**
      * Acepta una invitación de compartición (accept-nologin-share-invitation).
@@ -69,6 +85,210 @@ class UserAuthCloud internal constructor(
             powers = response.content["powers"],
         )
     }
+
+    /**
+     * Login con la cuenta nologin creada en el accept: devuelve el token de sesion
+     * que el wire captura automaticamente ( SESSION CAPTURED ) para los comandos
+     * autenticados posteriores (get-device-list). La password es LA MISMA que se
+     * envio en el accept con need-create=1.
+     */
+    suspend fun login(account: String, password: String, force: Boolean = false): UserAuthLogin {
+        return loginMutex.withLock {
+            val now = System.currentTimeMillis()
+            cachedLogin
+                ?.takeIf {
+                    !force &&
+                        it.account == account &&
+                        it.password == password &&
+                        now - it.completedAtMs < LOGIN_CACHE_TTL_MS
+                }
+                ?.let { return@withLock it.login }
+
+            val content = linkedMapOf(
+                "account" to account,
+                "auth-code" to "",
+                "ip-region-id" to "1",
+                "password" to password,
+                "auth-type" to "0",
+            )
+            val contentClass = "com.quvii.qvweb.userauth.bean.request.LoginReqContent"
+            val response = try {
+                wire.command("login", content, contentClass = contentClass, timeoutMs = 20_000)
+            } catch (timeout: UserAuthTimeoutException) {
+                // La cookie cacheada puede estar muerta: sesion nueva y un unico reintento.
+                println("WIBOX-ACCEPT LOGIN RETRY after timeout")
+                wire.resetSession()
+                wire.command("login", content, contentClass = contentClass, timeoutMs = 20_000)
+            }
+            if (!response.isSuccess) {
+                throw UserAuthException(
+                    command = "login",
+                    result = response.result ?: -1,
+                    responseContent = response.content,
+                )
+            }
+            val login = UserAuthLogin(
+                accountId = response.content["account-id"] ?: response.content["id"],
+                session = response.session,
+            )
+            cachedLogin = CachedLogin(account, password, login, System.currentTimeMillis())
+            login
+        }
+    }
+
+    suspend fun getShareLink(): String {
+        val response = wire.command("get-share-link", linkedMapOf())
+        if (!response.isSuccess) throw UserAuthException("get-share-link", response.result ?: -1, response.content)
+        return response.content["invite-page"].orEmpty().ifBlank {
+            throw UserAuthException("get-share-link", -1, response.content, "get-share-link returned no invite-page")
+        }
+    }
+
+    suspend fun listShareGroups(deviceId: String): List<ShareGroup> {
+        val response = wire.command(
+            "get-share-group-list",
+            linkedMapOf("device-id" to deviceId),
+            contentClass = "com.quvii.qvweb.userauth.bean.request.NoLoginShareListReqContent",
+        )
+        if (!response.isSuccess) throw UserAuthException("get-share-group-list", response.result ?: -1, response.content)
+        return response.shareGroups.mapNotNull { fields ->
+            val id = fields["share-group-id"] ?: return@mapNotNull null
+            shareGroup(fields, id)
+        }
+    }
+
+    suspend fun createShareGroup(
+        deviceId: String,
+        displayName: String,
+        permissions: Set<DevicePermission>,
+    ): ShareGroupCreation {
+        val response = wire.command(
+            "generate-nologin-share-invitation",
+            linkedMapOf(
+                "device-id" to deviceId,
+                "share-group-memo" to displayName,
+                "powers" to DevicePermissionCodec.encode(permissions),
+            ),
+            contentClass = "com.quvii.qvweb.userauth.bean.request.NoLoginShareCreateReqContent",
+        )
+        if (!response.isSuccess) {
+            throw UserAuthException("generate-nologin-share-invitation", response.result ?: -1, response.content)
+        }
+        val fields = response.shareGroups.firstOrNull() ?: response.content
+        val id = fields["share-group-id"].orEmpty()
+        return ShareGroupCreation(
+            group = shareGroup(fields, id),
+            invitePage = response.content["invite-page"].orEmpty(),
+            expireMinutes = response.content["expire-minutes"]?.toIntOrNull(),
+        )
+    }
+
+    suspend fun updateShareGroup(
+        id: String,
+        displayName: String,
+        permissions: Set<DevicePermission>,
+    ) {
+        val response = wire.command(
+            "update-share-group-config",
+            linkedMapOf(
+                "share-group-id" to id,
+                "share-group-memo" to displayName,
+                "powers" to DevicePermissionCodec.encode(permissions),
+            ),
+            contentClass = "com.quvii.qvweb.userauth.bean.request.NoLoginShareUpdateReqContent",
+        )
+        if (!response.isSuccess) throw UserAuthException("update-share-group-config", response.result ?: -1, response.content)
+    }
+
+    suspend fun deleteShareGroup(id: String) {
+        val response = wire.command(
+            "delete-share-group",
+            linkedMapOf("share-group-id" to id),
+            contentClass = "com.quvii.qvweb.userauth.bean.request.NoLoginShareDeleteReqContent",
+        )
+        if (!response.isSuccess) throw UserAuthException("delete-share-group", response.result ?: -1, response.content)
+    }
+
+    private fun shareGroup(fields: Map<String, String>, id: String): ShareGroup = ShareGroup(
+        id = id,
+        name = fields["share-group-memo"] ?: fields["name"].orEmpty(),
+        powers = fields["powers"].orEmpty(),
+        shareCode = fields["share-code"].orEmpty(),
+        expireTime = fields["expire-time"].orEmpty(),
+    )
+
+    /**
+     * Lista los dispositivos vinculados a la cuenta de la sesion (get-device-list).
+     *
+     * Debe llamarse sobre la MISMA sesion (mismo [UserAuthWire]) que acepto la invitacion:
+     * es la sesion la que lleva la cuenta vinculada. Contrato capturado del app oficial
+     * (DevListReqContent con count=0/page=0 devuelve todas).
+     */
+    suspend fun getDeviceList(): List<UserAuthDevice> {
+        val content = linkedMapOf(
+            "count" to "0",
+            "filter" to "",
+            "order" to "0",
+            "owner" to "",
+            "page" to "0",
+        )
+        val response = wire.command(
+            "get-device-list",
+            content,
+            contentClass = "com.quvii.qvweb.userauth.bean.request.DevListReqContent",
+        )
+        if (!response.isSuccess) {
+            throw UserAuthException(
+                command = "get-device-list",
+                result = response.result ?: -1,
+                responseContent = response.content,
+            )
+        }
+        return response.devices.mapNotNull { d ->
+            val id = d["id"] ?: return@mapNotNull null
+            UserAuthDevice(
+                id = id,
+                name = d["name"].orEmpty(),
+                model = d["model"].orEmpty(),
+                type = d["type"].orEmpty(),
+                channelNum = d["channel-num"]?.toIntOrNull() ?: 1,
+                fromShare = d["from-share"] == "1",
+                powers = d["powers"].orEmpty(),
+            )
+        }
+    }
+
+    /**
+     * Credenciales dinamicas del device (get-device-token, DevDynamicPwdGetReqContent).
+     *
+     * Debe llamarse tras [login] en la MISMA sesion: el header lleva el session token
+     * que el wire capturo del login. Emite auth-code/data-encode-key/dynamic-password
+     * (los mismos campos que el accept), usados para el canal device y el stream.
+     */
+    suspend fun getDeviceToken(deviceId: String): DeviceTokenData {
+        val content = linkedMapOf("device-id" to deviceId)
+        val response = wire.command(
+            "get-device-token",
+            content,
+            contentClass = "com.quvii.qvweb.userauth.bean.request.DevDynamicPwdGetReqContent",
+        )
+        if (!response.isSuccess) {
+            throw UserAuthException(
+                command = "get-device-token",
+                result = response.result ?: -1,
+                responseContent = response.content,
+            )
+        }
+        println("TOKEN RAW=" + response.content.entries.joinToString { it.key + "=" + it.value })
+        return DeviceTokenData(
+            authCode = response.content["auth-code"]
+                ?: response.content["out-auth-code"].orEmpty(),
+            dataEncodeKey = response.content["data-encode-key"].orEmpty(),
+            dynamicPassword = response.content["dynamic-password"].orEmpty(),
+            passwordExpired = response.content["password-expired"].orEmpty(),
+            transparentBasedata = response.content["transparent-basedata"].orEmpty(),
+        )
+    }
 }
 
 object UserAuthCloudFactory {
@@ -92,17 +312,24 @@ object UserAuthCloudFactory {
         clientId: String,
         caPem: InputStream,
     ): UserAuthCloud {
+        val started = System.currentTimeMillis()
+        android.util.Log.d("WIBOX-LIVE", "auth factory BEGIN")
         val certificate = CertificateFactory.getInstance("X509").generateCertificate(caPem)
+        android.util.Log.d("WIBOX-LIVE", "auth factory CA ${System.currentTimeMillis() - started}ms")
         val keyStore = KeyStore.getInstance(KeyStore.getDefaultType()).apply {
             load(null, null)
             setCertificateEntry("qualvision", certificate)
         }
+        android.util.Log.d("WIBOX-LIVE", "auth factory KS ${System.currentTimeMillis() - started}ms")
         val trustManagerFactory = TrustManagerFactory.getInstance("X509").apply { init(keyStore) }
+        android.util.Log.d("WIBOX-LIVE", "auth factory TMF ${System.currentTimeMillis() - started}ms")
         val trustManager = trustManagerFactory.trustManagers[0] as X509TrustManager
         val sslContext = SSLContext.getInstance("TLS").apply { init(null, arrayOf(trustManager), null) }
+        android.util.Log.d("WIBOX-LIVE", "auth factory SSL ${System.currentTimeMillis() - started}ms")
         val okHttpClient = OkHttpClient.Builder()
             .sslSocketFactory(sslContext.socketFactory, trustManager)
             .hostnameVerifier { _, _ -> true }
+            .protocols(listOf(okhttp3.Protocol.HTTP_1_1))
             .connectTimeout(20, TimeUnit.SECONDS)
             .readTimeout(45, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
