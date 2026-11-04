@@ -53,6 +53,9 @@ class LiveActivity : ComponentActivity() {
         dev.nacho.wibox.core.cloud.quii.LiveTuning.inner = intent.getBooleanExtra(EXTRA_INNER, false)
         dev.nacho.wibox.core.cloud.quii.LiveTuning.probeOrder = intent.getIntExtra(EXTRA_PROBE, 0)
         dev.nacho.wibox.core.cloud.quii.LiveTuning.cgiCommand = intent.getStringExtra(EXTRA_CGI)
+        dev.nacho.wibox.core.cloud.quii.LiveTuning.passwordMode = intent.getIntExtra(EXTRA_PWD, 0)
+        dev.nacho.wibox.core.cloud.quii.LiveTuning.colorMode = intent.getIntExtra(EXTRA_COLOR, 1)
+        dev.nacho.wibox.core.cloud.quii.LiveTuning.fixedPort = intent.getIntExtra(EXTRA_PORT, 0)
         android.util.Log.d("WIBOX-LIVE", "onCreate device='$deviceId' autoStart=$autoStart ch=$channel st=$stream ap=${dev.nacho.wibox.core.cloud.quii.LiveTuning.apParam} inner=${dev.nacho.wibox.core.cloud.quii.LiveTuning.inner}")
         val container = (application as WiboxApplication).container
         val liveController = LiveController(container, applicationContext)
@@ -71,6 +74,21 @@ class LiveActivity : ComponentActivity() {
                     onSurfaceDestroyed = { liveController.setSurface(null) },
                 )
             }
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Con la pantalla encendida, salir de la app significa que el usuario ya no
+        // esta mirando: se suelta la sesion para no dejar el timbre ocupado. Con la
+        // pantalla apagada se mantiene, que es el caso de uso del servicio.
+        val power = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+        if (power.isInteractive) {
+            android.util.Log.d("WIBOX-LIVE", "onStop con pantalla encendida: cierro la sesion")
+            controller?.pause()
+            LiveSessionService.stop(applicationContext)
+        } else {
+            android.util.Log.d("WIBOX-LIVE", "onStop con pantalla apagada: mantengo la sesion")
         }
     }
 
@@ -105,6 +123,9 @@ class LiveActivity : ComponentActivity() {
         private const val EXTRA_INNER = "inner"
         private const val EXTRA_PROBE = "probe"
         private const val EXTRA_CGI = "cgi"
+        private const val EXTRA_PWD = "pwd"
+        private const val EXTRA_COLOR = "color"
+        private const val EXTRA_PORT = "port"
 
         fun start(context: Context, deviceId: String) {
             val intent = Intent(context, LiveActivity::class.java)

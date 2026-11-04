@@ -13,6 +13,7 @@ import android.view.PixelCopy
 import android.view.Surface
 import androidx.lifecycle.LifecycleOwner
 import dev.nacho.wibox.core.cloud.quii.MediaFrame
+import dev.nacho.wibox.core.cloud.quii.QuiiLiveSession
 import dev.nacho.wibox.data.AppContainer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -50,6 +51,12 @@ class LiveController(
     val videoReady: StateFlow<Boolean> = _videoReady
 
     private var surface: Surface? = null
+
+    @Volatile
+    private var lastFrameAt = 0L
+
+    @Volatile
+    private var lastUnlockAt = 0L
     private var sessionJob: Job? = null
     private var liveSession: dev.nacho.wibox.core.cloud.quii.QuiiLiveSession? = null
     private var remoteLive: dev.nacho.wibox.core.cloud.quii.RemoteLiveSession? = null
@@ -57,6 +64,9 @@ class LiveController(
     private var currentDeviceId: String? = null
     private var codec: MediaCodec? = null
     private var audioTrack: AudioTrack? = null
+    private val AUDIO_GAIN = 0.4f
+    private val FRAME_STALL_MS = 15_000L
+    private val LIVE_MAX_MS = 15_000L
     private val MAX_CONNECT_ATTEMPTS = 8
 
     /** Espera antes de reconectar cuando la sesion no pinta imagen. */
@@ -149,7 +159,20 @@ class LiveController(
 
     fun start(deviceId: String, autoUnlock: Boolean = false, channel: Int = 1, stream: Int = 1) {
         android.util.Log.d("WIBOX-LIVE", "start($deviceId) state=" + _state.value)
-        if (_state.value is LiveUiState.Connecting || _state.value == LiveUiState.Live) return
+        // En vivo siempre reconecta: si la sesion esta viva pero sin imagen, el
+        // boton tiene que poder rescatar la pantalla en vez de no hacer nada.
+        if (_state.value is LiveUiState.Connecting) return
+        if (sessionJob?.isActive == true) {
+            android.util.Log.d("WIBOX-LIVE", "start: cierro la sesion anterior antes de reconectar")
+            sessionJob?.cancel()
+            sessionJob = null
+            runCatching { releaseVideoCodec() }
+            runCatching { sdkLive?.closeNow() }
+            sdkLive = null
+            activeDeviceId?.let { container.closeSdkPort(it) }
+            liveSession = null
+            remoteLive = null
+        }
         LiveDiag.clear()
         LiveDiag.add("start $deviceId")
         activeDeviceId = deviceId
@@ -270,8 +293,47 @@ class LiveController(
                         return@launch
                     }
                     if (gotImage) {
-                        collectJob.join()
-                        return@launch
+                        // La vista en vivo tiene duracion maxima, igual que la
+                        // previsualizacion de la app oficial: al llegar al limite se
+                        // cierra la sesion y se libera el canal del timbre.
+                        val liveStartedAt = System.currentTimeMillis()
+                        LiveDiag.add("vista limitada a ${LIVE_MAX_MS / 1000}s")
+                        // Vigila la sesion entera: el timbre puede colgar despues de
+                        // la primera imagen (por ejemplo al abrir la puerta) y dejar
+                        // el ultimo frame congelado en pantalla.
+                        while (true) {
+                            kotlinx.coroutines.delay(2_000)
+                            val liveReason = sdkLive?.hangUpReason?.value
+                            if (liveReason != null && liveReason != 0) {
+                                android.util.Log.d("WIBOX-LIVE", "HANGUP reason=$liveReason en vivo")
+                                LiveDiag.add("cuelgue del timbre motivo $liveReason")
+                                collectJob.cancel()
+                                closeLiveArtifacts(session)
+                                _state.value = LiveUiState.Error(liveEndMessage(liveReason))
+                                stopInternal()
+                                return@launch
+                            }
+                            if (System.currentTimeMillis() - liveStartedAt >= LIVE_MAX_MS) {
+                                android.util.Log.d("WIBOX-LIVE", "vista en vivo agotada a los ${LIVE_MAX_MS} ms")
+                                LiveDiag.add("vista cerrada tras ${LIVE_MAX_MS / 1000}s")
+                                collectJob.cancel()
+                                closeLiveArtifacts(session)
+                                _state.value = LiveUiState.Error(
+                                    "Vista cerrada tras ${LIVE_MAX_MS / 1000} segundos. Pulsa En vivo para ver otra vez.",
+                                )
+                                stopInternal()
+                                return@launch
+                            }
+                            if (System.currentTimeMillis() - lastFrameAt > FRAME_STALL_MS) {
+                                android.util.Log.d("WIBOX-LIVE", "FRAME STALL sin frames desde $lastFrameAt")
+                                LiveDiag.add("video parado mas de ${FRAME_STALL_MS / 1000}s")
+                                collectJob.cancel()
+                                closeLiveArtifacts(session)
+                                _state.value = LiveUiState.Error(liveEndMessage(null))
+                                stopInternal()
+                                return@launch
+                            }
+                        }
                     }
                     imageCycles++
                     android.util.Log.d(
@@ -314,20 +376,57 @@ class LiveController(
         }
     }
 
+    /**
+     * Mensaje de fin de sesion. Si el corte llega poco despues de abrir la puerta
+     * el timbre suele cerrar el video el solo: se explica en vez de dar un error.
+     */
+    private fun liveEndMessage(reason: Int?): String {
+        val justUnlocked = System.currentTimeMillis() - lastUnlockAt < 30_000
+        if (justUnlocked) {
+            return "Puerta abierta. La placa ha cortado el video; pulsa En vivo si quieres verla otra vez."
+        }
+        return if (reason != null) {
+            hangUpMessage(reason)
+        } else {
+            "El video se ha parado. Pulsa En vivo para reconectar."
+        }
+    }
+
+    /** Suelta codec, sesion y puerto P2P de la sesion en curso. */
+    private suspend fun closeLiveArtifacts(session: QuiiLiveSession?) {
+        runCatching { releaseVideoCodec() }
+        runCatching { sdkLive?.close() }
+        sdkLive = null
+        currentDeviceId?.let { container.closeSdkPort(it) }
+        session?.let { runCatching { it.close() } }
+        liveSession = null
+        remoteLive = null
+    }
+
     fun unlock() {
         scope.launch {
+            lastUnlockAt = System.currentTimeMillis()
             android.util.Log.d("WIBOX-LIVE", "UNLOCK send")
+            val started = System.currentTimeMillis()
             runCatching {
                 val sdk = sdkLive
                 val remote = remoteLive
                 sdk?.unlockDoor() ?: remote?.unlockDoor() ?: -1
             }
-                .onSuccess { error -> android.util.Log.d("WIBOX-LIVE", "UNLOCK error=" + error) }
+                .onSuccess { result ->
+                    val took = System.currentTimeMillis() - started
+                    android.util.Log.d("WIBOX-LIVE", "UNLOCK error=$result en ${took}ms")
+                    LiveDiag.add("abrir puerta rc=$result en ${took}ms")
+                    if (result != 0) {
+                        _state.value = LiveUiState.Error("No se pudo abrir la puerta (codigo $result).")
+                    }
+                }
                 .onFailure { error ->
                     android.util.Log.d(
                         "WIBOX-LIVE",
                         "UNLOCK FAIL " + error::class.java.simpleName + ": " + error.message,
                     )
+                    LiveDiag.add("abrir puerta fallo: " + (error.message ?: "").take(40))
                 }
         }
     }
@@ -399,19 +498,26 @@ class LiveController(
         val format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, 640, 480)
         format.setByteBuffer("csd-0", java.nio.ByteBuffer.wrap(byteArrayOf(0, 0, 0, 1) + fallbackSps))
         format.setByteBuffer("csd-1", java.nio.ByteBuffer.wrap(byteArrayOf(0, 0, 0, 1) + fallbackPps))
+        val colorMode = dev.nacho.wibox.core.cloud.quii.LiveTuning.colorMode
+        android.util.Log.d("WIBOX-LIVE", "VIDEO colorMode=$colorMode")
         runCatching {
-            format.setInteger(
-                MediaFormat.KEY_COLOR_STANDARD,
-                MediaFormat.COLOR_STANDARD_BT709,
-            )
-            format.setInteger(
-                MediaFormat.KEY_COLOR_RANGE,
-                MediaFormat.COLOR_RANGE_LIMITED,
-            )
-            format.setInteger(
-                MediaFormat.KEY_COLOR_TRANSFER,
-                MediaFormat.COLOR_TRANSFER_SDR_VIDEO,
-            )
+            when (colorMode) {
+                1 -> {
+                    format.setInteger(MediaFormat.KEY_COLOR_STANDARD, MediaFormat.COLOR_STANDARD_BT709)
+                    format.setInteger(MediaFormat.KEY_COLOR_RANGE, MediaFormat.COLOR_RANGE_LIMITED)
+                    format.setInteger(MediaFormat.KEY_COLOR_TRANSFER, MediaFormat.COLOR_TRANSFER_SDR_VIDEO)
+                }
+                2 -> {
+                    format.setInteger(MediaFormat.KEY_COLOR_STANDARD, MediaFormat.COLOR_STANDARD_BT601_NTSC)
+                    format.setInteger(MediaFormat.KEY_COLOR_RANGE, MediaFormat.COLOR_RANGE_LIMITED)
+                    format.setInteger(MediaFormat.KEY_COLOR_TRANSFER, MediaFormat.COLOR_TRANSFER_SDR_VIDEO)
+                }
+                3 -> {
+                    format.setInteger(MediaFormat.KEY_COLOR_STANDARD, MediaFormat.COLOR_STANDARD_BT601_PAL)
+                    format.setInteger(MediaFormat.KEY_COLOR_RANGE, MediaFormat.COLOR_RANGE_LIMITED)
+                    format.setInteger(MediaFormat.KEY_COLOR_TRANSFER, MediaFormat.COLOR_TRANSFER_SDR_VIDEO)
+                }
+            }
         }.onFailure { android.util.Log.w("WIBOX-LIVE", "color aspects fail", it) }
         android.util.Log.d(
             "WIBOX-LIVE",
@@ -458,6 +564,7 @@ class LiveController(
     }
 
     private fun feedVideo(frame: MediaFrame.Video) {
+        lastFrameAt = System.currentTimeMillis()
         val decoder = codec
         if (decoder == null) {
             videoErrorCount++
@@ -478,6 +585,9 @@ class LiveController(
                             "VIDEO skip sin IDR n=$videoSkippedCount nal=$t",
                         )
                     }
+                    // Sin IDR el decoder no tiene referencias: empujar P frames
+                    // deja el croma arrastrado durante todo el GOP.
+                    return
                 } else {
                     videoAwaitingKeyFrame = false
                     android.util.Log.d(
@@ -569,6 +679,9 @@ class LiveController(
             .setTransferMode(AudioTrack.MODE_STREAM)
             .setBufferSizeInBytes(minBuf)
             .build()
+        // El G711A del timbre llega con mucho ruido de fondo. Se reproduce por
+        // debajo del nivel nominal para que no sature.
+        audioTrack?.setVolume(AUDIO_GAIN)
         audioTrack?.play()
     }
 
@@ -608,6 +721,25 @@ class LiveController(
         releaseVideoCodec()
         try { audioTrack?.stop(); audioTrack?.release() } catch (_: Exception) {}
         audioTrack = null
+    }
+
+    /**
+     * Suelta la sesion en curso sin matar el controlador (la Activity sigue viva).
+     * Se llama al salir de la app para no dejar el canal del timbre ocupado.
+     */
+    fun pause() {
+        sessionJob?.cancel()
+        sessionJob = null
+        runCatching { sdkLive?.closeNow() }
+        sdkLive = null
+        currentDeviceId?.let { runCatching { container.closeSdkPort(it) } }
+        runCatching { releaseVideoCodec() }
+        runCatching { audioTrack?.stop(); audioTrack?.release() }
+        audioTrack = null
+        liveSession = null
+        remoteLive = null
+        _state.value = LiveUiState.Idle
+        android.util.Log.d("WIBOX-LIVE", "pause: sesion cerrada")
     }
 
     fun destroy() {

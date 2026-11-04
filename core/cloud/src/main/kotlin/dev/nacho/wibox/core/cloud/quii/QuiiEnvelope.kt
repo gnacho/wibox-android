@@ -102,7 +102,7 @@ object QuiiEnvelope {
         flag15: Int = 0,
         flag16: Int = 0,
         flag17: Int = 0,
-        timestamp: Long = System.currentTimeMillis(),
+        timestamp: Long = System.currentTimeMillis() / 1000,
     ): ByteArray {
         val extLen = QuiiCrypto.zeroPad(body + ByteArray(32)).size
         val clearHeader = buildHeader(

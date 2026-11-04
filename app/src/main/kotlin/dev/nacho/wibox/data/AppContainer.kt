@@ -140,17 +140,36 @@ class AppContainer(
         val context = appContext ?: throw IllegalStateException("sin contexto (AppContainer no inicializado via local)")
         val pem = caPem ?: throw IllegalStateException("sin ca.pem (AppContainer no inicializado via local)")
         val access = resolveAccess(deviceId)
-        val mapped = com.quvii.p2pv2.NativeP2PWake.openStreamPort(context, pem, deviceId)
-        if (!mapped.ok) throw IllegalStateException("tunel SDK no disponible: " + mapped.describe())
-        android.util.Log.d("WIBOX-LIVE", "SDK tunnel port=${mapped.port}")
+        val fixed = dev.nacho.wibox.core.cloud.quii.LiveTuning.fixedPort
+        val port: Int
+        if (fixed > 0) {
+            port = fixed
+            android.util.Log.d("WIBOX-LIVE", "puerto fijo port=$port (sin crear enlace)")
+        } else {
+            val mapped = com.quvii.p2pv2.NativeP2PWake.openStreamPort(context, pem, deviceId)
+            if (!mapped.ok) throw IllegalStateException("tunel SDK no disponible: " + mapped.describe())
+            port = mapped.port
+            android.util.Log.d("WIBOX-LIVE", "SDK tunnel port=$port")
+        }
         val key = access.dataEncodeKey.toByteArray(Charsets.UTF_8).copyOf(32)
-        val transport = dev.nacho.wibox.core.cloud.quii.TcpQuiiTransport("127.0.0.1", mapped.port, key)
+        val transport = dev.nacho.wibox.core.cloud.quii.TcpQuiiTransport("127.0.0.1", port, key)
         transport.connect()
+        val playPassword = if (dev.nacho.wibox.core.cloud.quii.LiveTuning.passwordMode == 1) {
+            access.dynamicPassword.ifEmpty {
+                dev.nacho.wibox.core.cloud.quii.QuiiCrypto.encodeDevicePassword(access.authCode)
+            }
+        } else {
+            dev.nacho.wibox.core.cloud.quii.QuiiCrypto.encodeDevicePassword(access.authCode)
+        }
+        android.util.Log.d(
+            "WIBOX-LIVE",
+            "play pwd mode=${dev.nacho.wibox.core.cloud.quii.LiveTuning.passwordMode} len=${playPassword.length} dynLen=${access.dynamicPassword.length}",
+        )
         val live = dev.nacho.wibox.core.cloud.quii.QuiiLiveSession(
             transport = transport,
             config = dev.nacho.wibox.core.cloud.quii.QuiiLiveConfig(
                 username = "adminapp2",
-                password = dev.nacho.wibox.core.cloud.quii.QuiiCrypto.encodeDevicePassword(access.authCode),
+                password = playPassword,
                 channel = channel,
                 stream = stream,
                 cryptoKey = key,
@@ -335,12 +354,15 @@ class AppContainer(
             provider.initializeDemo(demoStore.load() ?: DemoFixtures.initial())
             // Sesion cloud persistente: si hay credenciales de un accept anterior,
             // login + get-device-list en segundo plano (el timbre aparece al abrir).
-            provider.cloudCredentials()?.let { (account, password) ->
+            // Sin credenciales aceptadas en este movil se usan las de local.properties,
+            // si no la lista se queda con los dispositivos de demo y el timbre real no aparece.
+            val startup = provider.cloudCredentials() ?: (REAL_CLOUD_ACCOUNT to REAL_CLOUD_PASSWORD)
+            if (startup.first.isNotEmpty() && startup.second.isNotEmpty()) {
                 appScope.launch {
                     try {
-                        userAuthCloud.login(account, password)
+                        userAuthCloud.login(startup.first, startup.second)
                         syncCloudAndMerge()
-                        android.util.Log.d("WIBOX-ACCEPT", "STARTUP SYNC OK account=" + account)
+                        android.util.Log.d("WIBOX-ACCEPT", "STARTUP SYNC OK account=" + startup.first)
                     } catch (error: Exception) {
                         android.util.Log.d(
                             "WIBOX-ACCEPT",

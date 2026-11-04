@@ -16,4 +16,22 @@ object LiveTuning {
 
     /** Si no es null, no abre video: consulta ese comando al CGI local y lo muestra. */
     @Volatile var cgiCommand: String? = null
+
+    /**
+     * Contrasena del PLAY. 0 = encodeDevicePassword(authCode), 1 = dynamicPassword del token.
+     * La app oficial usa el dynamic password para cloudType 1.
+     */
+    @Volatile var passwordMode: Int = 0
+
+    /**
+     * Si es > 0, no crea enlace P2P propio: usa ese puerto local ya mapeado
+     * (por ejemplo el que mantiene abierto el SDK de la app oficial).
+     */
+    @Volatile var fixedPort: Int = 0
+
+    /**
+     * Aspectos de color del decoder: 0 = no declarar, 1 = BT709 limited SDR,
+     * 2 = BT601 NTSC, 3 = BT601 PAL.
+     */
+    @Volatile var colorMode: Int = 1
 }

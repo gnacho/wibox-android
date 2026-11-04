@@ -108,9 +108,8 @@ class QuiiLiveSession(
         if (cryptoMode != 2 || shaProfile != 1) return OpenResult.Rejected(status, cryptoMode, shaProfile)
 
         val body = QuiiEnvelope.playBody(config.username, config.password, QuiiEnvelope.playTarget(config.channel, config.stream))
-        // Libera cualquier sesion zombi que el timbre arrastre de intentos previos.
-        hangUp()
-        delay(300)
+        // La app oficial no envia HANG_UP antes del PLAY: mandarlo aqui hace que
+        // el timbre conteste con un cuelgue (motivo 1) que no es un rechazo real.
         if (!transport.sendPlay()) {
             transport.send(
                 QuiiEnvelope.encryptPacket(
