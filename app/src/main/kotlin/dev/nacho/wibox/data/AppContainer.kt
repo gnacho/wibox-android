@@ -365,6 +365,19 @@ class AppContainer(
         ),
         restore = {
             provider.initializeDemo(demoStore.load() ?: DemoFixtures.initial())
+            // Precalienta el SDK P2P: crear el cliente y subir el UST en frio
+            // cuesta casi seis segundos, y es lo que hacia la app mas lenta que
+            // la oficial al abrir la vista en vivo.
+            val warmContext = appContext
+            val warmPem = caPem
+            if (warmContext != null && warmPem != null) {
+                appScope.launch {
+                    runCatching {
+                        val ok = com.quvii.p2pv2.NativeP2PWake.ensureClient(warmContext, warmPem)
+                        android.util.Log.d("WIBOX-LIVE", "p2p client precalentado ok=$ok")
+                    }
+                }
+            }
             // Sesion cloud persistente: si hay credenciales de un accept anterior,
             // login + get-device-list en segundo plano (el timbre aparece al abrir).
             // Sin credenciales aceptadas en este movil se usan las de local.properties,
