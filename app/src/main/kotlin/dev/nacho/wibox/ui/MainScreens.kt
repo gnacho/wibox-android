@@ -625,6 +625,7 @@ private fun SettingsScreen(
     navigator: AppNavigator,
     onExit: () -> Unit,
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var showScenario by remember { mutableStateOf(false) }
     var showReset by remember { mutableStateOf(false) }
     var showExit by remember { mutableStateOf(false) }
@@ -648,6 +649,20 @@ private fun SettingsScreen(
             tag = "settings_vibration",
         )
         WiboxOptionRow(stringResource(R.string.about), { navigator.navigateInventory("about") }, tag = "about_button", topMargin = 10.dp)
+        WiboxOptionRow(
+            text = "Cambiar red WiFi",
+            onClick = {
+                // Android no deja cambiar de red sin ser device owner: se abre el
+                // selector del sistema, que es lo mas cerca que se puede llegar.
+                val intent = if (android.os.Build.VERSION.SDK_INT >= 29) {
+                    android.content.Intent(android.provider.Settings.Panel.ACTION_WIFI)
+                } else {
+                    android.content.Intent(android.provider.Settings.ACTION_WIFI_SETTINGS)
+                }.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                runCatching { context.startActivity(intent) }
+            },
+            tag = "wifi_settings",
+        )
         SettingsSectionHeader(stringResource(R.string.cloud_title))
         Text(
             text = stringResource(R.string.cloud_explanation),

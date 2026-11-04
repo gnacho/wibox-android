@@ -19,6 +19,7 @@ import dev.nacho.wibox.core.cloud.UserAuthException
 import dev.nacho.wibox.core.cloud.diag.LiveDiag
 import dev.nacho.wibox.core.cloud.UserAuthTimeoutException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -139,14 +140,26 @@ class AppContainer(
     ): dev.nacho.wibox.core.cloud.quii.SdkTunnelLiveSession {
         val context = appContext ?: throw IllegalStateException("sin contexto (AppContainer no inicializado via local)")
         val pem = caPem ?: throw IllegalStateException("sin ca.pem (AppContainer no inicializado via local)")
-        val access = resolveAccess(deviceId)
         val fixed = dev.nacho.wibox.core.cloud.quii.LiveTuning.fixedPort
+        // El enlace P2P no necesita credenciales, asi que se abre en paralelo con
+        // el login y el token. En serie se sumaban varios segundos antes del PLAY.
+        val portJob = if (fixed > 0) {
+            null
+        } else {
+            appScope.async { com.quvii.p2pv2.NativeP2PWake.openStreamPort(context, pem, deviceId) }
+        }
+        val access = try {
+            resolveAccess(deviceId)
+        } catch (error: Throwable) {
+            portJob?.cancel()
+            throw error
+        }
         val port: Int
         if (fixed > 0) {
             port = fixed
             android.util.Log.d("WIBOX-LIVE", "puerto fijo port=$port (sin crear enlace)")
         } else {
-            val mapped = com.quvii.p2pv2.NativeP2PWake.openStreamPort(context, pem, deviceId)
+            val mapped = portJob!!.await()
             if (!mapped.ok) throw IllegalStateException("tunel SDK no disponible: " + mapped.describe())
             port = mapped.port
             android.util.Log.d("WIBOX-LIVE", "SDK tunnel port=$port")

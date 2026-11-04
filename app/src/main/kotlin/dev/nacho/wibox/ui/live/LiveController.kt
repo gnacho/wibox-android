@@ -50,6 +50,9 @@ class LiveController(
     private val _videoReady = MutableStateFlow(false)
     val videoReady: StateFlow<Boolean> = _videoReady
 
+    /** Se pone a true cuando la vista se cierra sola por tiempo. */
+    val timedOut = MutableStateFlow(false)
+
     private var surface: Surface? = null
 
     @Volatile
@@ -66,7 +69,7 @@ class LiveController(
     private var audioTrack: AudioTrack? = null
     private val AUDIO_GAIN = 0.4f
     private val FRAME_STALL_MS = 15_000L
-    private val LIVE_MAX_MS = 15_000L
+    private val LIVE_MAX_MS = 30_000L
     private val MAX_CONNECT_ATTEMPTS = 8
 
     /** Espera antes de reconectar cuando la sesion no pinta imagen. */
@@ -159,6 +162,7 @@ class LiveController(
 
     fun start(deviceId: String, autoUnlock: Boolean = false, channel: Int = 1, stream: Int = 1) {
         android.util.Log.d("WIBOX-LIVE", "start($deviceId) state=" + _state.value)
+        timedOut.value = false
         // En vivo siempre reconecta: si la sesion esta viva pero sin imagen, el
         // boton tiene que poder rescatar la pantalla en vez de no hacer nada.
         if (_state.value is LiveUiState.Connecting) return
@@ -318,9 +322,8 @@ class LiveController(
                                 LiveDiag.add("vista cerrada tras ${LIVE_MAX_MS / 1000}s")
                                 collectJob.cancel()
                                 closeLiveArtifacts(session)
-                                _state.value = LiveUiState.Error(
-                                    "Vista cerrada tras ${LIVE_MAX_MS / 1000} segundos. Pulsa En vivo para ver otra vez.",
-                                )
+                                _state.value = LiveUiState.Idle
+                                timedOut.value = true
                                 stopInternal()
                                 return@launch
                             }

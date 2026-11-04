@@ -133,7 +133,9 @@ object NativeP2PWake {
     ): StreamPort {
         if (!ensureClient(context, caPem)) return StreamPort(-1, -1)
         var waited = 0
-        while (QvP2PV2Api.lastUstStatus != 3 && waited < 8_000) {
+        // 3 s basta: si el UST no ha subido, el bucle de addPortByP2P de abajo
+        // sigue intentandolo. Esperar 8 s en serie era parte de la lentitud.
+        while (QvP2PV2Api.lastUstStatus != 3 && waited < 3_000) {
             Thread.sleep(200)
             waited += 200
         }
@@ -156,7 +158,6 @@ object NativeP2PWake {
         // Mismo orden que funcionaba: despertar primero y pedir el puerto despues.
         val awakenRc = runCatching { QvP2PV2Api.deviceAwaken(deviceId) }.getOrNull()
         Log.d(TAG, "deviceAwaken($deviceId) rc=$awakenRc waited=${waited}ms")
-        Thread.sleep(1_500)
         Log.d(TAG, "status after awaken=" + runCatching { QvP2PV2Api.getDeviceStatus(deviceId) }.getOrDefault(-1))
         val deadline = System.currentTimeMillis() + 25_000
         while (System.currentTimeMillis() < deadline) {
@@ -173,7 +174,9 @@ object NativeP2PWake {
             Log.d(TAG, "addPortByP2P $label rc=$port")
             if (port == -3) return StreamPort(-1, -3)
             if (port == -2 && ++busyTries >= 3) return StreamPort(-1, -2)
-            Thread.sleep(1_000)
+            // Reintento corto: el enlace suele tardar menos de un segundo en estar
+            // listo y esperar 1 s por vuelta sumaba varios segundos al arranque.
+            Thread.sleep(400)
         }
         lastError = if (lastError == -1) -1 else lastError
         return StreamPort(-1, lastError)

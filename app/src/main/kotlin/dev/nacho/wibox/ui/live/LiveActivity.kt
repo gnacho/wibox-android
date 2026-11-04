@@ -29,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -67,6 +66,9 @@ class LiveActivity : ComponentActivity() {
         }
         setContent {
             MaterialTheme {
+                androidx.compose.runtime.LaunchedEffect(Unit) {
+                    liveController.timedOut.collect { expired -> if (expired) finish() }
+                }
                 LiveScreen(
                     deviceId = deviceId,
                     controller = liveController,
@@ -176,7 +178,6 @@ private fun LiveScreen(
                 is LiveUiState.Idle -> StatusOverlay("En espera")
                 is LiveUiState.Live -> if (!videoReady) WaitingOverlay()
             }
-            LiveDiagPanel()
         }
         Row(
             modifier = Modifier
@@ -197,28 +198,6 @@ private fun LiveScreen(
                 modifier = Modifier.weight(1f),
             ) { Text("Abrir") }
         }
-    }
-}
-
-@Composable
-private fun LiveDiagPanel() {
-    val lines by dev.nacho.wibox.core.cloud.diag.LiveDiag.lines.collectAsState()
-    if (lines.isEmpty()) return
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp),
-        verticalArrangement = Arrangement.Top,
-    ) {
-        Text(
-            text = lines.joinToString("\n"),
-            color = Color(0xFFB2FFB2),
-            fontSize = 10.sp,
-            fontFamily = FontFamily.Monospace,
-            modifier = Modifier
-                .background(Color(0xAA000000))
-                .padding(6.dp),
-        )
     }
 }
 

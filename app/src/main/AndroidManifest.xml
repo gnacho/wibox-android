@@ -44,7 +44,8 @@
             android:name="dev.nacho.wibox.ui.live.LiveActivity"
             android:exported="true"
             android:launchMode="singleTop"
-            android:configChanges="orientation|screenSize|keyboardHidden" />
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
+            android:resizeableActivity="true" />
 
         <service
             android:name="dev.nacho.wibox.ui.live.LiveSessionService"
