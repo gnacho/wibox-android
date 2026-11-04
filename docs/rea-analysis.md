@@ -1,494 +1,494 @@
-# Analisis de REA y fuentes Wibox para un clon mantenible en Kotlin
+# REA analysis and Wibox sources for a maintainable Kotlin clone
 
-## 1. Resumen ejecutivo
+## 1. Executive summary
 
-**HECHO:** `https://github.com/morluto/rea`, rama `main`, commit `d48e472fa6a664cacbb400560e673533005795ce`, es **REA: Reverse Engineer Anything**, una herramienta local de ingenieria inversa con CLI y MCP. No es un cliente Wibox ni un SDK Fermax (`README.md:6-10`, `package.json:2-10`). En su arbol no aparecen `wibox`, `fermax` ni `duox`: `git grep -in -e wibox -e fermax -e duox HEAD` termino con exit 1 y sin salida.
+**FACT:** `https://github.com/morluto/rea`, `main` branch, commit `d48e472fa6a664cacbb400560e673533005795ce`, is **REA: Reverse Engineer Anything**, a local reverse engineering tool with CLI and MCP. It is not a Wibox client nor a Fermax SDK (`README.md:6-10`, `package.json:2-10`). In its tree `wibox`, `fermax` and `duox` do not appear: `git grep -in -e wibox -e fermax -e duox HEAD` finished with exit 1 and no output.
 
-**HECHO:** REA es util para inspeccionar el APK y capturas historicas, no como especificacion cloud. Ofrece analisis estatico Android y lectura offline de HAR, SAZ y pcap (`README.md:187-229`, `docs/web-network-captures.md:1-6`, `docs/pcap-analysis.md:1-6`).
+**FACT:** REA is useful for inspecting the APK and historical captures, not as a cloud specification. It offers Android static analysis and offline reading of HAR, SAZ and pcap (`README.md:187-229`, `docs/web-network-captures.md:1-6`, `docs/pcap-analysis.md:1-6`).
 
-**HECHO DE CODIGO, fuente adicional:** `duhow/wibox`, commit `d8502d780f1d4ac3f2ec1a8425a98588fd7f53a7`, si contiene una implementacion local para Wibox parcheado. Sus scripts confirman comandos UART de cuatro bytes, CGI HTTP y topics MQTT para apertura, llamada, desvio, F1, timbre y Home Assistant (`include/wibox_codes.txt:1-24`, `include/web/run.cgi:1-21`, `include/bin/listener_mqtt.sh:37-88`). Esto prueba el comportamiento del **firmware parcheado**, no la API cloud del APK original.
+**CODE FACT, additional source:** `duhow/wibox`, commit `d8502d780f1d4ac3f2ec1a8425a98588fd7f53a7`, does contain a local implementation for patched Wibox. Its scripts confirm four-byte UART commands, HTTP CGI and MQTT topics for opening, call, forwarding, F1, doorbell and Home Assistant (`include/wibox_codes.txt:1-24`, `include/web/run.cgi:1-21`, `include/bin/listener_mqtt.sh:37-88`). This proves the behaviour of the **patched firmware**, not the cloud API of the original APK.
 
-**DOCUMENTACION DE TERCERO:** `duhow/wibox` tambien documenta un agente NTS cloud, una IP con UDP 8300 y HTTPS 443, autenticacion con `DevId` y `AuthPwd`, registro y conexion P2P. Son notas y un log pegado en `docs/system.md:148-193`, no una captura o binario que hayamos contrastado. No se contacto ese servicio.
+**THIRD-PARTY DOCUMENTATION:** `duhow/wibox` also documents an NTS cloud agent, an IP with UDP 8300 and HTTPS 443, authentication with `DevId` and `AuthPwd`, registration and P2P connection. They are notes and a pasted log in `docs/system.md:148-193`, not a capture or binary that we have checked. That service was not contacted.
 
-**AFIRMACION DE TERCERO:** el blog de cmos486 describe otro firmware custom con RTSP, MQTT y audio bidireccional WebRTC directo, sin depender de SIP para su tarjeta. Es evidencia sobre `cmos486/wibox-media`, no sobre el firmware o el cloud de fabrica. Fuente: [cmos486, "Firmware custom para el Fermax WiBox"](https://www.cmos486.es/blog/wibox-media-fermax-firmware-home-assistant), secciones "Implementado en el custom firmware" y "La tarjeta de Home Assistant".
+**THIRD-PARTY CLAIM:** the cmos486 blog describes another custom firmware with RTSP, MQTT and direct WebRTC two-way audio, without depending on SIP for its board. It is evidence about `cmos486/wibox-media`, not about the factory firmware or cloud. Source: [cmos486, "Firmware custom para el Fermax WiBox"](https://www.cmos486.es/blog/wibox-media-fermax-firmware-home-assistant), sections "Implementado en el custom firmware" and "La tarjeta de Home Assistant".
 
-**Conclusion:** no hay todavia una especificacion completa del cloud Wibox del APK. Si hay evidencia aprovechable para acotar dominio y protocolos locales. `core:cloud` no debe adoptar los topics del parche ni el WebRTC del fork como si fueran el contrato del fabricante.
+**Conclusion:** there is still no complete specification of the Wibox cloud of the APK. There is, however, usable evidence to bound the domain and local protocols. `core:cloud` must not adopt the topics of the patch nor the WebRTC of the fork as if they were the manufacturer's contract.
 
-## 2. Fuentes, revisiones, licencias y metodo
+## 2. Sources, revisions, licences and method
 
-### 2.1 Fuentes fijadas
+### 2.1 Pinned sources
 
-| Fuente | Revision y papel | Licencia y reutilizacion |
+| Source | Revision and role | Licence and reuse |
 |---|---|---|
-| `https://github.com/morluto/rea` | `main`, `d48e472fa6a664cacbb400560e673533005795ce`, paquete `rea-agents` 6.8.0. Herramienta de analisis | MIT, `LICENSE:1-13`. Solo identificadores y hechos |
-| `https://github.com/duhow/wibox#1` | `main`, `d8502d780f1d4ac3f2ec1a8425a98588fd7f53a7`. Firmware parcheado y notas Wibox | GPL-3.0, `LICENSE:1-18`. No se copia codigo sustancial |
-| `https://www.cmos486.es/blog/wibox-media-fermax-firmware-home-assistant` | Articulo publicado 2026-09-12, leido 2026-10-31. Custom `cmos486/wibox-media` | Se resume con enlace. No se reutiliza codigo |
+| `https://github.com/morluto/rea` | `main`, `d48e472fa6a664cacbb400560e673533005795ce`, package `rea-agents` 6.8.0. Analysis tool | MIT, `LICENSE:1-13`. Only identifiers and facts |
+| `https://github.com/duhow/wibox#1` | `main`, `d8502d780f1d4ac3f2ec1a8425a98588fd7f53a7`. Patched firmware and Wibox notes | GPL-3.0, `LICENSE:1-18`. No substantial code is copied |
+| `https://www.cmos486.es/blog/wibox-media-fermax-firmware-home-assistant` | Article published 2026-09-12, read 2026-10-31. Custom `cmos486/wibox-media` | Summarized with a link. No code is reused |
 
-Para `morluto/rea`, `git remote get-url origin`, `git branch --show-current` y `git rev-parse HEAD` confirmaron origen y revision. Su fecha es `2026-10-31T03:13:07+08:00`. Para `duhow/wibox`, los mismos comandos confirmaron el commit indicado, con fecha `2026-10-18T15:52:35+02:00`. Ambos clones quedaron en `/home/nacho/temp/opencode-work/rea-reference` y `/home/nacho/temp/opencode-work/duhow-wibox-reference`, respectivamente, con `git status --short` sin cambios.
+For `morluto/rea`, `git remote get-url origin`, `git branch --show-current` and `git rev-parse HEAD` confirmed origin and revision. Its date is `2026-10-31T03:13:07+08:00`. For `duhow/wibox`, the same commands confirmed the indicated commit, dated `2026-10-18T15:52:35+02:00`. Both clones remained in `/home/nacho/temp/opencode-work/rea-reference` and `/home/nacho/temp/opencode-work/duhow-wibox-reference`, respectively, with `git status --short` showing no changes.
 
-El fragmento `#1` de la URL aportada para duhow se conserva como identificador de la peticion. El analisis cubre la raiz del repositorio en el commit fijado, no un issue extraido de ese fragmento.
+The `#1` fragment of the URL provided for duhow is kept as the identifier of the request. The analysis covers the repository root at the pinned commit, not an issue extracted from that fragment.
 
-### 2.2 Taxonomia de evidencia
+### 2.2 Evidence taxonomy
 
-- **HECHO DE CODIGO:** se ve directamente en un script o contrato del commit citado. No implica ejecucion ni prueba en hardware.
-- **HECHO DOCUMENTADO:** un repositorio lo afirma en documentacion o en un log conservado. Se cita, pero no se eleva a comportamiento verificado por nosotros.
-- **AFIRMACION DE TERCERO:** procede del blog o de otro proyecto enlazado y no se ha contrastado con su codigo.
-- **HIPOTESIS:** interpretacion pendiente de prueba. Nunca se usa para completar un endpoint o secuencia.
-- **PROPUESTA:** recomendacion para Kotlin, no comportamiento atribuido a Wibox.
+- **CODE FACT:** seen directly in a script or contract of the cited commit. It does not imply execution or hardware testing.
+- **DOCUMENTED FACT:** a repository states it in documentation or in a kept log. It is cited, but not raised to behaviour verified by us.
+- **THIRD-PARTY CLAIM:** comes from the blog or another linked project and has not been checked against its code.
+- **HYPOTHESIS:** interpretation pending proof. It is never used to complete an endpoint or sequence.
+- **PROPOSAL:** recommendation for Kotlin, not behaviour attributed to Wibox.
 
-### 2.3 Cobertura y limites
+### 2.3 Coverage and limits
 
-- Solo analisis estatico y lectura publica. No se uso ninguna credencial, no se ejecuto firmware y no se contacto con Wibox, NTS, MQTT, SIP o WebRTC real.
-- No habia un APK Wibox ni una captura de red propia. Por tanto, ninguna fuente queda correlacionada con `applicationId`, version o certificado del APK objetivo.
-- En REA se revisaron 6860 archivos seguidos, incluidos 5429 `.ts`, con `git ls-files`. No contiene `.kt` ni `.kts`.
-- Los cinco submodulos de REA son motores genericos de analisis y no se inicializaron (`.gitmodules:1-15`). No aportan evidencia Wibox.
-- duhow no incluye el binario propietario Sofia ni `npc_nts_client_config.ini`. Sus afirmaciones cloud no pueden completarse solo con los scripts presentes.
-- Las versiones de firmware probadas por duhow son `V500.R001.A103.00.G0021.B007` y `V500.R001.A103.00.G0021.B013` (`README.md:17-19`). No se deduce compatibilidad universal.
+- Only static analysis and public reading. No credential was used, no firmware was executed and Wibox, NTS, MQTT, SIP or real WebRTC were not contacted.
+- There was no Wibox APK nor an own network capture. Therefore, no source is correlated with the `applicationId`, version or certificate of the target APK.
+- In REA, 6860 tracked files were reviewed, including 5429 `.ts`, with `git ls-files`. It contains no `.kt` or `.kts`.
+- The five REA submodules are generic analysis engines and were not initialized (`.gitmodules:1-15`). They provide no Wibox evidence.
+- duhow does not include the proprietary Sofia binary nor `npc_nts_client_config.ini`. Its cloud claims cannot be completed with the scripts present only.
+- The firmware versions tested by duhow are `V500.R001.A103.00.G0021.B007` and `V500.R001.A103.00.G0021.B013` (`README.md:17-19`). Universal compatibility is not deduced.
 
-## 3. Comparabilidad entre fuentes, APK y firmware
+## 3. Comparability between sources, APK and firmware
 
-| Objeto | Que demuestra | Que no demuestra |
+| Object | What it proves | What it does not prove |
 |---|---|---|
-| REA | Como inspeccionar artefactos y conservar evidencia | Ningun endpoint, token o accion Wibox |
-| Scripts duhow | Comportamiento local del firmware parcheado en el commit | API del APK, nube de fabrica o comportamiento de todas las versiones |
-| Notas `docs/system.md` duhow | Hallazgos de tercero sobre Sofia, NTS, puertos y secretos | Que el APK actual use exactamente esos mensajes o que la IP siga vigente |
-| Blog cmos486 | Funciones declaradas de un fork custom posterior | Protocolo cloud original, autenticacion del APK o necesidad de WebRTC en fabrica |
-| APK objetivo, aun no analizado | Sera la referencia primaria para la app que se quiere clonar | No puede sustituirse por analogias con estos proyectos |
+| REA | How to inspect artifacts and keep evidence | No Wibox endpoint, token or action |
+| duhow scripts | Local behaviour of the patched firmware at the commit | APK API, factory cloud or behaviour of all versions |
+| duhow `docs/system.md` notes | Third-party findings about Sofia, NTS, ports and secrets | That the current APK uses exactly those messages or that the IP is still valid |
+| cmos486 blog | Declared features of a later custom fork | Original cloud protocol, APK authentication or the need for WebRTC in factory |
+| Target APK, not yet analyzed | Will be the primary reference for the app to clone | It cannot be replaced by analogies with these projects |
 
-**HECHO:** REA no esta asociado a ninguna version Wibox. Su `jadxApp` solo define campos genericos `package`, `version_name`, `version_code`, SDK y permisos que podra extraer del APK (`src/android/JadxProtocol.ts:73-80`).
+**FACT:** REA is not associated with any Wibox version. Its `jadxApp` only defines generic fields `package`, `version_name`, `version_code`, SDK and permissions that it could extract from the APK (`src/android/JadxProtocol.ts:73-80`).
 
-**HIPOTESIS:** REA pudo aportarse como herramienta para producir la referencia desde el APK, no como implementacion de referencia. Falta contexto para confirmarlo y no afecta a las conclusiones tecnicas.
+**HYPOTHESIS:** REA may have been provided as a tool to produce the reference from the APK, not as a reference implementation. Context is missing to confirm it and it does not affect the technical conclusions.
 
-## 4. Arquitectura y lenguajes de REA
+## 4. REA architecture and languages
 
-REA organiza las dependencias hacia dominio. El dispatcher selecciona CLI o MCP, la composicion crea proveedores, el servidor traduce peticiones y la aplicacion comparte workflows. Contratos y dominio contienen esquemas y semantica (`docs/architecture.mermaid:4-28`, `docs/architecture.mermaid:72-83`).
+REA organizes dependencies towards the domain. The dispatcher selects CLI or MCP, composition creates providers, the server translates requests and the application shares workflows. Contracts and domain contain schemas and semantics (`docs/architecture.mermaid:4-28`, `docs/architecture.mermaid:72-83`).
 
-| Componente | Responsabilidad | Evidencia |
+| Component | Responsibility | Evidence |
 |---|---|---|
-| `scripts/rea.mjs`, `src/cli.ts` | CLI y seleccion MCP stdio/HTTP | `scripts/rea.mjs:9-20`, `scripts/rea.mjs:31-68` |
-| `src/main.ts`, `src/server/` | MCP, sesiones y transporte | `src/main.ts:41-69` |
-| `src/application/` | Workflows compartidos | `docs/architecture.mermaid:21-28` |
-| `src/contracts/`, `src/domain/` | Esquemas, Evidence y errores | `src/contracts/errorSchemas.ts:37-38`, `src/domain/evidence.ts:84-107` |
-| `src/android/`, `bridge/android/` | APK estatico con JADX externo | `docs/android-analysis.md:1-14` |
-| `src/captures/`, `src/pcap/` | Capturas guardadas | `docs/pcap-analysis.md:1-6` |
-| `bridge/`, `native/` | Puentes Python, Java, Swift y nativos | `package.json:49-108`, `docs/architecture.mermaid:65-69` |
+| `scripts/rea.mjs`, `src/cli.ts` | CLI and stdio/HTTP MCP selection | `scripts/rea.mjs:9-20`, `scripts/rea.mjs:31-68` |
+| `src/main.ts`, `src/server/` | MCP, sessions and transport | `src/main.ts:41-69` |
+| `src/application/` | Shared workflows | `docs/architecture.mermaid:21-28` |
+| `src/contracts/`, `src/domain/` | Schemas, Evidence and errors | `src/contracts/errorSchemas.ts:37-38`, `src/domain/evidence.ts:84-107` |
+| `src/android/`, `bridge/android/` | Static APK with external JADX | `docs/android-analysis.md:1-14` |
+| `src/captures/`, `src/pcap/` | Stored captures | `docs/pcap-analysis.md:1-6` |
+| `bridge/`, `native/` | Python, Java, Swift and native bridges | `package.json:49-108`, `docs/architecture.mermaid:65-69` |
 
-**Valor para Kotlin:** la separacion entre contratos, dominio y adaptadores es reutilizable como idea. No hay logica Wibox que portar ni archivos Kotlin en REA.
+**Value for Kotlin:** the separation between contracts, domain and adapters is reusable as an idea. There is no Wibox logic to port nor Kotlin files in REA.
 
-## 5. Matriz de funciones Wibox por procedencia
+## 5. Matrix of Wibox features by provenance
 
-| Funcion | Fabrica, documentacion duhow | Custom duhow, codigo | Blog cmos486 | Estado para clon del APK |
+| Feature | Factory, duhow documentation | duhow custom, code | cmos486 blog | Status for the APK clone |
 |---|---|---|---|---|
-| Login cloud | NTS inicia autenticacion y registro (`docs/system.md:168-179`) | No aplica | No tratado | Sin request/response de APK |
-| Renovacion de token | No documentada | No aplica | No tratado | Desconocida |
-| Alta o pairing | `DevId`, `AuthPwd` y Verify Code (`docs/system.md:148-153`) | AP local para configurar WiFi (`include/bin/ap_start.sh:13-28`) | Configuracion WiFi tras flashear | Falta secuencia original |
-| Descubrimiento LAN | UDP 5000 y cadena `ASZENO.SEARCH.V4.1` (`docs/system.md:276-290`) | Heredado de Sofia, no reimplementado | No tratado | Candidato a contrastar |
-| Apertura | No hay mensaje cloud | UART y MQTT/HTTP confirmados (`include/web/run.cgi:5-14`, `include/bin/listener_mqtt.sh:45-50`) | Apertura declarada | Dominio plausible, transporte cloud desconocido |
-| Iniciar/terminar llamada | No hay mensaje cloud | `START_CALL` y `STOP_CALL` (`include/wibox_codes.txt:19-21`) | Llamada WebRTC custom | Falta secuencia original |
-| F1 y guardia | No hay mensaje cloud | `START_F1`, `STOP_F1`, `CALL_GUARD` (`include/wibox_codes.txt:17-23`) | No es foco | No asumir equivalencia cloud |
-| Desvio | No hay mensaje cloud | `PUSH_STATE_0/1` y topic `forward` (`include/bin/listener.sh:147-155`) | No es foco | No asumir equivalencia cloud |
-| Timbre y estados | No hay eventos cloud | `ALARM_REPORT`, `HANG_UP`, `CMD_STOP_RING` (`docs/codes.md:18-23`, `docs/codes.md:34-38`) | Eventos declarados | Modelos cloud desconocidos |
-| Audio/video | No queda especificado | Audio marcado pendiente en README (`README.md:9-15`) | RTSP y WebRTC declarados | No trasladar WebRTC al APK |
-| SIP | No implementado en duhow | No hay cliente SIP en el arbol | Daemon SIP de otro fork permanece, pero no es foco | Sin evidencia de SIP cloud |
-| MQTT | No es el cloud NTS documentado | Plano 1883 y topics locales (`USAGE.md:10-25`) | MQTT para HA declarado | No usar como cloud de fabrica |
+| Cloud login | NTS starts authentication and registration (`docs/system.md:168-179`) | Not applicable | Not covered | No APK request/response |
+| Token renewal | Not documented | Not applicable | Not covered | Unknown |
+| Pairing | `DevId`, `AuthPwd` and Verify Code (`docs/system.md:148-153`) | Local AP to configure WiFi (`include/bin/ap_start.sh:13-28`) | WiFi configuration after flashing | Original sequence missing |
+| LAN discovery | UDP 5000 and string `ASZENO.SEARCH.V4.1` (`docs/system.md:276-290`) | Inherited from Sofia, not reimplemented | Not covered | Candidate to compare |
+| Opening | No cloud message | UART and MQTT/HTTP confirmed (`include/web/run.cgi:5-14`, `include/bin/listener_mqtt.sh:45-50`) | Opening declared | Plausible domain, cloud transport unknown |
+| Start/stop call | No cloud message | `START_CALL` and `STOP_CALL` (`include/wibox_codes.txt:19-21`) | Custom WebRTC call | Original sequence missing |
+| F1 and guard | No cloud message | `START_F1`, `STOP_F1`, `CALL_GUARD` (`include/wibox_codes.txt:17-23`) | Not the focus | Do not assume cloud equivalence |
+| Forwarding | No cloud message | `PUSH_STATE_0/1` and `forward` topic (`include/bin/listener.sh:147-155`) | Not the focus | Do not assume cloud equivalence |
+| Doorbell and states | No cloud events | `ALARM_REPORT`, `HANG_UP`, `CMD_STOP_RING` (`docs/codes.md:18-23`, `docs/codes.md:34-38`) | Events declared | Cloud models unknown |
+| Audio/video | Not specified | Audio marked as pending in README (`README.md:9-15`) | RTSP and WebRTC declared | Do not transfer WebRTC to the APK |
+| SIP | Not implemented in duhow | There is no SIP client in the tree | SIP daemon of another fork remains, but is not the focus | No evidence of cloud SIP |
+| MQTT | It is not the documented NTS cloud | Plain 1883 and local topics (`USAGE.md:10-25`) | MQTT for HA declared | Do not use as factory cloud |
 
-**HECHO:** esta matriz no demuestra que el fabricante carezca de funciones. Separa lo confirmado para cada implementacion y evita cubrir huecos por analogia.
+**FACT:** this matrix does not prove that the manufacturer lacks features. It separates what is confirmed for each implementation and avoids filling gaps by analogy.
 
-## 6. Endpoints, transportes y modelos
+## 6. Endpoints, transports and models
 
-### 6.1 Cloud y Sofia, solo documentacion duhow
+### 6.1 Cloud and Sofia, duhow documentation only
 
-El NTS Client se describe como intermediario entre cloud y el puerto local de management `TCP/34567`. Requiere `AuthPwd`, que puede pasarse con `-E`, y toma `DevId` de almacenamiento persistente (`docs/system.md:148-153`).
+The NTS Client is described as an intermediary between the cloud and the local management port `TCP/34567`. It requires `AuthPwd`, which can be passed with `-E`, and takes `DevId` from persistent storage (`docs/system.md:148-153`).
 
-Secuencia documentada:
+Documented sequence:
 
-1. Inicio del agente y deteccion de red/NAT.
-2. Conexion a autenticacion por HTTPS y login.
-3. Registro del dispositivo en el servidor.
-4. Solicitud P2P y creacion de conexiones TCP logicas (`docs/system.md:168-193`).
+1. Agent startup and network/NAT detection.
+2. Connection to authentication over HTTPS and login.
+3. Device registration on the server.
+4. P2P request and creation of logical TCP connections (`docs/system.md:168-193`).
 
-| Endpoint o canal | Valor documentado | Clase de evidencia y limite |
+| Endpoint or channel | Documented value | Evidence class and limit |
 |---|---|---|
-| Cloud UDP | `47.254.155.166:8300` | Log de tercero, `docs/system.md:168-175`. No contactado ni verificado vigente |
-| Cloud HTTPS | `47.254.155.166:443` | Mismo limite. No hay ruta HTTP, headers o cuerpo |
-| Management local | `TCP/34567` | `docs/system.md:75-81`. No hay esquema de mensajes en el repo |
-| Web Sofia | `TCP/80` y `TCP/443` | `docs/system.md:75-81`. ONVIF aparece deshabilitado |
+| Cloud UDP | `47.254.155.166:8300` | Third-party log, `docs/system.md:168-175`. Not contacted nor verified as current |
+| Cloud HTTPS | `47.254.155.166:443` | Same limit. There is no HTTP path, headers or body |
+| Local management | `TCP/34567` | `docs/system.md:75-81`. There is no message schema in the repo |
+| Sofia web | `TCP/80` and `TCP/443` | `docs/system.md:75-81`. ONVIF appears disabled |
 | Autodiscovery | `UDP/5000` | `docs/system.md:75-81`, `docs/system.md:276-290` |
-| UDP adicional | `UDP/5002` | Proposito desconocido, `docs/system.md:75-81` |
-| `system_sofia` | `TCP/6683`, loopback segun notas | Paquetes de 1032 bytes, `docs/system.md:103-112` |
-| `interDebug` | `TCP/9527` tras señal | Consola de debug, `docs/system.md:195-212` |
+| Additional UDP | `UDP/5002` | Unknown purpose, `docs/system.md:75-81` |
+| `system_sofia` | `TCP/6683`, loopback according to notes | 1032-byte packets, `docs/system.md:103-112` |
+| `interDebug` | `TCP/9527` after signal | Debug console, `docs/system.md:195-212` |
 
-**HECHO DOCUMENTADO:** la configuracion cloud se asocia a `npc_nts_client_config.ini` y estados `/var/cloud/states` (`docs/system.md:59-60`, `docs/system.md:95-101`). Esos archivos no estan incluidos para inspeccion, por lo que no se conocen rutas, claves o formato completos.
+**DOCUMENTED FACT:** the cloud configuration is associated with `npc_nts_client_config.ini` and `/var/cloud/states` states (`docs/system.md:59-60`, `docs/system.md:95-101`). Those files are not included for inspection, so complete paths, keys or format are not known.
 
-### 6.2 HTTP local del firmware parcheado, confirmado en codigo
+### 6.2 Local HTTP of the patched firmware, confirmed in code
 
-`setup.sh` arranca BusyBox httpd en puerto 80, o 81 si 80 esta ocupado (`include/web/setup.sh:13-18`). El front-end llama `./cgi-bin/run.cgi?c=` (`include/web/index.html:38-63`).
+`setup.sh` starts BusyBox httpd on port 80, or 81 if 80 is busy (`include/web/setup.sh:13-18`). The front end calls `./cgi-bin/run.cgi?c=` (`include/web/index.html:38-63`).
 
-| Comando CGI | Efecto confirmado | Respuesta o limite |
+| CGI command | Confirmed effect | Response or limit |
 |---|---|---|
-| `open` | Escribe `TRANSFER_CMD_UNLOCK_DOOR` en UART | No hay ack fisico ni JSON (`include/web/run.cgi:5-6`) |
-| `dspy` | Escribe `START_CALL` | `include/web/run.cgi:7-8` |
-| `dspn` | Escribe `STOP_CALL` | `include/web/run.cgi:7-8` |
-| `fone` | Activa F1, espera 3 segundos y desactiva | `include/web/run.cgi:9-10` |
-| `guard` | Escribe `CALL_GUARD` | `include/web/run.cgi:9-10` |
-| `unlock` | Inicia llamada, abre a los 2 segundos y cierra 1 segundo despues | Secuencia temporizada, no confirmacion de cerradura (`include/web/run.cgi:12-14`) |
+| `open` | Writes `TRANSFER_CMD_UNLOCK_DOOR` to UART | No physical ack nor JSON (`include/web/run.cgi:5-6`) |
+| `dspy` | Writes `START_CALL` | `include/web/run.cgi:7-8` |
+| `dspn` | Writes `STOP_CALL` | `include/web/run.cgi:7-8` |
+| `fone` | Activates F1, waits 3 seconds and deactivates | `include/web/run.cgi:9-10` |
+| `guard` | Writes `CALL_GUARD` | `include/web/run.cgi:9-10` |
+| `unlock` | Starts call, opens after 2 seconds and closes 1 second later | Timed sequence, not lock confirmation (`include/web/run.cgi:12-14`) |
 
-El CGI devuelve `Content-type: text/html` si la funcion termina, 404 si el comando no existe y 500 si falla la escritura UART (`include/web/run.cgi:5-21`). No hay autenticacion visible en `setup.sh` ni en el CGI. Esto es un riesgo del parche si se expone la red, no una prueba de que el cloud de fabrica carezca de autenticacion.
+The CGI returns `Content-type: text/html` if the function finishes, 404 if the command does not exist and 500 if the UART write fails (`include/web/run.cgi:5-21`). There is no visible authentication in `setup.sh` nor in the CGI. This is a risk of the patch if the network is exposed, not proof that the factory cloud lacks authentication.
 
-### 6.3 MQTT local del firmware parcheado, confirmado en codigo
+### 6.3 Local MQTT of the patched firmware, confirmed in code
 
-La raiz es `wibox/${MODEL}`, el client id es `wibox_${MODEL}` y las credenciales opcionales se leen de `/mnt/mtd/mqtt.conf` (`include/bin/mqtt_functions.sh:9-30`). La guia dice que se probo MQTT plano en 1883 (`USAGE.md:10-25`) y el build usa `WITH_TLS=no` (`scripts/81_mosquitto.sh:59-63`).
+The root is `wibox/${MODEL}`, the client id is `wibox_${MODEL}` and the optional credentials are read from `/mnt/mtd/mqtt.conf` (`include/bin/mqtt_functions.sh:9-30`). The guide says plain MQTT was tested on 1883 (`USAGE.md:10-25`) and the build uses `WITH_TLS=no` (`scripts/81_mosquitto.sh:59-63`).
 
-| Topic bajo `wibox/${MODEL}` | Payload y accion | Evidencia |
+| Topic under `wibox/${MODEL}` | Payload and action | Evidence |
 |---|---|---|
-| `/door/set` | `ON` o `PRESS` escribe unlock. Publica `OFF` al segundo | `include/bin/listener_mqtt.sh:42-51` |
-| `/door` | `ON/ONLINE` inicia llamada, `OFF/OFFLINE` la termina | `include/bin/listener_mqtt.sh:52-63` |
-| `/forward` | `ON/OFF` cambia desvio con `PUSH_STATE_1/0` | `include/bin/listener_mqtt.sh:64-75` |
-| `/f1` | `ON`, `OFF` o `PRESS`, este ultimo con pulso de 3 segundos | `include/bin/listener_mqtt.sh:77-88` |
-| `/ding` | `ON/OFF` para timbre | `include/bin/listener.sh:122-140` |
-| `/ding/last` | Timestamp retenido de la ultima llamada | `include/bin/listener.sh:122-127` |
-| Raiz | `init`, `config`, `online`, `offline`, will retenido y keepalive 300 | `include/bin/listener_mqtt.sh:37-43`, `include/bin/listener.sh:65-74` |
-| `/wifi/stats` | JSON con metricas, incluida RSSI | `include/bin/mqtt_wifi_stats.sh:6-26` |
+| `/door/set` | `ON` or `PRESS` writes unlock. Publishes `OFF` after one second | `include/bin/listener_mqtt.sh:42-51` |
+| `/door` | `ON/ONLINE` starts call, `OFF/OFFLINE` ends it | `include/bin/listener_mqtt.sh:52-63` |
+| `/forward` | `ON/OFF` changes forwarding with `PUSH_STATE_1/0` | `include/bin/listener_mqtt.sh:64-75` |
+| `/f1` | `ON`, `OFF` or `PRESS`, the latter with a 3-second pulse | `include/bin/listener_mqtt.sh:77-88` |
+| `/ding` | `ON/OFF` for the doorbell | `include/bin/listener.sh:122-140` |
+| `/ding/last` | Retained timestamp of the last call | `include/bin/listener.sh:122-127` |
+| Root | `init`, `config`, `online`, `offline`, retained will and keepalive 300 | `include/bin/listener_mqtt.sh:37-43`, `include/bin/listener.sh:65-74` |
+| `/wifi/stats` | JSON with metrics, including RSSI | `include/bin/mqtt_wifi_stats.sh:6-26` |
 
-Home Assistant discovery usa `homeassistant/<type>/<unique_id>/config` y publica entidades de puerta, F1, llamada, desvio, timbre, ultima llamada y calidad WiFi (`include/bin/mqtt_config_homeassistant.sh:5-16`, `include/bin/mqtt_config_homeassistant.sh:64-98`).
+Home Assistant discovery uses `homeassistant/<type>/<unique_id>/config` and publishes entities for door, F1, call, forwarding, doorbell, last call and WiFi quality (`include/bin/mqtt_config_homeassistant.sh:5-16`, `include/bin/mqtt_config_homeassistant.sh:64-98`).
 
-### 6.4 UART local, confirmado en codigo y tabla
+### 6.4 Local UART, confirmed in code and table
 
-El dispositivo es `/dev/ttySGK1`. El listener lee cuatro bytes por codigo (`include/bin/listener.sh:3-7`, `include/bin/listener.sh:86-99`). La documentacion describe prefijo `FB` y un checksum por suma, con ejemplos y significados (`docs/codes.md:1-12`).
+The device is `/dev/ttySGK1`. The listener reads four bytes per code (`include/bin/listener.sh:3-7`, `include/bin/listener.sh:86-99`). The documentation describes an `FB` prefix and a sum checksum, with examples and meanings (`docs/codes.md:1-12`).
 
-| Nombre | Frame | Direccion y funcion |
+| Name | Frame | Direction and function |
 |---|---|---|
-| `ALARM_REPORT` | `FB 11 00 1C` | Entrada, llamada desde calle |
-| `TRANSFER_CMD_UNLOCK_DOOR` | `FB 12 01 1E` | Salida, apertura rele 1 |
-| `HANG_UP_0` | `FB 13 00 1E` | Entrada, timeout sin respuesta documentado como 30 segundos |
-| `START_CALL` | `FB 14 01 20` | Entrada/salida, inicio de llamada |
-| `STOP_CALL` | `FB 14 00 1F` | Salida, fin de llamada |
-| `CALL_GUARD` | `FB 15 00 20` | Salida, llamada a guardia |
-| `START_F1`, `STOP_F1` | `FB 17 01 23`, `FB 17 00 22` | Salida, rele F1 |
-| `PUSH_STATE_0`, `PUSH_STATE_1` | `FB 19 00 24`, `FB 19 01 25` | Entrada/salida, deshabilita o habilita WiFi/llamadas |
-| `CMD_STOP_RING` | `FB 23 00 2E` | Entrada, llamada tomada por telefono fisico |
+| `ALARM_REPORT` | `FB 11 00 1C` | Input, call from street |
+| `TRANSFER_CMD_UNLOCK_DOOR` | `FB 12 01 1E` | Output, relay 1 opening |
+| `HANG_UP_0` | `FB 13 00 1E` | Input, timeout without answer documented as 30 seconds |
+| `START_CALL` | `FB 14 01 20` | Input/output, call start |
+| `STOP_CALL` | `FB 14 00 1F` | Output, call end |
+| `CALL_GUARD` | `FB 15 00 20` | Output, call to guard |
+| `START_F1`, `STOP_F1` | `FB 17 01 23`, `FB 17 00 22` | Output, F1 relay |
+| `PUSH_STATE_0`, `PUSH_STATE_1` | `FB 19 00 24`, `FB 19 01 25` | Input/output, disables or enables WiFi/calls |
+| `CMD_STOP_RING` | `FB 23 00 2E` | Input, call taken by physical phone |
 
-La fuente de frames es `include/wibox_codes.txt:1-24` y la interpretacion `docs/codes.md:12-39`. Los campos marcados `unknown` deben permanecer desconocidos.
+The source of frames is `include/wibox_codes.txt:1-24` and the interpretation `docs/codes.md:12-39`. Fields marked `unknown` must remain unknown.
 
-**Cobertura real del listener:** el fichero de codigos no equivale a una lista de funciones soportadas. `listener.sh` si maneja `CMD_RESET` para volver a fabrica (`include/bin/listener.sh:92-99`), pero no tiene ramas para todos los codigos definidos. Por ejemplo, `HANG_UP_1` esta definido en `include/wibox_codes.txt:4-6` y no tiene un `elif is_code HANG_UP_1` en `include/bin/listener.sh:86-159`. Otros codigos como `MCU_STATE`, `SAVE_ADDR` o `CALL_GUARD_ERROR_2` quedan como observaciones, no como una maquina de estados completa.
+**Real listener coverage:** the codes file is not the same as a list of supported features. `listener.sh` does handle `CMD_RESET` to return to factory (`include/bin/listener.sh:92-99`), but it has no branches for all defined codes. For example, `HANG_UP_1` is defined in `include/wibox_codes.txt:4-6` and has no `elif is_code HANG_UP_1` in `include/bin/listener.sh:86-159`. Other codes such as `MCU_STATE`, `SAVE_ADDR` or `CALL_GUARD_ERROR_2` remain as observations, not as a complete state machine.
 
-### 6.5 Modelos REA que no son Wibox
+### 6.5 REA models that are not Wibox
 
-| Modelo | Proposito real | Evidencia |
+| Model | Real purpose | Evidence |
 |---|---|---|
-| `Evidence` | Procedencia con `evidence_id`, `provider`, `normalized_result`, `confidence`, `authority` y `limitations` | `src/domain/evidence.ts:84-107` |
-| `AnalysisErrorProjection` | Error REA con `code`, `category`, `retryable` y `remediation` | `src/contracts/errorSchemas.ts:7-38` |
-| `jadxApp` | Metadatos genericos de un APK | `src/android/JadxProtocol.ts:73-80` |
-| ADB/Frida device | Dispositivos de analisis, no videoporteros | `src/domain/adb/adbDeviceAnalysis.ts:471-485`, `src/domain/fridaDiscovery.ts:3-13` |
+| `Evidence` | Provenance with `evidence_id`, `provider`, `normalized_result`, `confidence`, `authority` and `limitations` | `src/domain/evidence.ts:84-107` |
+| `AnalysisErrorProjection` | REA error with `code`, `category`, `retryable` and `remediation` | `src/contracts/errorSchemas.ts:7-38` |
+| `jadxApp` | Generic APK metadata | `src/android/JadxProtocol.ts:73-80` |
+| ADB/Frida device | Analysis devices, not video intercoms | `src/domain/adb/adbDeviceAnalysis.ts:471-485`, `src/domain/fridaDiscovery.ts:3-13` |
 
-## 7. Autenticacion, pairing, credenciales y tokens
+## 7. Authentication, pairing, credentials and tokens
 
-### 7.1 Cloud de fabrica
+### 7.1 Factory cloud
 
-**HECHO DOCUMENTADO:** NTS utiliza `DevId` y un Verify Code `AuthPwd`. El arranque con `-E ${m_dVerifyCode}` aparece en la lista de comandos de Sofia (`docs/system.md:130-146`) y el requisito se explica en `docs/system.md:148-153`.
+**DOCUMENTED FACT:** NTS uses `DevId` and an `AuthPwd` Verify Code. The startup with `-E ${m_dVerifyCode}` appears in the list of Sofia commands (`docs/system.md:130-146`) and the requirement is explained in `docs/system.md:148-153`.
 
-**DESCONOCIDO:** no hay peticion de login, respuesta, access token, refresh token, expiracion, logout o renovacion. La frase "Device is registered" en el log (`docs/system.md:173-179`) no permite reconstruir pairing ni los mensajes intercambiados.
+**UNKNOWN:** there is no login request, response, access token, refresh token, expiry, logout or renewal. The phrase "Device is registered" in the log (`docs/system.md:173-179`) does not allow reconstructing the pairing nor the exchanged messages.
 
-### 7.2 Secreto persistente documentado
+### 7.2 Documented persistent secret
 
-`docs/system.md` situa secretos codificados en base64 en `/mnt/mtd/Config/secret` (`docs/system.md:305-318`). Base64 es codificacion, no prueba de cifrado.
+`docs/system.md` places base64-encoded secrets in `/mnt/mtd/Config/secret` (`docs/system.md:305-318`). Base64 is encoding, not proof of encryption.
 
-| Campo | Interpretacion de la documentacion | Certeza |
+| Field | Interpretation of the documentation | Certainty |
 |---|---|---|
-| `TD` y `TD5` | `deviceToken` dividido en secciones | Documentado, sin formato de mensaje ni expiracion |
-| `K1`, `K2` | Dos claves alfanumericas de 32 caracteres | Documentado, uso desconocido |
-| `VC` | Verify Code impreso en el QR del hardware | Documentado |
-| `DVC` | Device Verify Code, `innerAuthCode` o `m_dVerifyCode` | Documentado |
-| `HVC` | Hash Verify Code | El texto dice "Apparently a SHA256", algoritmo no confirmado |
-| `FD` | `Activated` o `NotActive` | Documentado |
-| `ASC`, `RST` | Flags | Significado incierto incluso en las notas |
+| `TD` and `TD5` | `deviceToken` split into sections | Documented, without message format or expiry |
+| `K1`, `K2` | Two 32-character alphanumeric keys | Documented, use unknown |
+| `VC` | Verify Code printed in the hardware QR code | Documented |
+| `DVC` | Device Verify Code, `innerAuthCode` or `m_dVerifyCode` | Documented |
+| `HVC` | Hash Verify Code | The text says "Apparently a SHA256", algorithm not confirmed |
+| `FD` | `Activated` or `NotActive` | Documented |
+| `ASC`, `RST` | Flags | Uncertain meaning even in the notes |
 
-No se copian valores. Estos campos no justifican llamar OAuth o JWT al mecanismo ni inventar una politica de renovacion.
+No values are copied. These fields do not justify calling the mechanism OAuth or JWT nor inventing a renewal policy.
 
-### 7.3 Credenciales WiFi, shell y MQTT
+### 7.3 WiFi, shell and MQTT credentials
 
-- La guia duhow documenta passwords root de fabrica distintos segun consola (`INSTALL.md:39-52`). No se usaron ni se reproducen aqui.
-- La misma guia dice que las credenciales WiFi de Sofia estan cifradas y que no podian recuperarlas (`INSTALL.md:90-107`). No identifica algoritmo ni clave.
-- El parche guarda MQTT en `/mnt/mtd/mqtt.conf`, lo copia a `/tmp`, exporta valores con `xargs` y los pasa como argumentos `-u` y `-P` (`include/bin/mqtt_functions.sh:9-26`). Esto expone una superficie de secreto en ficheros y linea de comandos que no debe copiarse en Kotlin.
-- El AP del parche deriva SSID `IDS7938` mas cuatro caracteres del UDID, password del UDID completo e IP `192.168.111.1` (`include/bin/ap_start.sh:13-28`). Es provisioning local, no pairing cloud. Si el UDID es observable, no es un secreto robusto.
-- `STA_TO_AP` se documenta como el codigo recibido tras mantener el boton mas de 5 segundos, que provoca reinicio y modo AP (`docs/codes.md:34-35`). Es un mecanismo fisico de provisioning documentado, no un alto de cuenta cloud.
+- The duhow guide documents different factory root passwords depending on console (`INSTALL.md:39-52`). They were not used nor are they reproduced here.
+- The same guide says the Sofia WiFi credentials are encrypted and that they could not recover them (`INSTALL.md:90-107`). It does not identify algorithm or key.
+- The patch stores MQTT in `/mnt/mtd/mqtt.conf`, copies it to `/tmp`, exports values with `xargs` and passes them as `-u` and `-P` arguments (`include/bin/mqtt_functions.sh:9-26`). This exposes a secret surface in files and command line that must not be copied in Kotlin.
+- The AP of the patch derives SSID `IDS7938` plus four characters of the UDID, password from the full UDID and IP `192.168.111.1` (`include/bin/ap_start.sh:13-28`). It is local provisioning, not cloud pairing. If the UDID is observable, it is not a robust secret.
+- `STA_TO_AP` is documented as the code received after holding the button for more than 5 seconds, which causes a restart and AP mode (`docs/codes.md:34-35`). It is a documented physical provisioning mechanism, not cloud account creation.
 
-### 7.4 REA no aporta autenticacion Wibox
+### 7.4 REA provides no Wibox authentication
 
-La sesion UUID de MCP se crea con `randomUUID()` tras `initialize` (`src/server/http/serveStreamableHttp.ts:201-220`, `src/server/http/serveStreamableHttp.ts:404-417`). No es login de usuario. La configuracion REA solo selecciona motores, rutas, limites y timeouts (`src/config/environment.ts:47-134`). Las listas de nombres sensibles sirven para excluir credenciales de capturas, no para autenticar (`src/application/environment/environmentBuildReport.ts:23-79`).
+The MCP UUID session is created with `randomUUID()` after `initialize` (`src/server/http/serveStreamableHttp.ts:201-220`, `src/server/http/serveStreamableHttp.ts:404-417`). It is not user login. The REA configuration only selects engines, paths, limits and timeouts (`src/config/environment.ts:47-134`). The lists of sensitive names serve to exclude credentials from captures, not to authenticate (`src/application/environment/environmentBuildReport.ts:23-79`).
 
-## 8. Descubrimiento, dispositivos, acciones y estados
+## 8. Discovery, devices, actions and states
 
-### 8.1 Autodiscovery documentado
+### 8.1 Documented autodiscovery
 
-Las notas proponen escucha UDP y broadcast de la cadena `ASZENO.SEARCH.V4.1` hacia puerto 5000. La respuesta pegada incluye version B007 (`docs/system.md:276-290`). No hay datagrama binario completo, esquema de respuesta, autenticacion ni prueba con el APK.
+The notes propose UDP listening and broadcast of the string `ASZENO.SEARCH.V4.1` to port 5000. The pasted response includes version B007 (`docs/system.md:276-290`). There is no complete binary datagram, response schema, authentication or test with the APK.
 
-### 8.2 Acciones y eventos del parche
+### 8.2 Actions and events of the patch
 
-El listener convierte eventos UART en MQTT y alarmas locales. `ALARM_REPORT` publica timbre y timestamp, `HANG_UP_0` marca llamada perdida y `CMD_STOP_RING` indica que se descolgo el telefono fisico (`include/bin/listener.sh:122-146`). Los estados de alarma visibles son `Ring`, `Missed`, `Answered` y `Open door` (`include/web/index.html:38-45`).
+The listener turns UART events into MQTT and local alarms. `ALARM_REPORT` publishes doorbell and timestamp, `HANG_UP_0` marks a missed call and `CMD_STOP_RING` indicates that the physical phone was picked up (`include/bin/listener.sh:122-146`). The visible alarm states are `Ring`, `Missed`, `Answered` and `Open door` (`include/web/index.html:38-45`).
 
-La apertura automatica puede encadenar `ALARM_REPORT`, `START_CALL`, unlock y `STOP_CALL` cuando existen ciertos flags (`include/bin/listener.sh:108-135`). Es una maquina de estados del parche, no una maquina de estados cloud confirmada.
+Automatic opening can chain `ALARM_REPORT`, `START_CALL`, unlock and `STOP_CALL` when certain flags exist (`include/bin/listener.sh:108-135`). It is a state machine of the patch, not a confirmed cloud state machine.
 
-### 8.3 Lista de dispositivos
+### 8.3 Device list
 
-No hay un modelo cloud de instalaciones o dispositivos en duhow. Los modelos ADB y Frida de REA no llenan ese hueco. El identificador `MODEL` de MQTT se deriva del hostname, no demuestra el `DevId` o el esquema de identidad del fabricante (`include/bin/mqtt_functions.sh:20-30`).
+There is no cloud model of installations or devices in duhow. The ADB and Frida models of REA do not fill that gap. The MQTT `MODEL` identifier is derived from the hostname, it does not prove the `DevId` or the manufacturer identity scheme (`include/bin/mqtt_functions.sh:20-30`).
 
-### 8.4 Direccion VDS, distinta del pairing cloud
+### 8.4 VDS address, different from cloud pairing
 
-duhow registra `SAVE_ADDR 0x04` tras configurar con el boton P2 y pulsar el portero (`docs/codes.md:30-31`). El blog cmos486 afirma que el WiBox necesita una direccion VDS para escuchar el pulsador correcto y que una direccion incorrecta impide recibir llamadas sin error visible. Esta direccion identifica el destino en el bus VDS segun esa fuente. No debe modelarse como `deviceId` cloud ni como prueba de emparejamiento NTS sin evidencia adicional. Fuente del blog: [cmos486](https://www.cmos486.es/blog/wibox-media-fermax-firmware-home-assistant), "Paso 7: dile que piso es".
+duhow records `SAVE_ADDR 0x04` after configuring with the P2 button and pressing the doorbell (`docs/codes.md:30-31`). The cmos486 blog states that the WiBox needs a VDS address to hear the correct push button and that a wrong address prevents receiving calls with no visible error. This address identifies the destination on the VDS bus according to that source. It must not be modelled as a cloud `deviceId` nor as proof of NTS pairing without additional evidence. Blog source: [cmos486](https://www.cmos486.es/blog/wibox-media-fermax-firmware-home-assistant), "Paso 7: dile que piso es".
 
-## 9. Tiempo real: MQTT, SIP, WebRTC y otros canales
+## 9. Real time: MQTT, SIP, WebRTC and other channels
 
-| Canal | Que esta confirmado | Limite de aplicabilidad |
+| Channel | What is confirmed | Applicability limit |
 |---|---|---|
-| NTS/P2P | Log documenta P2P y TCP logico tras autenticacion (`docs/system.md:184-193`) | No hay wire format ni relacion demostrada con el APK actual |
-| MQTT duhow | Pub/sub local, will, retained, keepalive y topics de accion/estado | Firmware parcheado, no cloud de fabrica |
-| WebSocket REA | CDP loopback (`src/browser/CdpConnection.ts:79-113`) | Herramienta de analisis, no Wibox |
-| SSE REA | Streamable MCP (`src/server/http/serveStreamableHttp.ts:180-199`) | Herramienta de analisis, no Wibox |
-| SIP | Blog dice que el daemon del fork segator sigue disponible | Afirmacion de tercero sobre custom. No prueba SIP en stock ni da endpoints |
-| WebRTC | Blog declara audio bidireccional directo contra `cmos486/wibox-media` y tarjeta HA | No contrastado con codigo y no aplicable automaticamente al APK |
-| RTSP | Blog declara video H.264 por RTSP en custom | Igual que el anterior |
+| NTS/P2P | Log documents P2P and logical TCP after authentication (`docs/system.md:184-193`) | There is no wire format nor demonstrated relationship with the current APK |
+| duhow MQTT | Local pub/sub, will, retained, keepalive and action/state topics | Patched firmware, not factory cloud |
+| REA WebSocket | Loopback CDP (`src/browser/CdpConnection.ts:79-113`) | Analysis tool, not Wibox |
+| REA SSE | Streamable MCP (`src/server/http/serveStreamableHttp.ts:180-199`) | Analysis tool, not Wibox |
+| SIP | Blog says the daemon of the segator fork is still available | Third-party claim about a custom. It does not prove SIP in stock nor give endpoints |
+| WebRTC | Blog declares direct two-way audio against `cmos486/wibox-media` and an HA board | Not checked against code and not automatically applicable to the APK |
+| RTSP | Blog declares H.264 video over RTSP in the custom | Same as above |
 
-Fuente del blog para SIP, WebRTC y RTSP: [cmos486](https://www.cmos486.es/blog/wibox-media-fermax-firmware-home-assistant), secciones "Implementado en el custom firmware", "El origen de todo" y "La tarjeta de Home Assistant".
+Blog source for SIP, WebRTC and RTSP: [cmos486](https://www.cmos486.es/blog/wibox-media-fermax-firmware-home-assistant), sections "Implementado en el custom firmware", "El origen de todo" and "La tarjeta de Home Assistant".
 
-**DESCONOCIDO:** ninguna fuente aporta registrar o URI SIP, extension, password, negociacion SDP, signalling WebRTC, servidores STUN/TURN, credenciales ICE, URL o credenciales RTSP. Tampoco se detalla el canal de eventos cloud original. El blog describe como maximo la intencion y arquitectura declarada del fork, no un contrato implementable de media.
+**UNKNOWN:** no source provides SIP registrar or URI, extension, password, SDP negotiation, WebRTC signalling, STUN/TURN servers, ICE credentials, RTSP URL or credentials. Nor is the original cloud event channel detailed. The blog describes at most the intention and declared architecture of the fork, not an implementable media contract.
 
-**HIPOTESIS:** el sistema original puede combinar cloud, canal local y media, pero las fuentes no permiten decidir la topologia exacta del APK. La prueba debe salir de bibliotecas, clases, manifiesto y trafico de la version objetivo.
+**HYPOTHESIS:** the original system may combine cloud, local channel and media, but the sources do not allow deciding the exact topology of the APK. The proof must come from libraries, classes, manifest and traffic of the target version.
 
-## 10. Criptografia y proteccion de comunicaciones
+## 10. Cryptography and communications protection
 
-- **Cloud:** `AuthPwd`, token y campos `K1/K2` estan documentados, pero no su uso criptografico. `HVC` solo se sospecha SHA-256 (`docs/system.md:305-318`). No hay prueba de pinning, firma de comandos o cifrado de payloads.
-- **WiFi Sofia:** la guia afirma cifrado sin recuperacion de credenciales, sin algoritmo (`INSTALL.md:90-107`).
-- **MQTT parcheado:** plano, build `WITH_TLS=no` (`scripts/81_mosquitto.sh:59-63`). Usuario/password opcional no cifra el canal.
-- **HTTP parcheado:** BusyBox httpd en 80/81 sin configuracion TLS visible (`include/web/setup.sh:13-18`).
-- **Actualizacion parcheada:** MD5 compara bytes antes y despues de escribir, no autentica origen (`include/bin/update_firmware.sh:23-49`).
-- **REA:** SHA-256 de Evidence y HMAC del bridge Cutter pertenecen a la herramienta (`src/domain/evidence.ts:35-46`, `src/cutter/cutterBridgeMac.ts:1-16`). No revelan criptografia Wibox.
+- **Cloud:** `AuthPwd`, token and the `K1/K2` fields are documented, but not their cryptographic use. `HVC` is only suspected to be SHA-256 (`docs/system.md:305-318`). There is no proof of pinning, command signing or payload encryption.
+- **Sofia WiFi:** the guide claims encryption without credential recovery, without algorithm (`INSTALL.md:90-107`).
+- **Patched MQTT:** plain, build `WITH_TLS=no` (`scripts/81_mosquitto.sh:59-63`). Optional user/password does not encrypt the channel.
+- **Patched HTTP:** BusyBox httpd on 80/81 without visible TLS configuration (`include/web/setup.sh:13-18`).
+- **Patched update:** MD5 compares bytes before and after writing, it does not authenticate origin (`include/bin/update_firmware.sh:23-49`).
+- **REA:** Evidence SHA-256 and the Cutter bridge HMAC belong to the tool (`src/domain/evidence.ts:35-46`, `src/cutter/cutterBridgeMac.ts:1-16`). They do not reveal Wibox cryptography.
 
-## 11. Firmware y compatibilidad
+## 11. Firmware and compatibility
 
 ### 11.1 duhow
 
-El README marca Sofia desactivable, apertura HTTP/MQTT, Home Assistant, toolchain y Dropbear como implementados. Audio queda sin marcar (`README.md:9-15`). Las versiones probadas son B007 y B013 (`README.md:17-19`).
+The README marks Sofia as disableable, plus HTTP/MQTT opening, Home Assistant, toolchain and Dropbear as implemented. Audio is left unmarked (`README.md:9-15`). The tested versions are B007 and B013 (`README.md:17-19`).
 
-La guia indica telnet posible en B007 y deshabilitado en versiones nuevas como B013, por lo que recomienda acceso serie (`INSTALL.md:35-43`). Hay una diferencia tipografica entre `G021` en esa frase y `G0021` en README; no se debe normalizar sin comprobar la version real.
+The guide indicates telnet possibly available on B007 and disabled on new versions like B013, so it recommends serial access (`INSTALL.md:35-43`). There is a typographic difference between `G021` in that sentence and `G0021` in the README, it must not be normalized without checking the real version.
 
-Sofia y el parche son mutuamente excluyentes segun `USAGE.md:27-37`. `/mnt/mtd/factory` devuelve el arranque original.
+Sofia and the patch are mutually exclusive according to `USAGE.md:27-37`. `/mnt/mtd/factory` returns the original boot.
 
-La actualizacion escribe solo `mtd4` `/usr`, limita tamano y compara MD5 (`include/bin/update_firmware.sh:1-18`, `include/bin/update_firmware.sh:23-49`). La guia exige backups y recuperacion serie (`INSTALL.md:3-12`, `INSTALL.md:109-126`). No se ejecuto ninguno de esos pasos.
+The update writes only `mtd4` `/usr`, limits size and compares MD5 (`include/bin/update_firmware.sh:1-18`, `include/bin/update_firmware.sh:23-49`). The guide requires backups and serial recovery (`INSTALL.md:3-12`, `INSTALL.md:109-126`). None of those steps was executed.
 
-### 11.2 Blog cmos486
+### 11.2 cmos486 blog
 
-El articulo declara SoC Goke GK7102S, cramfs, bus VDS, UART y acceso telnet segun version. Añade B010 con telnet y B013 solo serie, y recomienda tratar versiones nuevas como solo serie hasta prueba contraria. Tambien afirma que una direccion VDS incorrecta impide recibir llamadas sin error visible. Son afirmaciones de tercero no contrastadas aqui con codigo o laboratorio.
+The article declares a Goke GK7102S SoC, cramfs, VDS bus, UART and telnet access depending on version. It adds B010 with telnet and B013 serial only, and recommends treating new versions as serial only until proven otherwise. It also states that a wrong VDS address prevents receiving calls with no visible error. They are third-party claims not checked here with code or laboratory.
 
-Fuente: [cmos486](https://www.cmos486.es/blog/wibox-media-fermax-firmware-home-assistant), secciones "Informacion WiBox", "Lo que tocaba averiguar" y "Paso 1: lee antes de flashear".
+Source: [cmos486](https://www.cmos486.es/blog/wibox-media-fermax-firmware-home-assistant), sections "Informacion WiBox", "Lo que tocaba averiguar" and "Paso 1: lee antes de flashear".
 
-El custom usa `/mnt/mtd/sip_media.conf`, con `mqtt_host`, `mqtt_user` y `mqtt_pass`, y el articulo dice que video/RTSP empiezan desactivados. No es el mismo fichero `/mnt/mtd/mqtt.conf` del parche duhow, por lo que no deben fusionarse configuraciones. Fuente: mismo articulo, "Paso 5: configuralo".
+The custom uses `/mnt/mtd/sip_media.conf`, with `mqtt_host`, `mqtt_user` and `mqtt_pass`, and the article says video/RTSP start disabled. It is not the same `/mnt/mtd/mqtt.conf` file as the duhow patch, so configurations must not be merged. Source: same article, "Paso 5: configuralo".
 
-## 12. Errores, reintentos y timeouts
+## 12. Errors, retries and timeouts
 
-### 12.1 Cloud de fabrica
+### 12.1 Factory cloud
 
-**DESCONOCIDO:** no hay envelope de error, codigos, backoff, reintentos, rate limit, idempotencia, reconexion o resincronizacion del cloud original. Los mensajes del log NTS no son un contrato de error.
+**UNKNOWN:** there is no error envelope, codes, backoff, retries, rate limit, idempotency, reconnection or resynchronization of the original cloud. The NTS log messages are not an error contract.
 
-### 12.2 Custom duhow, confirmado en codigo
+### 12.2 duhow custom, confirmed in code
 
-| Mecanismo | Politica real | Limite |
+| Mechanism | Real policy | Limit |
 |---|---|---|
-| CGI | 404 para comando desconocido, 500 si falla escritura UART | Sin JSON ni codigo de negocio (`include/web/run.cgi:5-21`) |
-| Apertura MQTT | Publica `OFF` al segundo | Es reset del comando, no ack fisico (`include/bin/listener_mqtt.sh:45-50`) |
-| Keepalive | `mosquitto_sub -k 300` y will offline retenido | No implica entrega exactamente una vez (`include/bin/listener_mqtt.sh:37-43`) |
-| Heartbeat MQTT | Timeout de lectura 45 segundos y reinicio tras 60 segundos en ciertos estados | Reinicio del dispositivo custom, no backoff (`include/bin/heartbeat_mqtt.sh:7-24`) |
-| Healthcheck red | 10 intentos, espera 20 segundos, ping timeout 3 segundos, reinicio al agotar | No copiar como politica cloud (`include/bin/heartbeat.sh:3-10`, `include/bin/heartbeat.sh:33-61`) |
-| Llamada | `HANG_UP_0` se documenta como timeout de 30 segundos | Dato de firmware original observado por tercero (`docs/codes.md:18-23`) |
+| CGI | 404 for unknown command, 500 if UART write fails | No JSON nor business code (`include/web/run.cgi:5-21`) |
+| MQTT opening | Publishes `OFF` after one second | It is command reset, not physical ack (`include/bin/listener_mqtt.sh:45-50`) |
+| Keepalive | `mosquitto_sub -k 300` and retained offline will | It does not imply exactly-once delivery (`include/bin/listener_mqtt.sh:37-43`) |
+| MQTT heartbeat | 45-second read timeout and restart after 60 seconds in certain states | Restart of the custom device, not backoff (`include/bin/heartbeat_mqtt.sh:7-24`) |
+| Network healthcheck | 10 attempts, 20-second wait, 3-second ping timeout, restart when exhausted | Do not copy as cloud policy (`include/bin/heartbeat.sh:3-10`, `include/bin/heartbeat.sh:33-61`) |
+| Call | `HANG_UP_0` is documented as a 30-second timeout | Original firmware datum observed by a third party (`docs/codes.md:18-23`) |
 
-### 12.3 REA, no reutilizable como valores Wibox
+### 12.3 REA, not reusable as Wibox values
 
-REA tiene errores tipados con `retryable` y `remediation` (`src/contracts/errorSchemas.ts:7-38`). MCP usa JSON-RPC con `error.code`, `error.message` e `id: null` (`src/server/http/serveStreamableHttp.ts:111-120`). JADX usa 120000 ms por defecto (`src/domain/analysisResourceLimits.ts:109-115`) y CDP 20000 ms por comando/handshake (`src/domain/browserDeadline.ts:8-18`). Ninguno es un default Wibox.
+REA has typed errors with `retryable` and `remediation` (`src/contracts/errorSchemas.ts:7-38`). MCP uses JSON-RPC with `error.code`, `error.message` and `id: null` (`src/server/http/serveStreamableHttp.ts:111-120`). JADX uses 120000 ms by default (`src/domain/analysisResourceLimits.ts:109-115`) and CDP 20000 ms per command/handshake (`src/domain/browserDeadline.ts:8-18`). None is a Wibox default.
 
-## 13. Configuracion, secretos y riesgos
+## 13. Configuration, secrets and risks
 
-| Riesgo | Evidencia | Recomendacion acotada |
+| Risk | Evidence | Bounded recommendation |
 |---|---|---|
-| Sustituir APK por referencias custom | duhow y blog describen firmware distinto | Mantener perfiles `stock-cloud`, `duhow-local` y `cmos486-custom` separados |
-| HTTP local sin auth visible y acciones por GET | `include/web/setup.sh:13-18`, `include/web/index.html:50-63`, `include/web/run.cgi:14-18` | No exponer ni reutilizar ese diseño. Exigir autenticacion, autorizacion y proteccion CSRF en cualquier clon local |
-| MQTT sin TLS | `USAGE.md:14-25`, `scripts/81_mosquitto.sh:59-63` | No asumir confidencialidad. Para Kotlin, TLS y validacion de broker segun evidencia y entorno |
-| Secretos por argv/ficheros | `include/bin/mqtt_functions.sh:14-26` | No copiar export con `xargs` ni argumentos con password. Almacen atomico y logs redactados |
-| AP con password derivada de UDID | `include/bin/ap_start.sh:13-20` | No tratar identificador observable como secreto |
-| Firmware sin verificacion de autenticidad | Solo MD5 en `include/bin/update_firmware.sh:23-49` | Firma y origen verificados para cualquier update propio |
-| Cloud documentado por IP vieja | `docs/system.md:168-179` | No fijar IP. Resolver endpoints desde APK/config/captura de la version objetivo |
-| Ausencia de ack fisico | Escritura UART y OFF temporizado | No informar "puerta abierta" sin evento que lo confirme |
-| Debug y servicios heredados | `system_sofia`, interDebug y telnet documentados | No habilitar servicios por analogia. Revisar superficie en APK/firmware real |
-| Capturas con credenciales | Campos TD/VC/DVC y configs | Fixtures saneados y sin tokens reales |
+| Replacing the APK with custom references | duhow and the blog describe different firmware | Keep `stock-cloud`, `duhow-local` and `cmos486-custom` profiles separate |
+| Local HTTP without visible auth and actions over GET | `include/web/setup.sh:13-18`, `include/web/index.html:50-63`, `include/web/run.cgi:14-18` | Do not expose nor reuse that design. Require authentication, authorization and CSRF protection in any local clone |
+| MQTT without TLS | `USAGE.md:14-25`, `scripts/81_mosquitto.sh:59-63` | Do not assume confidentiality. For Kotlin, TLS and broker validation according to evidence and environment |
+| Secrets through argv/files | `include/bin/mqtt_functions.sh:14-26` | Do not copy the export with `xargs` nor arguments with password. Atomic storage and redacted logs |
+| AP with password derived from UDID | `include/bin/ap_start.sh:13-20` | Do not treat an observable identifier as a secret |
+| Firmware without authenticity verification | Only MD5 in `include/bin/update_firmware.sh:23-49` | Verified signature and origin for any own update |
+| Cloud documented by an old IP | `docs/system.md:168-179` | Do not fix an IP. Resolve endpoints from APK/config/capture of the target version |
+| Absence of physical ack | UART write and timed OFF | Do not report "door open" without an event that confirms it |
+| Debug and inherited services | `system_sofia`, interDebug and telnet documented | Do not enable services by analogy. Review the surface in the real APK/firmware |
+| Captures with credentials | TD/VC/DVC fields and configs | Sanitized fixtures and no real tokens |
 
-REA tambien tiene un listener HTTP plano `/mcp` con default loopback (`src/server/http/serveStreamableHttp.ts:44-45`, `src/config/mcpHttpEndpoint.ts:13-16`). Su riesgo de despliegue no es parte de Wibox y no se audito aqui.
+REA also has a plain HTTP listener `/mcp` with a loopback default (`src/server/http/serveStreamableHttp.ts:44-45`, `src/config/mcpHttpEndpoint.ts:13-16`). Its deployment risk is not part of Wibox and was not audited here.
 
-## 14. Confirmado, hipotesis y desconocido
+## 14. Confirmed, hypothesis and unknown
 
-### 14.1 Confirmado directamente en codigo
+### 14.1 Confirmed directly in code
 
-- UART, comandos y eventos del parche duhow en el commit fijado.
-- CGI local y sus secuencias temporizadas.
-- Topics, payloads, retained, will y keepalive del MQTT duhow.
-- Config wifi/AP y derivacion de identidad MQTT del parche.
-- Arranque, exclusion Sofia/parche y verificacion MD5 de update.
-- Funciones REA de analisis estatico y capturas offline.
+- UART, commands and events of the duhow patch at the pinned commit.
+- Local CGI and its timed sequences.
+- Topics, payloads, retained, will and keepalive of the duhow MQTT.
+- WiFi/AP configuration and MQTT identity derivation of the patch.
+- Startup, Sofia/patch exclusion and update MD5 verification.
+- REA static analysis and offline capture features.
 
-### 14.2 Documentado por terceros, pendiente de contraste primario
+### 14.2 Documented by third parties, pending primary comparison
 
-- Agente NTS, IP/ports, autenticacion, registro y P2P.
-- Puertos Sofia, autodiscovery y paquetes `system_sofia`.
-- Campos de `/mnt/mtd/Config/secret` y significado atribuido.
-- Versiones y vias de acceso a firmware.
-- VDS, hardware y comportamiento descrito por cmos486.
-- RTSP, WebRTC, SIP y funciones del fork cmos486.
+- NTS agent, IP/ports, authentication, registration and P2P.
+- Sofia ports, autodiscovery and `system_sofia` packets.
+- Fields of `/mnt/mtd/Config/secret` and attributed meaning.
+- Versions and firmware access paths.
+- VDS, hardware and behaviour described by cmos486.
+- RTSP, WebRTC, SIP and features of the cmos486 fork.
 
-### 14.3 Hipotesis explicitas
+### 14.3 Explicit hypotheses
 
-- **HIPOTESIS:** REA pudo aportarse como herramienta de analisis del APK, no como referencia de protocolo.
-- **HIPOTESIS:** el APK original podria reutilizar NTS/P2P o algun canal relacionado. Debe probarse con clases, librerias y captura, no deducirse del nombre Sofia.
+- **HYPOTHESIS:** REA may have been provided as an APK analysis tool, not as a protocol reference.
+- **HYPOTHESIS:** the original APK could reuse NTS/P2P or some related channel. It must be tested with classes, libraries and capture, not deduced from the Sofia name.
 
-### 14.4 Desconocido
+### 14.4 Unknown
 
-- API cloud, hosts actuales, rutas y versiones.
-- Request/response de login, pairing y lista de dispositivos.
-- Refresh, expiracion, logout y almacenamiento en el APK.
-- Wire format NTS y relacion exacta APK-dispositivo-cloud.
-- Acciones cloud, ack, estados, orden y garantias de entrega.
-- SIP, WebRTC, WebSocket o media de fabrica.
-- TLS, pinning, criptografia, errores, rate limit e idempotencia.
-- Compatibilidad con la version concreta del APK objetivo.
+- Cloud API, current hosts, paths and versions.
+- Login, pairing and device list request/response.
+- Refresh, expiry, logout and storage in the APK.
+- NTS wire format and exact APK-device-cloud relationship.
+- Cloud actions, ack, states, order and delivery guarantees.
+- SIP, WebRTC, WebSocket or factory media.
+- TLS, pinning, cryptography, errors, rate limit and idempotency.
+- Compatibility with the specific version of the target APK.
 
-## 15. Contrato recomendado para `core:cloud` mantenible
+## 15. Recommended contract for a maintainable `core:cloud`
 
-Todo en esta seccion es **PROPUESTA**. Los datos locales aportan vocabulario de dominio, no el contrato cloud.
+Everything in this section is a **PROPOSAL**. The local data provide domain vocabulary, not the cloud contract.
 
-### 15.1 Fronteras
+### 15.1 Boundaries
 
-- `core:cloud`: Kotlin puro, modelos, casos de uso, sesion, errores y puertos. Sin Android ni cliente HTTP concreto en las interfaces.
-- `cloud:fermax`: DTO y endpoints de la version confirmada del APK. Ningun DTO se filtra al dominio.
-- `local:duhow`, solo si se decide soportarlo: adaptador independiente para UART/HTTP/MQTT del parche. No se presenta como cloud.
-- `media`: SIP/WebRTC/RTSP solo cuando una fuente primaria defina el mecanismo objetivo.
-- `infra:auth`: almacen atomico y redaccion. Android Keystore se evalua por necesidad, no por costumbre.
+- `core:cloud`: pure Kotlin, models, use cases, session, errors and ports. No Android nor concrete HTTP client in the interfaces.
+- `cloud:fermax`: DTOs and endpoints of the confirmed APK version. No DTO leaks into the domain.
+- `local:duhow`, only if it is decided to support it: separate adapter for UART/HTTP/MQTT of the patch. It is not presented as cloud.
+- `media`: SIP/WebRTC/RTSP only when a primary source defines the target mechanism.
+- `infra:auth`: atomic storage and redaction. Android Keystore is evaluated by need, not by habit.
 
-### 15.2 Operaciones candidatas
+### 15.2 Candidate operations
 
-| Operacion | Contrato minimo | Condicion para activarla |
+| Operation | Minimum contract | Condition to enable it |
 |---|---|---|
-| `authenticate` | Mecanismo y respuesta tipada | Request/response y errores observados |
-| `refreshSession` | Single-flight y margen temporal | Refresh, expiracion y revocacion confirmados |
-| `logout` | Borrado local y revocacion remota si existe | Secuencia confirmada |
-| `pairDevice` | Identidad, Verify Code o datos reales | Flujo original y permisos confirmados |
-| `listDevices` | Dispositivos y paginacion | Modelo cloud observado |
-| `discoverLocalDevices` | Resultado y cobertura LAN | Datagramas y autenticacion confirmados |
-| `performAction` | Accion, recurso, ack y correlacion | Comando y respuesta cloud observados |
-| `observeEvents` | `Flow<CloudEvent>` con huecos explícitos | Canal, orden, replay y deduplicacion observados |
-| `close` | Libera recursos sin revocar implicitamente | Siempre |
+| `authenticate` | Mechanism and typed response | Observed request/response and errors |
+| `refreshSession` | Single-flight and time margin | Refresh, expiry and revocation confirmed |
+| `logout` | Local deletion and remote revocation if it exists | Confirmed sequence |
+| `pairDevice` | Identity, Verify Code or real data | Original flow and confirmed permissions |
+| `listDevices` | Devices and pagination | Observed cloud model |
+| `discoverLocalDevices` | Result and LAN coverage | Confirmed datagrams and authentication |
+| `performAction` | Action, resource, ack and correlation | Observed cloud command and response |
+| `observeEvents` | `Flow<CloudEvent>` with explicit gaps | Observed channel, order, replay and deduplication |
+| `close` | Releases resources without implicit revocation | Always |
 
-`openDoor`, `startCall`, `stopCall`, `setForward` y `triggerF1` son nombres de dominio plausibles gracias al parche. No deben publicarse como operaciones cloud soportadas hasta tener mensajes y respuestas del fabricante.
+`openDoor`, `startCall`, `stopCall`, `setForward` and `triggerF1` are plausible domain names thanks to the patch. They must not be published as supported cloud operations until there are manufacturer messages and responses.
 
-### 15.3 Modelos y puertos
+### 15.3 Models and ports
 
-- `AuthSession`: secretos opacos, refresh opcional y `expiresAt` solo si existe. `toString` redactado.
-- `TokenStore`: `load`, `save`, `clear`, atomicos y separados por cuenta/entorno.
-- `Device`: id estable, nombre, capacidades y estado desconocido explicito.
-- `DeviceCapability`: apertura, llamada, desvio, F1 u otros solo si el dispositivo los declara o se confirman.
-- `CloudAction`: tipo, recurso, parametros e idempotencia solo si el servidor la admite.
-- `CloudEvent`: tipo, dispositivo, secuencia/tiempo si existen y payload desconocido preservado.
-- `CloudTransport` y `RealtimeTransport`: request/response y eventos aislados.
-- `Clock`: caducidad, backoff y pruebas deterministas.
+- `AuthSession`: opaque secrets, optional refresh and `expiresAt` only if it exists. Redacted `toString`.
+- `TokenStore`: `load`, `save`, `clear`, atomic and separated by account/environment.
+- `Device`: stable id, name, capabilities and explicit unknown state.
+- `DeviceCapability`: opening, call, forwarding, F1 or others only if the device declares them or they are confirmed.
+- `CloudAction`: type, resource, parameters and idempotency only if the server allows it.
+- `CloudEvent`: type, device, sequence/time if they exist and preserved unknown payload.
+- `CloudTransport` and `RealtimeTransport`: request/response and isolated events.
+- `Clock`: expiry, backoff and deterministic tests.
 
-### 15.4 Errores y robustez
+### 15.4 Errors and robustness
 
-Jerarquia sellada `CloudError` para autenticacion, autorizacion, recurso ausente, conflicto, rate limit, red, timeout, protocolo, capacidad no soportada y desconocido. Conservar codigos del proveedor como metadatos saneados.
+Sealed `CloudError` hierarchy for authentication, authorization, missing resource, conflict, rate limit, network, timeout, protocol, unsupported capability and unknown. Keep provider codes as sanitized metadata.
 
-1. Una renovacion en vuelo por sesion.
-2. No inventar refresh si el APK no lo demuestra.
-3. Reintentar solo lecturas idempotentes o acciones con idempotencia confirmada.
-4. No repetir aperturas tras respuesta ambigua. El CGI/MQTT del parche no ofrece ack fisico y no sirve de modelo de confirmacion.
-5. Respetar `Retry-After` si existe. Backoff con jitter y limite inyectable.
-6. Separar timeouts de conexion, lectura, operacion y realtime.
-7. Marcar perdida de eventos al reconectar. MQTT retained del parche no implica la semantica cloud.
-8. No registrar tokens, passwords, Verify Codes, UDID completos ni payloads sensibles.
+1. One renewal in flight per session.
+2. Do not invent refresh if the APK does not prove it.
+3. Retry only idempotent reads or actions with confirmed idempotency.
+4. Do not repeat openings after an ambiguous response. The CGI/MQTT of the patch offers no physical ack and is not a confirmation model.
+5. Respect `Retry-After` if it exists. Backoff with jitter and injectable limit.
+6. Separate connection, read, operation and realtime timeouts.
+7. Mark event loss when reconnecting. MQTT retained in the patch does not imply cloud semantics.
+8. Do not log tokens, passwords, Verify Codes, full UDIDs or sensitive payloads.
 
-### 15.5 Pruebas minimas
+### 15.5 Minimum tests
 
-- Fixtures saneados por version y campos desconocidos.
-- Login, refresh, expiracion, revocacion y concurrencia.
-- Paginacion, duplicados y capacidades de dispositivos.
-- 401, 403, 409, 429, 5xx, red, timeout y JSON invalido.
-- No reintento de accion fisica ambigua ni falso ack.
-- Reconexion, duplicados, huecos y cierre de `Flow`.
-- Redaccion de logs y ausencia de secretos en fixtures.
-- Contratos DTO/dominio golden por version del APK.
-- Si se soporta duhow, pruebas separadas para frames UART y topics sin mezclarlas con `cloud:fermax`.
+- Sanitized fixtures per version and unknown fields.
+- Login, refresh, expiry, revocation and concurrency.
+- Pagination, duplicates and device capabilities.
+- 401, 403, 409, 429, 5xx, network, timeout and invalid JSON.
+- No retry of an ambiguous physical action nor false ack.
+- Reconnection, duplicates, gaps and `Flow` close.
+- Log redaction and absence of secrets in fixtures.
+- Golden DTO/domain contracts per APK version.
+- If duhow is supported, separate tests for UART frames and topics without mixing them with `cloud:fermax`.
 
-## 16. Plan de contraste con el APK
+## 16. Comparison plan with the APK
 
-1. Registrar SHA-256, `applicationId`, `versionName`, `versionCode`, firmas y procedencia. REA expone el modelo generico en `src/android/JadxProtocol.ts:73-80` y comandos en `docs/android-analysis.md:219-253`.
-2. Inventariar manifiesto, componentes, permisos, servicios, receivers y deep links con `inspect_android_package`.
-3. Buscar clases y recursos `Sofia`, `NTS`, `DevId`, `AuthPwd`, `Verify`, `34567`, `5000`, cloud, token y media. Un nombre coincidente sera pista, no prueba de equivalencia.
-4. Seguir construccion y consumo de mensajes con `inspect_android_method` y `trace_android_references`. REA declara que no resuelve reflection, JNI o dispatch runtime (`src/contracts/android/androidToolContracts.ts:166-170`).
-5. Revisar librerias nativas/JNI si NTS, TLS o media no esta en DEX. No convertir ausencia DEX en ausencia total.
-6. Extraer endpoints y modelos solo con evidencia de productor y consumidor. Registrar clase, metodo, sobrecarga y artefacto.
-7. Buscar almacenamiento real: preferencias, BD, ficheros, Keystore, `Config/secret`, migraciones y borrado de sesion.
-8. Contrastar NTS y autodiscovery con datagramas/capturas autorizadas. No usar la IP documentada como destino de pruebas.
-9. Analizar capturas offline. HAR/SAZ no repite peticiones (`docs/web-network-captures.md:1-6`) y pcap no adquiere trafico (`docs/pcap-analysis.md:1-6`).
-10. Separar perfiles si APK, firmware duhow y fork cmos486 difieren. No promediar tokens, rutas, topics o media.
-11. Solo entonces fijar DTO, secuencias, errores, reintentos y adaptadores `core:cloud`.
+1. Record SHA-256, `applicationId`, `versionName`, `versionCode`, signatures and provenance. REA exposes the generic model in `src/android/JadxProtocol.ts:73-80` and commands in `docs/android-analysis.md:219-253`.
+2. Inventory the manifest, components, permissions, services, receivers and deep links with `inspect_android_package`.
+3. Search for `Sofia`, `NTS`, `DevId`, `AuthPwd`, `Verify`, `34567`, `5000`, cloud, token and media classes and resources. A coincident name will be a clue, not proof of equivalence.
+4. Follow message construction and consumption with `inspect_android_method` and `trace_android_references`. REA declares that it does not resolve reflection, JNI or runtime dispatch (`src/contracts/android/androidToolContracts.ts:166-170`).
+5. Review native/JNI libraries if NTS, TLS or media is not in DEX. Do not turn DEX absence into total absence.
+6. Extract endpoints and models only with producer and consumer evidence. Record class, method, overload and artifact.
+7. Look for real storage: preferences, DB, files, Keystore, `Config/secret`, migrations and session deletion.
+8. Compare NTS and autodiscovery with authorized datagrams/captures. Do not use the documented IP as a test destination.
+9. Analyze offline captures. HAR/SAZ do not repeat requests (`docs/web-network-captures.md:1-6`) and pcap does not acquire traffic (`docs/pcap-analysis.md:1-6`).
+10. Separate profiles if the APK, duhow firmware and cmos486 fork differ. Do not average tokens, paths, topics or media.
+11. Only then fix DTOs, sequences, errors, retries and `core:cloud` adapters.
 
-## 17. Funciones REA utiles para ese trabajo
+## 17. REA features useful for that work
 
-| Operacion | Aporta | Limite |
+| Operation | Provides | Limit |
 |---|---|---|
-| `inspect_android_package` | Paquete, SDK, permisos, manifiesto y componentes | No ejecuta ni autentica APK (`src/contracts/android/androidToolContracts.ts:52-69`) |
-| `search_android_classes` | Busca clases locales | No prueba runtime (`src/contracts/android/androidToolContracts.ts:98-110`) |
-| `inspect_android_class` | Miembros y mapping R8 | Nombres observados primarios (`src/contracts/android/androidToolContracts.ts:113-140`) |
-| `inspect_android_method` | Metodo con fallback smali | Puede quedar incompleto (`src/contracts/android/androidToolContracts.ts:142-164`) |
-| `trace_android_references` | Usos estaticos | Sin reflection/JNI/runtime (`src/contracts/android/androidToolContracts.ts:166-170`) |
-| `inspect_android_jni_bindings` | Relaciones DEX/JNI | No carga librerias (`src/contracts/android/androidToolContracts.ts:23-50`) |
+| `inspect_android_package` | Package, SDK, permissions, manifest and components | It does not run or authenticate the APK (`src/contracts/android/androidToolContracts.ts:52-69`) |
+| `search_android_classes` | Searches local classes | It does not prove runtime (`src/contracts/android/androidToolContracts.ts:98-110`) |
+| `inspect_android_class` | Members and R8 mapping | Primary observed names (`src/contracts/android/androidToolContracts.ts:113-140`) |
+| `inspect_android_method` | Method with smali fallback | It can be incomplete (`src/contracts/android/androidToolContracts.ts:142-164`) |
+| `trace_android_references` | Static uses | No reflection/JNI/runtime (`src/contracts/android/androidToolContracts.ts:166-170`) |
+| `inspect_android_jni_bindings` | DEX/JNI relationships | It does not load libraries (`src/contracts/android/androidToolContracts.ts:23-50`) |
 | `inspect_web_network_capture` | HAR, mitmproxy, SAZ | Offline (`docs/web-network-captures.md:1-6`) |
-| `inspect_pcap_capture` | Endpoints, DNS, SNI, protocolos y URI | Cobertura limitada por captura (`docs/pcap-analysis.md:40-65`) |
+| `inspect_pcap_capture` | Endpoints, DNS, SNI, protocols and URI | Coverage limited by the capture (`docs/pcap-analysis.md:40-65`) |
 
-## 18. Cierre
+## 18. Closing
 
-**HECHO:** REA no contiene el protocolo Wibox. duhow aporta codigo local parcheado y notas cloud de tercero. cmos486 aporta afirmaciones sobre otro custom. Ninguna combinacion de las tres permite afirmar que conocemos el cloud del APK.
+**FACT:** REA does not contain the Wibox protocol. duhow provides patched local code and third-party cloud notes. cmos486 provides claims about another custom. No combination of the three allows claiming that we know the APK cloud.
 
-**Resultado aprovechable:** vocabulario de acciones y eventos, candidatos de descubrimiento y NTS para contrastar, riesgos concretos que no copiar y una herramienta para el analisis primario del APK.
+**Usable result:** vocabulary of actions and events, discovery and NTS candidates to compare, specific risks not to copy and a tool for the primary analysis of the APK.
 
-El inventario estructurado esta en `analysis/rea/inventory.json`. Distingue `source` REA, `additional_sources`, `duhow_wibox.code_confirmed`, `duhow_wibox.third_party_stock_notes` y `cmos486_third_party_claims`. El verificador local comprueba estructura, evidencias, presencia o justificacion de autenticacion/dispositivos/tiempo real y un control negativo sin modificar entregables.
+The structured inventory is in `analysis/rea/inventory.json`. It distinguishes `source` REA, `additional_sources`, `duhow_wibox.code_confirmed`, `duhow_wibox.third_party_stock_notes` and `cmos486_third_party_claims`. The local verifier checks structure, evidence, presence or justification of authentication/devices/real time and a negative control without modifying deliverables.
 
-## 19. Registro de las cuatro pasadas
+## 19. Record of the four passes
 
-1. **Entrega completa:** se fijaron REA y duhow por commit, se leyeron sus licencias y el blog, y se inventariaron arquitectura, endpoints, modelos, transportes, funciones, autenticacion, dispositivos, realtime, criptografia, errores, configuracion y riesgos.
-2. **Relectura experta:** se revisaron las secuencias NTS, pairing frente a provisioning, VDS frente a identidad cloud, acciones UART, cobertura del listener y limites de SIP/WebRTC/RTSP. Se añadio la diferencia entre codigos definidos y codigos manejados.
-3. **Busqueda de errores y omisiones:** se corrigio la licencia duhow para no inferir una variante no declarada, se añadieron riesgos de GET sin autenticacion y se reforzaron componentes, evidencias negativas y validacion de archivos incompletos.
-4. **Pulido:** se comprobo coherencia entre informe e inventario, referencias archivo:linea, fragmentos citados, separacion de fuentes y ausencia de secretos. El comando final y su salida se registran en `analysis/rea/verification.txt`.
+1. **Full delivery:** REA and duhow were pinned by commit, their licences and the blog were read, and architecture, endpoints, models, transports, features, authentication, devices, realtime, cryptography, errors, configuration and risks were inventoried.
+2. **Expert reread:** the NTS sequences, pairing versus provisioning, VDS versus cloud identity, UART actions, listener coverage and SIP/WebRTC/RTSP limits were reviewed. The difference between defined codes and handled codes was added.
+3. **Search for errors and omissions:** the duhow licence was corrected so as not to infer an undeclared variant, risks of GET without authentication were added, and components, negative evidence and validation of incomplete files were reinforced.
+4. **Polish:** coherence between report and inventory, `file:line` references, cited fragments, separation of sources and absence of secrets were checked. The final command and its output are recorded in `analysis/rea/verification.txt`.
 
-## 20. Ejecucion verificada de REA sobre el APK
+## 20. Verified REA run over the APK
 
-### 20.1 Alcance y toolchain
+### 20.1 Scope and toolchain
 
-Despues del analisis del repositorio se ejecuto REA 6.8.0 contra el APK Wibox v2.2 ya identificado por SHA-256. Se uso el paquete oficial `rea-agents` publicado en npm y el provider `jadx-headless-mcp` 0.7.1. El JAR tiene SHA-256 `6e5eacf500b64292bfb73c49797c1958f6ee44646e43e868039ae7feb573ff75` y JDK 17 lo enumera sin errores.
+After the repository analysis, REA 6.8.0 was run against the Wibox v2.2 APK already identified by SHA-256. The official `rea-agents` package published on npm was used, with the `jadx-headless-mcp` 0.7.1 provider. The JAR has SHA-256 `6e5eacf500b64292bfb73c49797c1958f6ee44646e43e868039ae7feb573ff75` and JDK 17 enumerates it without errors.
 
-El build desde el checkout no fue la via final: Node 26.12.1 rechazo el modo TypeScript `transform` usado por el script de metadata. No se modifico REA para ocultar ese fallo. Se instalo el paquete oficial precompilado en `/home/nacho/temp/opencode-work/rea-runtime` y se invoco `scripts/rea.mjs`. Todos los analisis fueron estaticos, sin dispositivos, credenciales ni conexiones al cloud Wibox.
+The build from the checkout was not the final route: Node 26.12.1 rejected the `transform` TypeScript mode used by the metadata script. REA was not modified to hide that failure. The official precompiled package was installed in `/home/nacho/temp/opencode-work/rea-runtime` and `scripts/rea.mjs` was invoked. All analyses were static, without devices, credentials or connections to the Wibox cloud.
 
-### 20.2 Evidencia generada
+### 20.2 Generated evidence
 
-Los resultados completos estan en `analysis/rea/wibox-*.json`. El artefacto `analysis/rea/wibox-inspect-android-package.json` confirma el hash del APK, paquete, version, SDK, 6.674 clases y 1.521 recursos. Las busquedas tuvieron cobertura completa del indice de clases de REA.
+The complete results are in `analysis/rea/wibox-*.json`. The `analysis/rea/wibox-inspect-android-package.json` artifact confirms the APK hash, package, version, SDK, 6,674 classes and 1,521 resources. The searches had complete coverage of the REA class index.
 
-| Area | Metodo REA | Resultado contrastado |
+| Area | REA method | Checked result |
 |---|---|---|
-| Paquete | `inspect-android-package` | Identidad y componentes del APK analizado |
-| OAuth | `inspect-android-class`, `inspect-android-method` | `OAuthApi.getToken` y `refreshToken` usan `/qvoauthv2/token`; los managers construyen los grants `password` y `refresh_token` |
-| Shadow | `inspect-android-class`, `inspect-android-method` | Cuatro operaciones API y callers de `QvShadowHttpManager` para status, multi, subscribe y unsubscribe |
-| Registro opaco | `trace-android-references`, `inspect-android-method` | `UserApi.upChannelForFreeLogin` es usado por `QvAuthManager` y `HttpUserAuthManager`; no se infiere un body de exito de alto nivel |
-| Discovery | `inspect-android-method` | `QvLocationManager` llega a `QvP2PManager.queryServiceAddress(typeMask, groupId, callback)` |
-| MQTT y P2P | `search-android-classes`, `inspect-android-class` | Clases y constantes localizadas; no se convierte su presencia en actividad dinamica ni en un wire format reutilizable |
+| Package | `inspect-android-package` | Identity and components of the analyzed APK |
+| OAuth | `inspect-android-class`, `inspect-android-method` | `OAuthApi.getToken` and `refreshToken` use `/qvoauthv2/token`, the managers build the `password` and `refresh_token` grants |
+| Shadow | `inspect-android-class`, `inspect-android-method` | Four API operations and callers of `QvShadowHttpManager` for status, multi, subscribe and unsubscribe |
+| Opaque registration | `trace-android-references`, `inspect-android-method` | `UserApi.upChannelForFreeLogin` is used by `QvAuthManager` and `HttpUserAuthManager`, a high-level success body is not inferred |
+| Discovery | `inspect-android-method` | `QvLocationManager` reaches `QvP2PManager.queryServiceAddress(typeMask, groupId, callback)` |
+| MQTT and P2P | `search-android-classes`, `inspect-android-class` | Classes and constants located, their presence is not turned into dynamic activity nor a reusable wire format |
 
-Las interfaces Retrofit devuelven firma pero no cuerpo, por lo que REA no muestra sus anotaciones en `inspect-android-method`. Se trazaron referencias y se inspeccionaron los callers con cuerpo en vez de interpretar esa ausencia como ausencia de contrato.
+The Retrofit interfaces return signature but not body, so REA does not show their annotations in `inspect-android-method`. References were traced and the callers with a body were inspected instead of interpreting that absence as absence of contract.
 
-### 20.3 Efecto sobre la implementacion
+### 20.3 Effect on the implementation
 
-La ejecucion confirma el contrato OAuth y las operaciones Shadow ya implementadas con sus fixtures. Tambien confirma que el registro opaco usa `UserApi`, pero no aporta por si solo una respuesta tipada segura para exponerlo como flujo de alto nivel.
+The run confirms the OAuth contract and the Shadow operations already implemented with their fixtures. It also confirms that opaque registration uses `UserApi`, but it does not by itself provide a safe typed response to expose it as a high-level flow.
 
-El descubrimiento regional no queda reducido a una URL HTTP fija: depende de P2P, tipos de servicio, region y callbacks. Por eso `discoverServices` continua como `Unsupported`. MQTT, realtime, P2P y acciones fisicas mantienen sus limites documentados. La ejecucion de REA no demuestra comportamiento runtime, validez de credenciales, disponibilidad del servicio ni compatibilidad con una cuenta real.
+Regional discovery is not reduced to a fixed HTTP URL: it depends on P2P, service types, region and callbacks. That is why `discoverServices` remains `Unsupported`. MQTT, realtime, P2P and physical actions keep their documented limits. The REA run does not prove runtime behaviour, credential validity, service availability or compatibility with a real account.

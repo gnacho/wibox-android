@@ -1,73 +1,73 @@
-# Implementación del puerto de proveedores Wibox
+# Wibox provider port implementation
 
-## 1. Alcance y certeza
+## 1. Scope and certainty
 
-Esta hoja implementa F0/F1: un puerto provider-neutral y un adaptador `stock-qvcloud` sobre el `WiboxCloud` existente. No sustituye la API legacy, no añade protocolo nuevo y no certifica compatibilidad cloud completa. Toda la evidencia procede de los contratos offline ya registrados y de attempt3 para app upgrade. No se ha usado red, hardware ni credenciales.
+This sheet implements F0/F1: a provider-neutral port and a `stock-qvcloud` adapter over the existing `WiboxCloud`. It does not replace the legacy API, does not add new protocol and does not certify full cloud compatibility. All evidence comes from the already recorded offline contracts and from attempt3 for app upgrade. No network, hardware or credentials were used.
 
-La matriz F0 sigue siendo `analysis/architecture/provider-matrix.json`. El catálogo de `ProviderCapabilityCatalog.stockQvCloud` conserva sus 64 IDs, soporte, estado, referencias y limitaciones. La operación disponible se evalúa aparte para evitar que la presencia de un método se convierta en una afirmación de compatibilidad.
+The F0 matrix remains `analysis/architecture/provider-matrix.json`. The `ProviderCapabilityCatalog.stockQvCloud` catalog keeps its 64 IDs, support, status, references and limitations. The available operation is evaluated separately so that the presence of a method does not become a claim of compatibility.
 
-## 2. API pública real
+## 2. Real public API
 
-Todo el API pública vive en `dev.nacho.wibox.core.cloud` y carece de Ktor, DTOs wire y tipos Android.
+The whole public API lives in `dev.nacho.wibox.core.cloud` and has no Ktor, wire DTOs or Android types.
 
-| Clase o contrato | Responsabilidad |
+| Class or contract | Responsibility |
 |---|---|
-| `WiboxProvider` | Descriptor, catálogo, subpuertos, preparación y cierre |
-| `WiboxProviderFactory` | Creación explícita del adaptador stock. No ofrece factorías MQTT o self-hosted |
-| `ProviderDescriptor` | `ProviderId`, versión de perfil, conexión y extensiones declarativas QVCloud |
-| `ProviderCapabilityCatalog` | Catálogo inmutable de las 64 capacidades |
-| `CapabilitySnapshot` | Soporte F0, ámbito, dispositivo/canal opcional, revalidación, origen, evidencia declarada, operación y evidencia de operación |
-| `SessionPort` | Autenticar, restaurar y refrescar. `logout` sigue `Unsupported` |
-| `SessionHandle` | Identidad opaca sin tokens ni password. `toString` redacta identificadores |
-| `CredentialMaterial` | Material efímero para autenticación. `toString` redacta identidad y secreto |
-| `DevicePort` | Shadow individual, múltiple, suscripción y desuscripción |
-| `DeviceSnapshot` | Dispositivo con rol, permisos, canales, presencia, origen y frescura. No se usa como lista vacía de éxito |
-| `ShadowSnapshot` | Campos solicitados y devueltos, estado, timestamp, frescura y desconocidos conservados |
-| `EventPort` | Parser offline FCM y frontera realtime |
-| `EventEnvelope` | Evento con origen, tiempo crudo, campos desconocidos, cursor y duplicados |
-| `EventStreamItem` | Eventos, conexión, reconexión, resync y gaps para futuros canales probados |
-| `ActionPort` | Frontera de acciones. Actualmente devuelve `Unsupported` antes de ejecutar |
-| `ActionOutcome` | Correlación y niveles LOCAL_ACCEPTED, PROVIDER_ACCEPTED, DEVICE_ACKNOWLEDGED, PHYSICAL_OBSERVED, REJECTED y UNKNOWN_OUTCOME |
-| `MaintenancePort` | Consulta de actualización de app |
-| `ProviderError` | Errores tipados con operación, capacidad, retry, código y causa saneada |
+| `WiboxProvider` | Descriptor, catalog, subports, preparation and close |
+| `WiboxProviderFactory` | Explicit creation of the stock adapter. It offers no MQTT or self-hosted factories |
+| `ProviderDescriptor` | `ProviderId`, profile version, connection and declarative QVCloud extensions |
+| `ProviderCapabilityCatalog` | Immutable catalog of the 64 capabilities |
+| `CapabilitySnapshot` | F0 support, scope, optional device/channel, revalidation, origin, declared evidence, operation and operation evidence |
+| `SessionPort` | Authenticate, restore and refresh. `logout` remains `Unsupported` |
+| `SessionHandle` | Opaque identity without tokens or password. `toString` redacts identifiers |
+| `CredentialMaterial` | Ephemeral material for authentication. `toString` redacts identity and secret |
+| `DevicePort` | Single and multi Shadow, subscription and unsubscription |
+| `DeviceSnapshot` | Device with role, permissions, channels, presence, origin and freshness. It is not used as an empty success list |
+| `ShadowSnapshot` | Requested and returned fields, state, timestamp, freshness and preserved unknowns |
+| `EventPort` | Offline FCM parser and realtime boundary |
+| `EventEnvelope` | Event with origin, raw time, unknown fields, cursor and duplicates |
+| `EventStreamItem` | Events, connection, reconnection, resync and gaps for future proven channels |
+| `ActionPort` | Action boundary. Currently returns `Unsupported` before executing |
+| `ActionOutcome` | Correlation and levels LOCAL_ACCEPTED, PROVIDER_ACCEPTED, DEVICE_ACKNOWLEDGED, PHYSICAL_OBSERVED, REJECTED and UNKNOWN_OUTCOME |
+| `MaintenancePort` | App update query |
+| `ProviderError` | Typed errors with operation, capability, retry, code and sanitized cause |
 
-`ProviderId.MQTT`, `ProviderId.SELF_HOSTED` y `ProviderConnectionKind` solo identifican diseños futuros. No existen adaptadores para esos IDs ni capacidades implementadas asociadas. `ProviderId.DEMO` no activa ningún fallback.
+`ProviderId.MQTT`, `ProviderId.SELF_HOSTED` and `ProviderConnectionKind` only identify future designs. There are no adapters for those IDs and no implemented capabilities associated with them. `ProviderId.DEMO` does not enable any fallback.
 
-## 3. Tres ejes que no se confunden
+## 3. Three axes that are not confused
 
-Cada `CapabilitySnapshot` separa:
+Each `CapabilitySnapshot` separates:
 
-1. `support`: obligación declarativa F0, con required, optional, unsupported o unknown.
-2. `declaredEvidence` y `declaredOrigin`: estado y origen registrados en la matriz F0.
-3. `operation`, `operationEvidence` y `operationOrigin`: operación realmente expuesta y evidencia que la sustenta.
+1. `support`: declarative F0 obligation, with required, optional, unsupported or unknown.
+2. `declaredEvidence` and `declaredOrigin`: status and origin recorded in the F0 matrix.
+3. `operation`, `operationEvidence` and `operationOrigin`: operation actually exposed and the evidence that supports it.
 
-La regla actual solo cambia la evidencia de operación de `app.update_check`: la matriz conserva `static_evidence_only`, mientras el adaptador presenta `IMPLEMENTED_CONTRACT` con `DYNAMIC_CAPTURE` por `DYN3-HTTP-UPGRADE-001`. No se eleva OAuth, Shadow, pairing, lista, realtime, media ni acciones a comportamiento runtime.
+The current rule only changes the operation evidence of `app.update_check`: the matrix keeps `static_evidence_only`, while the adapter presents `IMPLEMENTED_CONTRACT` with `DYNAMIC_CAPTURE` by `DYN3-HTTP-UPGRADE-001`. OAuth, Shadow, pairing, list, realtime, media and actions are not raised to runtime behaviour.
 
-`limitations` conserva las cuatro dimensiones actuales de cada entrada. No hay una propiedad `hardware_verified`, ni una conversión automática de tests offline en prueba física.
+`limitations` keeps the four current dimensions of each entry. There is no `hardware_verified` property, nor an automatic conversion of offline tests into physical proof.
 
-## 4. Operaciones implementadas y evidencia
+## 4. Implemented operations and evidence
 
-| Operación neutral | Delegación legacy | Evidencia y alcance | Prueba de comportamiento |
+| Neutral operation | Legacy delegation | Evidence and scope | Behaviour test |
 |---|---|---|---|
-| `prepare` | `restoreSession` | Restauración offline. READY solo con sesión y provider abierto | Preparación con/sin sesión y cierre concurrente |
-| `session.authenticate` | `authenticate` | E029, E033, contrato offline OAuth password. Sin registro opaco inventado | Sesión opaca y secretos redactados |
-| `session.restoreSession` | `restoreSession` | E034, E036, restauración offline | Restauración y preparación |
-| `session.refreshSession` | `refreshSession` | E033 a E036, single-flight legacy | Estado REFRESHED y mismo handle opaco |
-| `devices.getShadow` | `getDeviceShadow` | E041, contrato offline | Snapshot y campos desconocidos |
-| `devices.getShadows` | `getDeviceShadows` | E041, contrato offline | Conserva lista sin rellenar estado |
-| `devices.subscribeShadow` | `subscribeDeviceShadows` | E041, solo ack HTTP. No prueba MQTT posterior | Ack tipado, sin realtime prometido |
-| `devices.unsubscribeShadow` | `unsubscribeDeviceShadows` | E041, motivos 1 y 2 sin logout/unbind físico implícito | Ack y timestamp conservados |
-| `events.parseAlarm` | `parseAlarmEvent` | E056, E057, parser offline 2/19/20 | Envelope FCM y desconocidos |
-| `maintenance.checkAppUpgrade` | `cloud.checkAppUpgrade(request)` | E050 y attempt3, GET + HTTP 200 XML. No recalcula HTTP ni parsea XML en el adaptador | Una sola delegación, resultado idéntico y errores mapeados |
-| `close` | `close` condicionado por ownership | Lifecycle offline, cierre idempotente | Un solo cierre propiedad del adapter y operación posterior rechazada |
+| `prepare` | `restoreSession` | Offline restoration. READY only with a session and an open provider | Preparation with/without session and concurrent close |
+| `session.authenticate` | `authenticate` | E029, E033, offline OAuth password contract. No invented opaque registration | Opaque session and redacted secrets |
+| `session.restoreSession` | `restoreSession` | E034, E036, offline restoration | Restoration and preparation |
+| `session.refreshSession` | `refreshSession` | E033 to E036, legacy single-flight | REFRESHED state and same opaque handle |
+| `devices.getShadow` | `getDeviceShadow` | E041, offline contract | Snapshot and unknown fields |
+| `devices.getShadows` | `getDeviceShadows` | E041, offline contract | Keeps the list without filling in state |
+| `devices.subscribeShadow` | `subscribeDeviceShadows` | E041, HTTP ack only. Does not prove later MQTT | Typed ack, no realtime promised |
+| `devices.unsubscribeShadow` | `unsubscribeDeviceShadows` | E041, reasons 1 and 2 without implicit logout/physical unbind | Ack and timestamp preserved |
+| `events.parseAlarm` | `parseAlarmEvent` | E056, E057, offline parser 2/19/20 | FCM envelope and unknowns |
+| `maintenance.checkAppUpgrade` | `cloud.checkAppUpgrade(request)` | E050 and attempt3, GET + HTTP 200 XML. Does not recalculate HTTP or parse XML in the adapter | A single delegation, identical result and mapped errors |
+| `close` | `close` conditioned by ownership | Offline lifecycle, idempotent close | A single close owned by the adapter and subsequent operation rejected |
 
-`ProviderErrorMapper` conserva autenticación, autorización, HTTP, red, timeout, parseo, persistencia, entrada inválida, Unsupported, Closed y códigos de negocio sin copiar URLs, cuerpos o tokens. `CancellationException` se propaga como cancelación, no como `Network`.
+`ProviderErrorMapper` keeps authentication, authorization, HTTP, network, timeout, parsing, persistence, invalid input, Unsupported, Closed and business codes without copying URLs, bodies or tokens. `CancellationException` propagates as cancellation, not as `Network`.
 
-## 5. Matriz completa F0/F1
+## 5. Full F0/F1 matrix
 
-La columna `operación` describe la evidencia de la operación expuesta, no compatibilidad total ni hardware.
+The `operation` column describes the evidence of the exposed operation, not total compatibility or hardware.
 
-| Capacidad | Soporte F0 | Evidencia F0 | Operación F1 |
+| Capability | F0 support | F0 evidence | F1 operation |
 |---|---|---|---|
 | `core.lifecycle` | required | implemented_contract | implemented_contract |
 | `core.capability_negotiation` | required | local_only | local_only |
@@ -126,7 +126,7 @@ La columna `operación` describe la evidencia de la operación expuesta, no comp
 | `config.delete_device` | required | local_only | local_only |
 | `firmware.check` | required | local_only | local_only |
 | `firmware.apply` | required | unsupported | unsupported |
-| `app.update_check` | optional | static_evidence_only | implemented_contract con captura dinámica |
+| `app.update_check` | optional | static_evidence_only | implemented_contract with dynamic capture |
 | `app.privacy_terms` | required | local_only | local_only |
 | `app.deep_link` | optional | static_evidence_only | static_evidence_only |
 | `app.diagnostics` | optional | local_only | local_only |
@@ -134,47 +134,47 @@ La columna `operación` describe la evidencia de la operación expuesta, no comp
 | `security.persistence` | required | design_required | design_required |
 | `events.notifications` | required | static_evidence_only | static_evidence_only |
 
-Registro opaco, `userLogin`, discovery regional/LAN, lista, credenciales dinámicas, pairing, invitaciones, historial, push, media, acciones, configuración y firmware no tienen una operación nueva por el solo hecho de aparecer en el catálogo.
+Opaque registration, `userLogin`, regional/LAN discovery, list, dynamic credentials, pairing, invitations, history, push, media, actions, configuration and firmware do not have a new operation just because they appear in the catalog.
 
-## 6. Acciones y acknowledgements
+## 6. Actions and acknowledgements
 
-`ActionCommand` contiene correlación, dispositivo, canal, tipo, parámetros redactados y política de reintento. `ActionPort.execute` no llama a `performAction` mientras la capacidad sea `unsupported`, por lo que un fake no puede convertir la operación en éxito ni provocar retries.
+`ActionCommand` holds correlation, device, channel, type, redacted parameters and retry policy. `ActionPort.execute` does not call `performAction` while the capability is `unsupported`, so a fake cannot turn the operation into a success or trigger retries.
 
-`ActionOutcome.canClaimPhysicalEffect()` solo es verdadero con `PHYSICAL_OBSERVED`, una observación presente y ausencia de resultado ambiguo. `LOCAL_ACCEPTED`, `PROVIDER_ACCEPTED` y `DEVICE_ACKNOWLEDGED` nunca se traducen por sí solos en puerta abierta. El adaptador no genera los niveles altos porque no existe ack de dispositivo o evidencia física.
+`ActionOutcome.canClaimPhysicalEffect()` is only true with `PHYSICAL_OBSERVED`, a present observation and no ambiguous result. `LOCAL_ACCEPTED`, `PROVIDER_ACCEPTED` and `DEVICE_ACKNOWLEDGED` never translate by themselves into an open door. The adapter does not generate the high levels because there is no device ack or physical evidence.
 
-`UNKNOWN_OUTCOME` usa `DO_NOT_RETRY`. No se reintenta una acción física ambigua ni se informa éxito por una respuesta de transporte.
+`UNKNOWN_OUTCOME` uses `DO_NOT_RETRY`. An ambiguous physical action is not retried and success is not reported from a transport response.
 
-## 7. Ownership, concurrencia y cierre
+## 7. Ownership, concurrency and close
 
-`WiboxProviderFactory.stockQvCloud` recibe un `WiboxCloud` existente y `ProviderSessionContext`. El identificador opaco se genera dentro del adaptador y permanece estable entre autenticación, restauración y refresh. Los tokens legacy no cruzan el puerto.
+`WiboxProviderFactory.stockQvCloud` receives an existing `WiboxCloud` and a `ProviderSessionContext`. The opaque identifier is generated inside the adapter and stays stable across authentication, restoration and refresh. Legacy tokens do not cross the port.
 
-`closeClientWhenClosed=true` es el valor por defecto: el provider es propietario del cliente y lo cierra exactamente una vez. Con `false`, el llamador conserva la propiedad y puede seguir usando el cliente legacy. En ambos casos el provider queda cerrado para nuevas operaciones. Descriptor y catálogo son inmutables y siguen disponibles.
+`closeClientWhenClosed=true` is the default: the provider owns the client and closes it exactly once. With `false`, the caller keeps ownership and can keep using the legacy client. In both cases the provider is closed for new operations. Descriptor and catalog are immutable and remain available.
 
-`prepare` serializa preparaciones con un mutex y vuelve a comprobar el estado tras restaurar. Así no devuelve READY si ocurre un cierre concurrente. No hay un scope global adicional: el cliente propietario conserva sus recursos y su single-flight de refresh.
+`prepare` serializes preparations with a mutex and checks the state again after restoring. That way it does not return READY if a concurrent close happens. There is no additional global scope: the owning client keeps its resources and its refresh single-flight.
 
-`observeEvents` no emite un stream vacío de éxito. Una emisión inesperada de un fake se convierte en `Unsupported`, una finalización vacía también, y la cancelación se propaga. Los modelos de gap y cursor existen para futuras implementaciones probadas, no como evidencia de realtime actual.
+`observeEvents` does not emit an empty success stream. An unexpected emission from a fake becomes `Unsupported`, an empty completion as well, and cancellation propagates. The gap and cursor models exist for future proven implementations, not as evidence of current realtime.
 
-## 8. Migración de app y UI
+## 8. App and UI migration
 
-La app puede mantener `WiboxCloud`, `WiboxCloudFactory`, `TokenStore`, modelos y fakes actuales. El adaptador envuelve esa API sin modificar sus métodos ni elevar sus capacidades. La migración consiste en inyectar `WiboxProvider` en el repositorio y consumir `SessionHandle`, `ShadowSnapshot`, `EventEnvelope`, `ActionOutcome` y `ProviderError` en vez de tipos QVCloud o fixtures de UI.
+The app can keep `WiboxCloud`, `WiboxCloudFactory`, `TokenStore`, models and current fakes. The adapter wraps that API without modifying its methods or raising its capabilities. Migration consists of injecting `WiboxProvider` into the repository and consuming `SessionHandle`, `ShadowSnapshot`, `EventEnvelope`, `ActionOutcome` and `ProviderError` instead of QVCloud types or UI fixtures.
 
-Los ViewModels no deben conocer `AppUpgradeRequest.baseUrl`, topics, tokens ni transporte. La composición que tenga configuración secreta o específica seguirá fuera de la UI. La UI decide presentación por `CapabilitySnapshot`, distinguiendo unsupported y unknown. Un error de stock nunca selecciona demo.
+ViewModels must not know `AppUpgradeRequest.baseUrl`, topics, tokens or transport. Composition that holds secret or specific configuration stays outside the UI. The UI decides presentation from `CapabilitySnapshot`, distinguishing unsupported and unknown. A stock error never selects demo.
 
-`ActionOutcomeText` solo puede anunciar efecto físico cuando `canClaimPhysicalEffect()` sea verdadero. `EventStreamItem.Gap` y `ResyncRequired` se muestran como pérdida de continuidad, no como eventos.
+`ActionOutcomeText` can only announce a physical effect when `canClaimPhysicalEffect()` is true. `EventStreamItem.Gap` and `ResyncRequired` are shown as loss of continuity, not as events.
 
-## 9. Consumo futuro por Binder
+## 9. Future Binder consumption
 
-Una API Binder debe vivir en otra capa y traducir los modelos neutros a contratos Parcelable/AIDL versionados. No debe exportar `WiboxCloud`, `CloudSession`, Ktor, URLs, DTOs o `CredentialMaterial`.
+A Binder API must live in another layer and translate the neutral models into versioned Parcelable/AIDL contracts. It must not export `WiboxCloud`, `CloudSession`, Ktor, URLs, DTOs or `CredentialMaterial`.
 
-Las llamadas suspend se adaptan a comandos con identificador de correlación. `Flow<EventStreamItem>` se proyecta a callbacks que conservan evento, gap, resync y cursor. El cierre del cliente Binder cancela la colección y, según ownership, cierra el provider una sola vez. Los secretos quedan en el proceso propietario y nunca viajan en snapshots, logs ni callbacks.
+Suspend calls are adapted to commands with a correlation identifier. `Flow<EventStreamItem>` is projected to callbacks that keep event, gap, resync and cursor. Closing the Binder client cancels the collection and, depending on ownership, closes the provider once. Secrets stay in the owning process and never travel in snapshots, logs or callbacks.
 
-## 10. Futuros proveedores y límites
+## 10. Future providers and limits
 
-MQTT y self-hosted solo tienen IDs reservados. No hay clases de adaptador, brokers, topics, nube alternativa ni soporte anunciado. El MQTT estático del APK sigue desactivado y no se transforma en el futuro provider MQTT.
+MQTT and self-hosted only have reserved IDs. There are no adapter classes, brokers, topics, alternative cloud or announced support. The static MQTT of the APK remains disabled and is not turned into the future MQTT provider.
 
-Persisten estas limitaciones: registro y login sin request/response completos, discovery sin respuesta regional, lista sin contrato, realtime sin canal probado, media sin alternativa FOSS, acciones sin ack y hardware no probado. OAuth y Shadow siguen siendo contratos offline. App upgrade solo cubre la respuesta de éxito observada, sin decisión de disponibilidad, contrato de error o compatibilidad total.
+These limitations persist: registration and login without full request/response, discovery without a regional response, list without a contract, realtime without a proven channel, media without a FOSS alternative, actions without ack and unproven hardware. OAuth and Shadow remain offline contracts. App upgrade only covers the observed success response, without availability decision, error contract or full compatibility.
 
-## 11. Verificación
+## 11. Verification
 
 ```bash
 python3 core/cloud/verify_provider_port.py
@@ -184,4 +184,4 @@ python3 core/cloud/verify_no_secrets.py
 ./gradlew :core:cloud:test --rerun-tasks
 ```
 
-`verification.txt` registra salidas, recuento de tests y límites medidos.
+`verification.txt` records outputs, test counts and measured limits.

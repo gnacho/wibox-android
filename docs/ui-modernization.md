@@ -1,258 +1,258 @@
-# Modernización de la UI de Wibox
+# Wibox UI modernization
 
-## 1. Objetivo y límites
+## 1. Goal and limits
 
-La UI puede modernizarse sin mantener un clon píxel a píxel. La restricción principal pasa a ser funcional: conservar las 33 pantallas o representaciones no legacy alcanzables, sus estados, acciones, navegación y recursos necesarios, y documentar las 5 pantallas legacy sin entrada actual. La compatibilidad QVCloud/Quvii y la honestidad sobre lo no implementado tienen prioridad sobre el acabado visual.
+The UI can be modernized without keeping a pixel-by-pixel clone. The main restriction becomes functional: keep the 33 reachable non-legacy screens or representations, their states, actions, navigation and necessary resources, and document the 5 legacy screens without a current entry. QVCloud/Quvii compatibility and honesty about what is not implemented take priority over visual finish.
 
-Este documento es diseño y criterio de aceptación. No describe capturas nuevas ya producidas ni una implementación Compose posterior. Las capturas actuales citadas en `docs/ui-implementation.md` pertenecen a la demo existente, no prueban los cambios aquí propuestos ni compatibilidad con el APK original.
+This document is design and acceptance criteria. It does not describe new captures already produced nor a later Compose implementation. The current captures cited in `docs/ui-implementation.md` belong to the existing demo, they do not prove the changes proposed here nor compatibility with the original APK.
 
-Inventario de referencia: `analysis/apk/ui-inventory.json` contiene 38 entradas y 71 aristas. De las 33 no legacy, `cache` es un relay sin UI. Por tanto, la implementación posterior debe cubrir 33 destinos o representaciones no legacy, con 32 superficies visuales y un relay, más 5 especificaciones legacy documentadas.
+Reference inventory: `analysis/apk/ui-inventory.json` contains 38 entries and 71 edges. Of the 33 non-legacy ones, `cache` is a relay without UI. Therefore, the later implementation must cover 33 non-legacy destinations or representations, with 32 visual surfaces and one relay, plus 5 documented legacy specifications.
 
-## 2. Diagnóstico de la implementación Compose actual
+## 2. Diagnosis of the current Compose implementation
 
-La base actual ya tiene Compose, rutas para las 33 representaciones no legacy, estados demo y etiquetas de modo local. También tiene limitaciones que una modernización real debe resolver:
+The current base already has Compose, routes for the 33 non-legacy representations, demo states and local mode labels. It also has limitations that a real modernization must solve:
 
-1. `WiboxApp` concentra un único `NavHost` y crea tres ViewModels de larga duración para todos los flujos. El borrador de alta, el estado global y el preview comparten vida más allá de su pantalla.
-2. `WiboxRepository` está construido sobre `FakeWiboxCloud`. Los ViewModels reciben `DemoDevice`, `DemoSnapshot` y `DemoScenario`, por lo que el modelo de presentación está acoplado a fixtures.
-3. `LoadingScreen` navega tras 450 ms. No representa restauración de sesión, discovery, preparación de proveedor ni error de arranque.
-4. La navegación usa cadenas y argumentos manuales. Es legible, pero necesita reglas explícitas para process death, deep links, llamadas duplicadas y retorno de subflujos.
-5. La demo completa pairing y preview mediante temporizadores. Sus textos `PLAYING_SIMULATED` y ack local son honestos, pero esos estados no deben reutilizarse como estados de éxito stock.
-6. Algunas funciones conservan la forma, no el contenido: marcadores en vez de media, metadata en vez de captura o grabación y enlaces sintéticos en vez de invitaciones reales. La modernización debe mantener esos huecos visibles hasta cerrarlos. El escaneo de QR ya no está en esta lista: la cámara lee los códigos con CameraX y ZXing, y el campo manual queda como alternativa.
-7. La paleta actual reproduce texto blanco sobre `#78c9e7`. No debe darse por accesible sin medir contraste. Modernizar permite elegir contenido oscuro o un color primario más oscuro.
-8. La carga demo tolerante a datos dañados no es válida para datos reales. Un snapshot corrupto no puede reiniciar silenciosamente la instalación a fixtures.
+1. `WiboxApp` concentrates a single `NavHost` and creates three long-lived ViewModels for all flows. The pairing draft, the global state and the preview share a life beyond their screen.
+2. `WiboxRepository` is built on `FakeWiboxCloud`. The ViewModels receive `DemoDevice`, `DemoSnapshot` and `DemoScenario`, so the presentation model is coupled to fixtures.
+3. `LoadingScreen` navigates after 450 ms. It does not represent session restoration, discovery, provider preparation or startup error.
+4. Navigation uses strings and manual arguments. It is readable, but it needs explicit rules for process death, deep links, duplicate calls and return from subflows.
+5. The demo completes pairing and preview through timers. Its `PLAYING_SIMULATED` texts and local ack are honest, but those states must not be reused as stock success states.
+6. Some features keep the shape, not the content: placeholders instead of media, metadata instead of capture or recording and synthetic links instead of real invitations. Modernization must keep those gaps visible until they are closed. QR scanning is no longer in this list: the camera reads the codes with CameraX and ZXing, and the manual field remains as an alternative.
+7. The current palette reproduces white text on `#78c9e7`. It must not be taken as accessible without measuring contrast. Modernizing allows choosing dark content or a darker primary colour.
+8. The demo load tolerant to damaged data is not valid for real data. A corrupt snapshot cannot silently reset the installation to fixtures.
 
-## 3. Arquitectura Compose propuesta
+## 3. Proposed Compose architecture
 
-### 3.1 Grafos y navegación
+### 3.1 Graphs and navigation
 
-Mantener un `NavHost` raíz pequeño y separar grafos con rutas estables y argumentos tipados:
+Keep a small root `NavHost` and separate graphs with stable routes and typed arguments:
 
-| Grafo | Destinos | Responsabilidad |
+| Graph | Destinations | Responsibility |
 |---|---|---|
-| `session` | `loading`, relay `cache`, decisión de conexión | Restaurar, preparar proveedor, resolver push inicial y errores |
-| `main` | `main_tab`, `tab_devices`, `tab_events`, `tab_event_list`, `tab_gallery`, `tab_settings` | Cuatro pestañas, estado de cada pestaña y edición |
-| `pairing` | `add_type`, `online_type`, `product_intro`, `scan`, `online_devices`, `handle_wifi`, `router`, `voice`, `wifi_progress`, `device_bind`, `share_bind`, `pairing_fail` | Borrador único del alta, permisos y retorno cancelado |
-| `device` | `preview`, `config`, `password_modify`, `unlock_setting`, `device_info`, `router` en modificación, `upgrade` | Dispositivo y canal seleccionados, acciones y ajustes |
-| `sharing` | `share_manage`, `share_device`, aceptación desde QR | Invitaciones, permisos y navegación entre cuentas |
-| `media` | `image_pager`, `video_player` | Media local real y estado del reproductor |
-| `system` | `push_call`, `about`, `debug` | Llamada entrante, información y diagnóstico restringido |
+| `session` | `loading`, `cache` relay, connection decision | Restore, prepare provider, resolve initial push and errors |
+| `main` | `main_tab`, `tab_devices`, `tab_events`, `tab_event_list`, `tab_gallery`, `tab_settings` | Four tabs, state of each tab and editing |
+| `pairing` | `add_type`, `online_type`, `product_intro`, `scan`, `online_devices`, `handle_wifi`, `router`, `voice`, `wifi_progress`, `device_bind`, `share_bind`, `pairing_fail` | Single pairing draft, permissions and cancelled return |
+| `device` | `preview`, `config`, `password_modify`, `unlock_setting`, `device_info`, `router` in modification, `upgrade` | Selected device and channel, actions and settings |
+| `sharing` | `share_manage`, `share_device`, acceptance from QR | Invitations, permissions and navigation between accounts |
+| `media` | `image_pager`, `video_player` | Real local media and player state |
+| `system` | `push_call`, `about`, `debug` | Incoming call, information and restricted diagnostics |
 
-Reglas:
+Rules:
 
-- IDs estables para `deviceId`, `channelId`, `mediaId`, `invitationId` y `callId`. No codificar secretos en rutas o deep links.
-- `SavedStateHandle` conserva identidad y posición, no tokens, passwords ni `CredentialMaterial`.
-- Cada pestaña conserva scroll, paginación, selección y estado de carga al cambiar de pestaña o de proceso.
-- `router` es un destino compartido con argumento `modify`, no dos implementaciones divergentes en los grafos pairing y device. Su resultado vuelve al origen correcto.
-- El alta tiene un solo resultado `bound`, `cancelled`, `failed` o `outcomeUnknown`. Volver atrás no deja un borrador zombie ni un pairing activo.
-- Aceptar una llamada consume un `callId` una sola vez. Rotación y recomposición no aceptan ni rechazan de nuevo.
-- El back stack se prueba con las 71 aristas originales como referencia. Un cambio de agrupación es válido solo si conserva destinos, acciones y salida previsible, y tiene test.
-- Las cinco pantallas legacy no se insertan por estética. Reactivar `guide`, `product_choose`, `add_method_legacy`, `wifi_list_legacy` o `wifi_set_legacy` requiere una decisión funcional, una entrada explícita y sus pruebas.
+- Stable IDs for `deviceId`, `channelId`, `mediaId`, `invitationId` and `callId`. Do not encode secrets in routes or deep links.
+- `SavedStateHandle` keeps identity and position, not tokens, passwords or `CredentialMaterial`.
+- Each tab keeps scroll, pagination, selection and loading state when switching tabs or processes.
+- `router` is a shared destination with a `modify` argument, not two divergent implementations in the pairing and device graphs. Its result returns to the right origin.
+- Pairing has a single result `bound`, `cancelled`, `failed` or `outcomeUnknown`. Going back leaves no zombie draft nor active pairing.
+- Accepting a call consumes a `callId` only once. Rotation and recomposition do not accept or reject again.
+- The back stack is tested with the 71 original edges as reference. A grouping change is valid only if it keeps destinations, actions and predictable exit, and has a test.
+- The five legacy screens are not inserted for aesthetics. Reactivating `guide`, `product_choose`, `add_method_legacy`, `wifi_list_legacy` or `wifi_set_legacy` requires a functional decision, an explicit entry and its tests.
 
-### 3.2 ViewModels y modelos de presentación
+### 3.2 ViewModels and presentation models
 
-| ViewModel | Ámbito | Estado que posee |
+| ViewModel | Scope | State it owns |
 |---|---|---|
-| `SessionViewModel` | Grafo de sesión | Proveedor, modo demo/real, preparación, error y llamada pendiente |
-| `DevicesViewModel` | `tab_devices` | Lista, frescura, presencia, refresh y acciones pendientes |
-| `EventsViewModel` | Eventos | Páginas, filtros visibles, fotos, selección y gaps |
-| `GalleryViewModel` | Galería | Archivos, selección, pager y operaciones de media |
-| `PairingViewModel` | Grafo de alta | Borrador no secreto, etapa, permisos, candidatos y resultado |
-| `DeviceDetailViewModel` | Un dispositivo | Detalle, Shadow, capacidades, configuración y errores |
-| `PreviewViewModel` | Una `MediaSessionHandle` | Paneles, canal, reproducción, audio, captura, grabación y acciones |
-| `CallViewModel` | Un `callId` | Ringing, aceptar, rechazar, timeout y answered elsewhere |
-| `SharingViewModel` | Un dispositivo | Invitaciones, permisos, límite y enlaces efímeros |
-| `SettingsViewModel` | Ajustes | Preferencias, privacidad, diagnóstico y proveedor |
+| `SessionViewModel` | Session graph | Provider, demo/real mode, preparation, error and pending call |
+| `DevicesViewModel` | `tab_devices` | List, freshness, presence, refresh and pending actions |
+| `EventsViewModel` | Events | Pages, visible filters, photos, selection and gaps |
+| `GalleryViewModel` | Gallery | Files, selection, pager and media operations |
+| `PairingViewModel` | Pairing graph | Non-secret draft, stage, permissions, candidates and result |
+| `DeviceDetailViewModel` | One device | Detail, Shadow, capabilities, configuration and errors |
+| `PreviewViewModel` | One `MediaSessionHandle` | Panels, channel, playback, audio, capture, recording and actions |
+| `CallViewModel` | One `callId` | Ringing, accept, reject, timeout and answered elsewhere |
+| `SharingViewModel` | One device | Invitations, permissions, limit and ephemeral links |
+| `SettingsViewModel` | Settings | Preferences, privacy, diagnostics and provider |
 
-Los Composables reciben estado inmutable y eventos. No llaman a repositorios, no parsean QR, no conocen DTOs y no deciden soporte. Un `UiMapper` traduce modelos provider-neutral a modelos de presentación. `Demo*` queda confinado al adaptador demo.
+Composables receive immutable state and events. They do not call repositories, do not parse QR codes, do not know DTOs and do not decide support. A `UiMapper` translates provider-neutral models into presentation models. `Demo*` is confined to the demo adapter.
 
-Las acciones físicas se ejecutan en el ViewModel del dispositivo correspondiente mediante un `ActionCoordinator` común. Este coordinador impide duplicados por `commandId`, conserva `ActionOutcome` y evita que dos pantallas repitan una apertura al recomponerse.
+Physical actions run in the ViewModel of the corresponding device through a common `ActionCoordinator`. This coordinator prevents duplicates by `commandId`, keeps `ActionOutcome` and stops two screens from repeating an opening when recomposed.
 
-### 3.3 Diseño visual mantenible
+### 3.3 Maintainable visual design
 
-- Compose Material 3 como base de componentes, con tokens propios para color, tipografía, elevación, estados y dimensiones. No un tema Material genérico superpuesto sin revisar.
-- Componentes comunes: `ProviderStatusBanner`, `LoadContent`, `DeviceCard`, `CapabilityAction`, `ActionOutcomeText`, `PermissionRationale`, `PairingProgress`, `MediaControls`, `SelectionBar` y `ErrorPanel`.
-- Iconos originales solo cuando estén trazados en `analysis/apk/resources/manifest.json` y sean necesarios para identidad o acción. Para iconografía nueva se prefiere Lucide convertido a vector o el estándar Android si no existe equivalente. No se reutilizan binarios, certificados ni recursos secretos.
-- La identidad puede conservar el azul Wibox, pero el contenido sobre primario se decide por contraste medido. No se fija texto blanco sobre `#78c9e7` si no alcanza AA.
-- Cuatro pestañas en teléfono y `NavigationRail` en ancho suficiente. No convertir la app en un dashboard nuevo ni eliminar la jerarquía de alta, dispositivo y galería.
-- Preview y visores conservan superficie oscura por legibilidad de media. El resto no se oscurece automáticamente sin suite de contraste.
+- Compose Material 3 as the component base, with own tokens for colour, typography, elevation, states and dimensions. Not a generic Material theme overlaid without review.
+- Common components: `ProviderStatusBanner`, `LoadContent`, `DeviceCard`, `CapabilityAction`, `ActionOutcomeText`, `PermissionRationale`, `PairingProgress`, `MediaControls`, `SelectionBar` and `ErrorPanel`.
+- Original icons only when they are traced in `analysis/apk/resources/manifest.json` and are necessary for identity or action. For new iconography, Lucide converted to a vector or the Android standard is preferred if no equivalent exists. Binaries, certificates and secret resources are not reused.
+- The identity can keep the Wibox blue, but content on primary is decided by measured contrast. White text on `#78c9e7` is not fixed if it does not reach AA.
+- Four tabs on phone and `NavigationRail` at sufficient width. Do not turn the app into a new dashboard nor remove the pairing, device and gallery hierarchy.
+- Preview and viewers keep a dark surface for media legibility. The rest is not darkened automatically without a contrast suite.
 
-## 4. Inventario completo y destino modernizado
+## 4. Full inventory and modernized destination
 
-Convenciones de la tabla:
+Table conventions:
 
-- La columna original resume funcionalidad, todos los IDs de estado del inventario y recursos o acciones que no se pueden perder.
-- La situación actual se refiere a la app demo existente, no al APK original.
-- Las pruebas y capturas nombradas son obligaciones futuras. `CAP-*` no implica que el archivo exista.
-- `legacy_documented` conserva la especificación fuera del grafo principal, sin afirmar que hoy sea alcanzable.
+- The original column summarizes functionality, all the state IDs of the inventory and resources or actions that cannot be lost.
+- The current situation refers to the existing demo app, not to the original APK.
+- The tests and captures named are future obligations. `CAP-*` does not imply that the file exists.
+- `legacy_documented` keeps the specification outside the main graph, without claiming it is reachable today.
 
-| ID | Funcionalidad, estados y recursos originales | Situación actual | Destino modernizado | Evidencia y test requeridos |
+| ID | Original functionality, states and resources | Current situation | Modernized destination | Required evidence and test |
 |---|---|---|---|---|
-| `loading` | Entrada y restauración. Estados: `splash`, `storage_permission`, `phone_permission`, `startup_wait`, `push_redirect`. Recurso `start.png`. Navega a `main_tab`, `push_call`, `preview`. | Portada de 450 ms y salto a main. No hay sesión ni permisos reales. | `SessionScreen` con preparación real, error recuperable y deep link; portada breve solo si no retrasa el arranque. | `SessionViewModelTest` para espera/error/push y permisos de almacenamiento/teléfono sin bloqueo indebido; `NavigationTest` para tres destinos; `CAP-loading-splash` y `CAP-loading-error` en emulador. |
-| `cache` | Relay push sin layout. Estados: `relay`, `finish`. Navega a `loading`. | Representación dentro de `MainActivity`, sin relay real. | `PushRelay` sin UI, con extras validados y cierre inmediato. | `PushRelayTest` para copiar solo datos permitidos y terminar. Sin captura por no tener UI. |
-| `main_tab` | Cuatro pestañas y diálogos. Estados: `devices_selected`, `events_selected`, `gallery_selected`, `settings_selected`, `terms`, `android_hint`, `edit_mode`. Recursos de tabs normales/seleccionados. Navega a `tab_devices`, `tab_events`, `tab_gallery`, `tab_settings`. | Cuatro tabs, rail ancho y edición con tabs ocultas. Términos y aviso Android no son reales. | `MainScaffold` con estado por pestaña, términos y avisos accionables solo cuando correspondan. | `MainNavigationTest`, restauración de tab y selección; `CAP-main-tabs`, `CAP-main-edit`, `CAP-main-terms`. |
-| `add_type` | Elegir alta nueva u online. Estados: `new_device`, `online_device`. Estilo `option_button`. Navega a `product_intro`, `online_type`. | Ambas opciones existen. | `AddTypeScreen` en grafo pairing, con accesos claros y capacidad de proveedor. | `PairingNavigationTest` para dos ramas; `CAP-add-type`. |
-| `preview` | Video y acciones. Estados: `empty`, `connecting`, `playing`, `stopped`, `refresh`, `password_error`, `offline`, `one_window`, `four_windows`, `portrait`, `landscape`, `listening`, `talking`, `recording`, `snapshot`, `unlock_progress`, `unlock_success`, `unlock_failure`, `f1`, `timeout`, `no_permission`. Controles play, canal, calidad, escucha, habla, captura, grabación, unlock/F1. Navega a `config`, `password_modify`. | Simulación honesta con paneles, controles y acciones locales; no hay P2P, archivos reales ni ack físico. | `PreviewScreen` sobre `MediaSessionHandle`, controles por capacidad y resultados por nivel de ack. Conservar uno/cuatro paneles y rotación. | `PreviewViewModelTest` para todos los estados; `MediaContractTest`; `ActionOutcomeTest`; `CAP-preview-one`, `CAP-preview-four`, `CAP-preview-landscape`, `CAP-preview-offline`, `CAP-preview-unsupported`, `CAP-preview-action-pending`, `CAP-preview-ack`. Prueba hardware posterior para media/acciones. |
-| `online_type` | Buscar online o alta manual. Estados: `scan_online`, `manual`. Navega a `online_devices`, `device_bind`. | Ambas rutas existen; búsqueda simulada. | `OnlineTypeScreen` con origen LAN real o demo etiquetado. | `PairingNavigationTest`; `DiscoveryStateTest`; `CAP-online-type`. |
-| `product_choose` | Selector Wi-Fi Doorbell 7410 y Monitor 9440. Estados: `doorbell`, `monitor`. Recursos `device_type_7410`, `device_type_9440`. Navega a `product_intro`. `legacy_no_inbound`. | Omitida como legacy. | `legacy_documented`: conservar modelos, estados y recursos en especificación; no añadir entrada sin evidencia de necesidad. | `LegacyCoverageTest` para impedir borrado accidental. Si se reactiva: `PairingNavigationTest` y `CAP-product-choose`. |
-| `product_intro` | Reset y acceso a QR/WiFi. Estados: `reset_instructions`, `location_permission`, `camera_permission`, `scan_error`, `wifi_switch_error`. Recurso `reset_device_img`. Navega a `scan`, `router`, `handle_wifi`. | Instrucciones y paso manual; no permisos ni cámara reales. | `ProductIntroScreen` con permisos just-in-time y recuperación a ajustes sin bloquear rutas no dependientes. | `PermissionFlowTest` para ubicación/cámara; `PairingNavigationTest`; `CAP-product-intro`, `CAP-product-intro-permission`. |
-| `handle_wifi` | Paso manual al AP. Estados: `instructions`, `copied`, `ap_mismatch`, `ap_connected`. Recursos `prompt_setup_wifi`, `icon_copy`. Navega a `router`, `wifi_progress`. | Texto, copia y continuación demo. | `HandleWifiScreen` con detección real de SSID cuando exista y salida manual segura. | `WifiSelectionTest` para copiar/mismatch/connected; `CAP-handle-wifi-mismatch`. |
-| `wifi_list_legacy` | Lista WiFi legacy. Estados: `loading`, `list`, `error`, `password`, `connect_failure`, `success`. Recursos `wifi_0`. Navega a `wifi_set_legacy`. `legacy_no_inbound`. | Omitida como legacy. | `legacy_documented`: no fusionar con `router` sin conservar sus seis estados en la especificación. | `LegacyCoverageTest`. Si se reactiva: `WifiLegacyTest` y `CAP-wifi-list-legacy-*` por estado. |
-| `wifi_set_legacy` | Configuración WiFi legacy. Estados: `password_hidden`, `password_visible`, `countdown`, `connect_error`, `modify_success`, `set_failure`. Navega a `config`, `product_intro`. `legacy_no_inbound`. | Omitida como legacy. | `legacy_documented`: conservar cuenta atrás, errores y dos destinos documentados. | `LegacyCoverageTest`. Si se reactiva: `WifiLegacyTest` y `CAP-wifi-set-legacy-*` por estado. |
-| `device_bind` | Formulario de alta. Estados: `qr_locked`, `manual`, `password_hidden`, `password_visible`, `share_link`, `validation_error`, `binding`, `success`, `invitation_error`. Acciones nombre, UID, auth code, QR y bind. Navega a `main_tab`, `scan`. | Validación, duplicados, binding y alta persistente local. | `DeviceBindScreen` con secreto efímero, `PairingResult` y resultado desconocido tras timeout. | `PairingViewModelTest` para todos los estados; `SecretStateTest`; `CAP-device-bind-manual`, `CAP-device-bind-validation`, `CAP-device-bind-pending`. |
-| `online_devices` | Resultados LAN. Estados: `refreshing`, `results`, `empty`, `error`. Navega a `device_bind`. | Loading, resultados, vacío y error simulados. | `OnlineDevicesScreen` con lista real, frescura y vacío solo tras búsqueda completada. | `DiscoveryViewModelTest` para cuatro estados y duplicados; `CAP-online-devices-empty`, `CAP-online-devices-results`. |
-| `scan` | Escáner QR y galería. Estados: `scanning`, `pick_image`, `invalid`, `result`, `new_device`, `share`. Recursos `qr_scan`, galería. Navega a `product_intro`, `device_bind`, `share_bind`. | Cámara con CameraX y ZXing sobre el parser, más entrada manual. Sin selección de imagen. | `ScanCodeScreen` con cámara FOSS, galería, pegar como alternativa y cierre de cámara al salir. | `CameraPermissionTest`, parser y tres destinos; `CAP-scan-camera`, `CAP-scan-pick-image`, `CAP-scan-invalid`. |
-| `config` | Ajustes de dispositivo. Estados: `owner`, `shared`, `loading`, `alarm_on`, `alarm_off`, `upgrade_available`, `delete_confirm`, `delete_error`, `bind_required`. Acciones info, passwords, unlock, WiFi, usuarios, firmware, alarmas, sync hora, F1/FPS/lock/audio y borrado. Navega a `device_info`, `password_modify`, `unlock_setting`, `router`, `upgrade`, `share_manage`, `main_tab`. | Owner/shared, alarmas y edición local; upgrade y varias operaciones no son reales. | `DeviceConfigScreen` por capacidades y rol, sin ocultar unsupported como si fuera ausencia de función. | `DeviceConfigViewModelTest` para owner/shared y todos los estados; `NavigationTest` de siete destinos; `CAP-config-owner`, `CAP-config-shared`, `CAP-config-delete-error`. |
-| `password_modify` | Cambio de contraseñas. Estados: `device_mode`, `admin_mode`, `unlock_mode`, `init_mode`, `mismatch`, `empty`, `success`. Navega a `config`. | Cuatro modos y validación local sin guardar secretos. | `PasswordModifyScreen` con operación real por modo, limpieza de campos y error de credencial. | `PasswordViewModelTest` para modos/errores; `SecretStateTest`; `CAP-password-modify-mismatch`. |
-| `unlock_setting` | Quick unlock y biometría. Estados: `quick_on`, `quick_off`, `bio_on`, `bio_off`, `bio_unavailable`, `warning`, `saved`. Navega a `config`. | Quick y biometría persistentes; la biometría se resuelve con la credencial del sistema y sin ella la acción pasa directa. | `UnlockSettingScreen` con credencial del sistema antes de abrir o disparar F1, y advertencia de seguridad, sin confundir autorización local con ack. | `BiometricTest` para disponible/no disponible/fallback; `CAP-unlock-setting-warning`, `CAP-unlock-setting-bio-unavailable`. |
-| `device_info` | Información y renombrado. Estados: `read_only`, `editing`, `validation_error`, `success`, `failure`. UID no editable. Navega a `config`. | Edición, duplicado y guardado local. | `DeviceInfoScreen` con UID estable, guardado local/remoto y estado stale. | `DeviceInfoViewModelTest` para cinco estados; `CAP-device-info-validation`. |
-| `about` | Versión, privacidad y acceso debug. Estados: `version`, `privacy`, `debug_trigger`. Recurso `logo.png`. Navega a `debug`. | Versión local, privacidad local y gesto. | `AboutScreen` con versión del paquete, proveedor y privacidad accesible; debug restringido. | `AboutTest` para versión/privacidad/gesto; `CAP-about`, `CAP-about-privacy`. |
-| `image_pager` | Visor de imágenes. Estados: `white`, `black`, `page`, `share`, `delete_confirm`, `save_result`. Navega a `video_player`, `tab_gallery`. | Marcadores locales, modos y borrado; compartir/exportar no disponible. | `ImagePagerScreen` con media real, zoom accesible, URI grants mínimos y operaciones reales. | `MediaPagerTest` con imágenes de fixture; `FileProviderSecurityTest`; `CAP-image-pager-white`, `CAP-image-pager-black`, `CAP-image-pager-delete`. |
-| `video_player` | Reproductor local. Estados: `playing`, `paused`, `stopped`, `muted`, `unmuted`, `seeking`, `tools_visible`, `tools_hidden`, `landscape`. Navega a `image_pager`. | Controles simulados sobre panel negro. | `VideoPlayerScreen` con player real, posición restaurada, audio y controles accesibles. | `VideoPlayerTest` para todos los estados y process death; `CAP-video-player-playing`, `CAP-video-player-seeking`, `CAP-video-player-landscape`. |
-| `push_call` | Llamada entrante. Estados: `ringing`, `vibration`, `accept`, `refuse`, `auto_refuse`, `answered_elsewhere`. Recursos fondo y botones originales. Navega a `preview`, `main_tab`. | Llamada local con vibración, aceptar/rechazar y cierre a 30 s. | `IncomingCallScreen` con `callId`, acciones una sola vez, permisos y evento 20. | `CallViewModelTest` con reloj; `CallNavigationTest` anti duplicado; `CAP-push-call-ringing`, `CAP-push-call-answered-elsewhere`. Prueba FCM/hardware posterior. |
-| `debug` | Diagnóstico. Estados: `debug_toggle`, `forwarding`, `connection_type`, `advanced`, `service_switch`, `send_log`, `token`. Navega a `loading`. `hidden_gesture`. | Escenarios fake, reset y ausencia de token. | `DebugScreen` solo en builds permitidas, diagnóstico por proveedor y exportación saneada. Nunca token visible. | `DebugAccessTest`, `LogRedactionTest`, confirmación para cambio/reset; `CAP-debug-redacted`. |
-| `upgrade` | Firmware. Estados: `query`, `up_to_date`, `available`, `progress`, `success`, `failure`. Navega a `config`. | Consulta local up-to-date y upgrade deshabilitado. | `FirmwareScreen` con consulta y apply separados. Apply solo con evidencia, autenticidad y autorización de hardware. | `FirmwareViewModelTest` para seis estados sin flashear; `CAP-upgrade-available`, `CAP-upgrade-failure`. Prueba física fuera de tests normales. |
-| `guide` | Guía paginada. Estados: `page_locks`, `page_cameras`, `page_playback`, `start`. Recursos `guide_display1/2/3`. Navega a `main_tab`. `legacy_no_inbound`. | Omitida porque loading siempre abre main. | `legacy_documented`: conservar las tres páginas y botón sin presentarla como onboarding actual. | `LegacyCoverageTest`. Si se reactiva: pager accesible y `CAP-guide-locks`, `CAP-guide-cameras`, `CAP-guide-playback`. |
-| `add_method_legacy` | Selector AP/audio legacy. Estados: `ap`, `voice`, `switch_success`, `switch_failure`. Navega a `router`, `handle_wifi`. `legacy_no_inbound`. | Omitida como legacy. | `legacy_documented`: no duplicar el selector moderno sin revisar estas transiciones. | `LegacyCoverageTest`. Si se reactiva: `PairingNavigationTest` y `CAP-add-method-legacy`. |
-| `router` | Router y contraseña. Estados: `loading`, `selected`, `password_hidden`, `password_visible`, `save_password`, `validation`, `new_mode`, `modify_mode`. Recursos niveles `wifi_1` a `wifi_4`. Navega a `wifi_progress`, `voice`, `config`. | Lista y formulario demo; guardado preferido sin secretos persistidos. | `RouterScreen` con redes reales, guardado opt in, secreto efímero y dos modos. | `RouterViewModelTest` para ocho estados; `WifiPermissionTest`; `CAP-router-new`, `CAP-router-modify`, `CAP-router-validation`. |
-| `voice` | Alta acústica. Estados: `sending`, `waiting`, `volume_low`, `failure`, `success`. Recurso `device_add_sound_waver`. Navega a `device_bind`, `main_tab`. | Máquina local sin emitir audio. | `VoiceProvisioningScreen` con emisión real cancelable, volumen y progreso del adaptador. | `AudioProvisioningTest` para cinco estados; `CAP-voice-waiting`, `CAP-voice-volume-low`; prueba hardware posterior. |
-| `wifi_progress` | Progreso AP. Estados: `connecting`, `sending`, `waiting`, `network_error`, `retry`, `failure`, `success`. Recurso `device_add_wifi_set`. Navega a `pairing_fail`, `device_bind`, `main_tab`, `handle_wifi`. | Etapas locales, fallo manual y navegación. | `WifiProvisioningScreen` con progreso real, 150 s si el perfil lo confirma, cancelación y `outcomeUnknown`. | `ProvisioningViewModelTest` para todos los estados/cancelación; `CAP-wifi-progress-waiting`, `CAP-wifi-progress-network-error`, `CAP-wifi-progress-unknown`. |
-| `share_device` | Nueva invitación. Estados: `qr`, `link`, `expiration`, `copied`, `save_result`, `share_sheet`. QR 120 dp. Navega a `share_manage`. | Enlace local y QR/exportación no disponibles; no muestra QR falso. | `ShareDeviceScreen` con QR real, caducidad, copia y chooser; contenido sensible fuera de logs. | `InvitationViewModelTest`, decodificar QR generado, compartir/guardar real; `CAP-share-device-qr`, `CAP-share-device-expiration`. |
-| `pairing_fail` | Error de alta. Estados: `error`, `main_only`. Back físico ignorado y salida a `main_tab`. | Error simulado y regreso a main. | `PairingFailScreen` con causa tipada, retry seguro y salida previsible sin dejar tarea activa. | `PairingFailureNavigationTest` para back y reintento; `CAP-pairing-fail`. |
-| `share_manage` | Usuarios e invitaciones. Estados: `loading`, `empty`, `list`, `create`, `edit`, `delete`, `limit`, `error`. Navega a `share_device`, `config`. | Lista local, crear/borrar, límite y errores. | `ShareManageScreen` con CRUD real, permisos, rol owner y límite 100 cuando aplique. | `SharingViewModelTest` para ocho estados y permisos; `CAP-share-manage-empty`, `CAP-share-manage-list`, `CAP-share-manage-limit`. |
-| `share_bind` | Aceptar invitación. Estados: `form`, `validation`, `accept`, `success`, `invalid`. UID/código bloqueados. Navega a `main_tab`. | Invitación local, duplicados y alta compartida. | `ShareBindScreen` con aceptación real, reaceptación y errores de caducidad/uso. | `InvitationAcceptTest` para cinco estados y reaceptación; `CAP-share-bind-form`, `CAP-share-bind-invalid`. |
-| `tab_devices` | Lista y acciones. Estados: `empty`, `list`, `refresh`, `offline`, `password`, `biometric`, `action_result`. Recursos portada y estados online/offline. Navega a `add_type`, `preview`, `config`. | Loading/empty/list/offline y acciones demo deshabilitadas según permiso. | `DevicesScreen` con datos reales/stale, acciones por capacidad y ack diferenciado. | `DevicesViewModelTest` para siete estados; `ActionOutcomeTest`; `CAP-devices-empty`, `CAP-devices-list`, `CAP-devices-offline`, `CAP-devices-biometric`. |
-| `tab_events` | Contenedor de eventos. Estados: `loading`, `empty`, `list`, `filters_hidden`, `warning`, `edit`, `delete`, `image`. Navega a `tab_event_list`. | Lista local, warning, edición y borrado; filtros ocultos documentados. | `EventsScreen` con una lista All por defecto y filtros solo si se habilitan; fotos reales y gaps visibles. | `EventsViewModelTest` para ocho estados; `CAP-events-empty`, `CAP-events-list`, `CAP-events-edit`, `CAP-events-image`. |
-| `tab_event_list` | Lista de actividad. Estados: `empty_all`, `empty_call`, `empty_motion`, `refresh`, `load_more`, `edit`. Navega a `tab_events`. | Filas, refresh manual, páginas de 15 y edición local. | `EventList` con cursor real, tres vacíos y selección, sin transformar error en lista vacía. | `EventPaginationTest` para páginas/errores/gaps; `CAP-event-list-empty-motion`, `CAP-event-list-load-more`. |
-| `tab_gallery` | Galería local. Estados: `empty`, `grid`, `edit`, `selected`, `select_all`, `share`, `save`, `delete`. Tres columnas y fechas. Navega a `image_pager`. | Grid local con marcadores y operaciones sobre metadata. | `GalleryScreen` con archivos reales, selección y acciones de URI seguras. | `GalleryViewModelTest` para ocho estados; `FileProviderSecurityTest`; `CAP-gallery-empty`, `CAP-gallery-grid`, `CAP-gallery-selected`. |
-| `tab_settings` | Ajustes. Estados: `sound_on`, `sound_off`, `vibration_on`, `vibration_off`, `about`, `exit_confirm`, `hidden_options`. Navega a `about`. Auto rotate, canales y preview time ocultos en original. | Sonido/vibración persistentes, about, escenarios, reset y salida demo. | `SettingsScreen` con preferencias reales, proveedor y modo conexión. Opciones ocultas documentadas, debug/reset fuera de producción. | `SettingsViewModelTest` para siete estados; `CAP-settings`, `CAP-settings-exit-confirm`, `CAP-settings-hidden-options-review` solo documental. |
+| `loading` | Entry and restoration. States: `splash`, `storage_permission`, `phone_permission`, `startup_wait`, `push_redirect`. Resource `start.png`. Navigates to `main_tab`, `push_call`, `preview`. | 450 ms cover and jump to main. There is no session nor real permissions. | `SessionScreen` with real preparation, recoverable error and deep link, brief cover only if it does not delay startup. | `SessionViewModelTest` for wait/error/push and storage/phone permissions without undue blocking, `NavigationTest` for three destinations, `CAP-loading-splash` and `CAP-loading-error` on the emulator. |
+| `cache` | Push relay without layout. States: `relay`, `finish`. Navigates to `loading`. | Representation inside `MainActivity`, without a real relay. | `PushRelay` without UI, with validated extras and immediate close. | `PushRelayTest` to copy only allowed data and finish. No capture because it has no UI. |
+| `main_tab` | Four tabs and dialogs. States: `devices_selected`, `events_selected`, `gallery_selected`, `settings_selected`, `terms`, `android_hint`, `edit_mode`. Normal/selected tab resources. Navigates to `tab_devices`, `tab_events`, `tab_gallery`, `tab_settings`. | Four tabs, wide rail and editing with hidden tabs. Terms and Android notice are not real. | `MainScaffold` with state per tab, terms and actionable notices only when they apply. | `MainNavigationTest`, tab and selection restoration, `CAP-main-tabs`, `CAP-main-edit`, `CAP-main-terms`. |
+| `add_type` | Choose new or online pairing. States: `new_device`, `online_device`. `option_button` style. Navigates to `product_intro`, `online_type`. | Both options exist. | `AddTypeScreen` in the pairing graph, with clear entries and provider capability. | `PairingNavigationTest` for two branches, `CAP-add-type`. |
+| `preview` | Video and actions. States: `empty`, `connecting`, `playing`, `stopped`, `refresh`, `password_error`, `offline`, `one_window`, `four_windows`, `portrait`, `landscape`, `listening`, `talking`, `recording`, `snapshot`, `unlock_progress`, `unlock_success`, `unlock_failure`, `f1`, `timeout`, `no_permission`. Controls play, channel, quality, listen, talk, capture, recording, unlock/F1. Navigates to `config`, `password_modify`. | Honest simulation with panels, controls and local actions, no P2P, real files or physical ack. | `PreviewScreen` over `MediaSessionHandle`, controls per capability and results per ack level. Keep one/four panels and rotation. | `PreviewViewModelTest` for all states, `MediaContractTest`, `ActionOutcomeTest`, `CAP-preview-one`, `CAP-preview-four`, `CAP-preview-landscape`, `CAP-preview-offline`, `CAP-preview-unsupported`, `CAP-preview-action-pending`, `CAP-preview-ack`. Later hardware test for media/actions. |
+| `online_type` | Search online or manual pairing. States: `scan_online`, `manual`. Navigates to `online_devices`, `device_bind`. | Both routes exist, simulated search. | `OnlineTypeScreen` with real LAN origin or labelled demo. | `PairingNavigationTest`, `DiscoveryStateTest`, `CAP-online-type`. |
+| `product_choose` | Wi-Fi Doorbell 7410 and Monitor 9440 selector. States: `doorbell`, `monitor`. Resources `device_type_7410`, `device_type_9440`. Navigates to `product_intro`. `legacy_no_inbound`. | Omitted as legacy. | `legacy_documented`: keep models, states and resources in the specification, do not add an entry without evidence of need. | `LegacyCoverageTest` to prevent accidental deletion. If reactivated: `PairingNavigationTest` and `CAP-product-choose`. |
+| `product_intro` | Reset and access to QR/WiFi. States: `reset_instructions`, `location_permission`, `camera_permission`, `scan_error`, `wifi_switch_error`. Resource `reset_device_img`. Navigates to `scan`, `router`, `handle_wifi`. | Instructions and manual step, no real permissions or camera. | `ProductIntroScreen` with just-in-time permissions and recovery to settings without blocking non-dependent routes. | `PermissionFlowTest` for location/camera, `PairingNavigationTest`, `CAP-product-intro`, `CAP-product-intro-permission`. |
+| `handle_wifi` | Manual step to the AP. States: `instructions`, `copied`, `ap_mismatch`, `ap_connected`. Resources `prompt_setup_wifi`, `icon_copy`. Navigates to `router`, `wifi_progress`. | Text, copy and demo continuation. | `HandleWifiScreen` with real SSID detection when it exists and a safe manual exit. | `WifiSelectionTest` for copy/mismatch/connected, `CAP-handle-wifi-mismatch`. |
+| `wifi_list_legacy` | Legacy WiFi list. States: `loading`, `list`, `error`, `password`, `connect_failure`, `success`. Resource `wifi_0`. Navigates to `wifi_set_legacy`. `legacy_no_inbound`. | Omitted as legacy. | `legacy_documented`: do not merge with `router` without keeping its six states in the specification. | `LegacyCoverageTest`. If reactivated: `WifiLegacyTest` and `CAP-wifi-list-legacy-*` per state. |
+| `wifi_set_legacy` | Legacy WiFi configuration. States: `password_hidden`, `password_visible`, `countdown`, `connect_error`, `modify_success`, `set_failure`. Navigates to `config`, `product_intro`. `legacy_no_inbound`. | Omitted as legacy. | `legacy_documented`: keep the countdown, errors and two documented destinations. | `LegacyCoverageTest`. If reactivated: `WifiLegacyTest` and `CAP-wifi-set-legacy-*` per state. |
+| `device_bind` | Pairing form. States: `qr_locked`, `manual`, `password_hidden`, `password_visible`, `share_link`, `validation_error`, `binding`, `success`, `invitation_error`. Actions name, UID, auth code, QR and bind. Navigates to `main_tab`, `scan`. | Validation, duplicates, binding and persistent local pairing. | `DeviceBindScreen` with ephemeral secret, `PairingResult` and unknown result after timeout. | `PairingViewModelTest` for all states, `SecretStateTest`, `CAP-device-bind-manual`, `CAP-device-bind-validation`, `CAP-device-bind-pending`. |
+| `online_devices` | LAN results. States: `refreshing`, `results`, `empty`, `error`. Navigates to `device_bind`. | Simulated loading, results, empty and error. | `OnlineDevicesScreen` with real list, freshness and empty only after a completed search. | `DiscoveryViewModelTest` for four states and duplicates, `CAP-online-devices-empty`, `CAP-online-devices-results`. |
+| `scan` | QR and gallery scanner. States: `scanning`, `pick_image`, `invalid`, `result`, `new_device`, `share`. Resources `qr_scan`, gallery. Navigates to `product_intro`, `device_bind`, `share_bind`. | Camera with CameraX and ZXing over the parser, plus manual entry. No image selection. | `ScanCodeScreen` with FOSS camera, gallery, paste as alternative and camera close on exit. | `CameraPermissionTest`, parser and three destinations, `CAP-scan-camera`, `CAP-scan-pick-image`, `CAP-scan-invalid`. |
+| `config` | Device settings. States: `owner`, `shared`, `loading`, `alarm_on`, `alarm_off`, `upgrade_available`, `delete_confirm`, `delete_error`, `bind_required`. Actions info, passwords, unlock, WiFi, users, firmware, alarms, time sync, F1/FPS/lock/audio and deletion. Navigates to `device_info`, `password_modify`, `unlock_setting`, `router`, `upgrade`, `share_manage`, `main_tab`. | Owner/shared, alarms and local editing, upgrade and several operations are not real. | `DeviceConfigScreen` by capabilities and role, without hiding unsupported as if it were an absent feature. | `DeviceConfigViewModelTest` for owner/shared and all states, `NavigationTest` of seven destinations, `CAP-config-owner`, `CAP-config-shared`, `CAP-config-delete-error`. |
+| `password_modify` | Password change. States: `device_mode`, `admin_mode`, `unlock_mode`, `init_mode`, `mismatch`, `empty`, `success`. Navigates to `config`. | Four modes and local validation without storing secrets. | `PasswordModifyScreen` with real operation per mode, field cleanup and credential error. | `PasswordViewModelTest` for modes/errors, `SecretStateTest`, `CAP-password-modify-mismatch`. |
+| `unlock_setting` | Quick unlock and biometrics. States: `quick_on`, `quick_off`, `bio_on`, `bio_off`, `bio_unavailable`, `warning`, `saved`. Navigates to `config`. | Persistent quick and biometrics, biometrics resolved with the system credential and without it the action goes straight through. | `UnlockSettingScreen` with system credential before opening or triggering F1, and a security warning, without confusing local authorization with ack. | `BiometricTest` for available/unavailable/fallback, `CAP-unlock-setting-warning`, `CAP-unlock-setting-bio-unavailable`. |
+| `device_info` | Information and renaming. States: `read_only`, `editing`, `validation_error`, `success`, `failure`. Non-editable UID. Navigates to `config`. | Editing, duplicate and local save. | `DeviceInfoScreen` with stable UID, local/remote save and stale state. | `DeviceInfoViewModelTest` for five states, `CAP-device-info-validation`. |
+| `about` | Version, privacy and debug access. States: `version`, `privacy`, `debug_trigger`. Resource `logo.png`. Navigates to `debug`. | Local version, local privacy and gesture. | `AboutScreen` with package version, provider and accessible privacy, restricted debug. | `AboutTest` for version/privacy/gesture, `CAP-about`, `CAP-about-privacy`. |
+| `image_pager` | Image viewer. States: `white`, `black`, `page`, `share`, `delete_confirm`, `save_result`. Navigates to `video_player`, `tab_gallery`. | Local placeholders, modes and deletion, share/export unavailable. | `ImagePagerScreen` with real media, accessible zoom, minimal URI grants and real operations. | `MediaPagerTest` with fixture images, `FileProviderSecurityTest`, `CAP-image-pager-white`, `CAP-image-pager-black`, `CAP-image-pager-delete`. |
+| `video_player` | Local player. States: `playing`, `paused`, `stopped`, `muted`, `unmuted`, `seeking`, `tools_visible`, `tools_hidden`, `landscape`. Navigates to `image_pager`. | Simulated controls over a black panel. | `VideoPlayerScreen` with real player, restored position, audio and accessible controls. | `VideoPlayerTest` for all states and process death, `CAP-video-player-playing`, `CAP-video-player-seeking`, `CAP-video-player-landscape`. |
+| `push_call` | Incoming call. States: `ringing`, `vibration`, `accept`, `refuse`, `auto_refuse`, `answered_elsewhere`. Original background and button resources. Navigates to `preview`, `main_tab`. | Local call with vibration, accept/reject and close at 30 s. | `IncomingCallScreen` with `callId`, one-time actions, permissions and event 20. | `CallViewModelTest` with clock, `CallNavigationTest` anti-duplicate, `CAP-push-call-ringing`, `CAP-push-call-answered-elsewhere`. Later FCM/hardware test. |
+| `debug` | Diagnostics. States: `debug_toggle`, `forwarding`, `connection_type`, `advanced`, `service_switch`, `send_log`, `token`. Navigates to `loading`. `hidden_gesture`. | Fake scenarios, reset and absence of token. | `DebugScreen` only in permitted builds, per-provider diagnostics and sanitized export. Never a visible token. | `DebugAccessTest`, `LogRedactionTest`, confirmation for change/reset, `CAP-debug-redacted`. |
+| `upgrade` | Firmware. States: `query`, `up_to_date`, `available`, `progress`, `success`, `failure`. Navigates to `config`. | Local up-to-date query and disabled upgrade. | `FirmwareScreen` with query and apply separated. Apply only with evidence, authenticity and hardware authorization. | `FirmwareViewModelTest` for six states without flashing, `CAP-upgrade-available`, `CAP-upgrade-failure`. Physical test outside normal tests. |
+| `guide` | Paginated guide. States: `page_locks`, `page_cameras`, `page_playback`, `start`. Resources `guide_display1/2/3`. Navigates to `main_tab`. `legacy_no_inbound`. | Omitted because loading always opens main. | `legacy_documented`: keep the three pages and button without presenting it as current onboarding. | `LegacyCoverageTest`. If reactivated: accessible pager and `CAP-guide-locks`, `CAP-guide-cameras`, `CAP-guide-playback`. |
+| `add_method_legacy` | Legacy AP/audio selector. States: `ap`, `voice`, `switch_success`, `switch_failure`. Navigates to `router`, `handle_wifi`. `legacy_no_inbound`. | Omitted as legacy. | `legacy_documented`: do not duplicate the modern selector without reviewing these transitions. | `LegacyCoverageTest`. If reactivated: `PairingNavigationTest` and `CAP-add-method-legacy`. |
+| `router` | Router and password. States: `loading`, `selected`, `password_hidden`, `password_visible`, `save_password`, `validation`, `new_mode`, `modify_mode`. Resources `wifi_1` to `wifi_4` levels. Navigates to `wifi_progress`, `voice`, `config`. | Demo list and form, preferred save without persisted secrets. | `RouterScreen` with real networks, opt-in save, ephemeral secret and two modes. | `RouterViewModelTest` for eight states, `WifiPermissionTest`, `CAP-router-new`, `CAP-router-modify`, `CAP-router-validation`. |
+| `voice` | Acoustic pairing. States: `sending`, `waiting`, `volume_low`, `failure`, `success`. Resource `device_add_sound_waver`. Navigates to `device_bind`, `main_tab`. | Local machine without emitting audio. | `VoiceProvisioningScreen` with real cancellable emission, volume and adapter progress. | `AudioProvisioningTest` for five states, `CAP-voice-waiting`, `CAP-voice-volume-low`, later hardware test. |
+| `wifi_progress` | AP progress. States: `connecting`, `sending`, `waiting`, `network_error`, `retry`, `failure`, `success`. Resource `device_add_wifi_set`. Navigates to `pairing_fail`, `device_bind`, `main_tab`, `handle_wifi`. | Local stages, manual failure and navigation. | `WifiProvisioningScreen` with real progress, 150 s if the profile confirms it, cancellation and `outcomeUnknown`. | `ProvisioningViewModelTest` for all states/cancellation, `CAP-wifi-progress-waiting`, `CAP-wifi-progress-network-error`, `CAP-wifi-progress-unknown`. |
+| `share_device` | New invitation. States: `qr`, `link`, `expiration`, `copied`, `save_result`, `share_sheet`. 120 dp QR code. Navigates to `share_manage`. | Local link and QR/export unavailable, it does not show a fake QR code. | `ShareDeviceScreen` with real QR code, expiry, copy and chooser, sensitive content outside logs. | `InvitationViewModelTest`, decode the generated QR code, real share/save, `CAP-share-device-qr`, `CAP-share-device-expiration`. |
+| `pairing_fail` | Pairing error. States: `error`, `main_only`. Physical back ignored and exit to `main_tab`. | Simulated error and return to main. | `PairingFailScreen` with typed cause, safe retry and predictable exit without leaving an active task. | `PairingFailureNavigationTest` for back and retry, `CAP-pairing-fail`. |
+| `share_manage` | Users and invitations. States: `loading`, `empty`, `list`, `create`, `edit`, `delete`, `limit`, `error`. Navigates to `share_device`, `config`. | Local list, create/delete, limit and errors. | `ShareManageScreen` with real CRUD, permissions, owner role and limit 100 when applicable. | `SharingViewModelTest` for eight states and permissions, `CAP-share-manage-empty`, `CAP-share-manage-list`, `CAP-share-manage-limit`. |
+| `share_bind` | Accept invitation. States: `form`, `validation`, `accept`, `success`, `invalid`. Locked UID/code. Navigates to `main_tab`. | Local invitation, duplicates and shared pairing. | `ShareBindScreen` with real acceptance, re-acceptance and expiry/use errors. | `InvitationAcceptTest` for five states and re-acceptance, `CAP-share-bind-form`, `CAP-share-bind-invalid`. |
+| `tab_devices` | List and actions. States: `empty`, `list`, `refresh`, `offline`, `password`, `biometric`, `action_result`. Cover and online/offline resources. Navigates to `add_type`, `preview`, `config`. | Loading/empty/list/offline and demo actions disabled according to permission. | `DevicesScreen` with real/stale data, actions per capability and differentiated ack. | `DevicesViewModelTest` for seven states, `ActionOutcomeTest`, `CAP-devices-empty`, `CAP-devices-list`, `CAP-devices-offline`, `CAP-devices-biometric`. |
+| `tab_events` | Event container. States: `loading`, `empty`, `list`, `filters_hidden`, `warning`, `edit`, `delete`, `image`. Navigates to `tab_event_list`. | Local list, warning, editing and deletion, documented hidden filters. | `EventsScreen` with an All list by default and filters only if enabled, real photos and visible gaps. | `EventsViewModelTest` for eight states, `CAP-events-empty`, `CAP-events-list`, `CAP-events-edit`, `CAP-events-image`. |
+| `tab_event_list` | Activity list. States: `empty_all`, `empty_call`, `empty_motion`, `refresh`, `load_more`, `edit`. Navigates to `tab_events`. | Rows, manual refresh, pages of 15 and local editing. | `EventList` with real cursor, three empty states and selection, without turning an error into an empty list. | `EventPaginationTest` for pages/errors/gaps, `CAP-event-list-empty-motion`, `CAP-event-list-load-more`. |
+| `tab_gallery` | Local gallery. States: `empty`, `grid`, `edit`, `selected`, `select_all`, `share`, `save`, `delete`. Three columns and dates. Navigates to `image_pager`. | Local grid with placeholders and operations over metadata. | `GalleryScreen` with real files, selection and safe URI actions. | `GalleryViewModelTest` for eight states, `FileProviderSecurityTest`, `CAP-gallery-empty`, `CAP-gallery-grid`, `CAP-gallery-selected`. |
+| `tab_settings` | Settings. States: `sound_on`, `sound_off`, `vibration_on`, `vibration_off`, `about`, `exit_confirm`, `hidden_options`. Navigates to `about`. Auto rotate, channels and preview time hidden in the original. | Persistent sound/vibration, about, scenarios, reset and demo exit. | `SettingsScreen` with real preferences, provider and connection mode. Documented hidden options, debug/reset outside production. | `SettingsViewModelTest` for seven states, `CAP-settings`, `CAP-settings-exit-confirm`, `CAP-settings-hidden-options-review` documentary only. |
 
-## 5. Modelo de estados de UI
+## 5. UI state model
 
-### 5.1 Carga, vacío, error y offline
+### 5.1 Loading, empty, error and offline
 
-| Estado | Regla de presentación | Regla de datos |
+| State | Presentation rule | Data rule |
 |---|---|---|
-| `loading` | Skeleton o indicador junto al área afectada, sin bloquear toda la app si hay contenido previo | Solo indica operación en curso, no éxito |
-| `empty` | Mensaje y acción específica: añadir dispositivo, sin eventos, sin media o sin usuarios | Solo después de respuesta correcta que demuestre cero elementos |
-| `error` | Causa accionable y retry permitido. Mantiene contenido previo si existe | Nunca convertir fallo en vacío ni sustituir por demo |
-| `offline` | Distinguir teléfono sin red, proveedor desconectado y dispositivo offline | Conservar datos stale con hora de última actualización |
-| `unsupported` | Función conocida pero no ofrecida por proveedor/dispositivo/rol | No reintentar ni presentar timeout |
-| `unknown` | Función no negociada o sin evidencia | Permitir revalidar; no afirmar que el hardware carece de ella |
-| `permission` | Explicar permiso Android o rol owner/shared y ofrecer acción válida | No confundir denegación de plataforma con unsupported cloud |
-| `action-pending` | Mostrar acción y dispositivo, deshabilitar duplicados y permitir cancelar solo si es segura | Conservar `commandId` y estado tras rotación |
-| `ack` | Texto según nivel: local, proveedor, dispositivo u observación física | Nunca convertir ack de transporte en efecto físico |
-| `failure` | Error tipado, posible resultado desconocido y siguiente paso | No repetir automáticamente acciones físicas ambiguas |
+| `loading` | Skeleton or indicator next to the affected area, without blocking the whole app if there is previous content | Only indicates an operation in progress, not success |
+| `empty` | Message and specific action: add device, no events, no media or no users | Only after a correct response that proves zero items |
+| `error` | Actionable cause and allowed retry. Keeps previous content if it exists | Never turn a failure into empty nor replace with demo |
+| `offline` | Distinguish phone without network, disconnected provider and offline device | Keep stale data with the last update time |
+| `unsupported` | Feature known but not offered by provider/device/role | Do not retry nor present a timeout |
+| `unknown` | Feature not negotiated or without evidence | Allow revalidation, do not claim the hardware lacks it |
+| `permission` | Explain the Android permission or owner/shared role and offer a valid action | Do not confuse platform denial with cloud unsupported |
+| `action-pending` | Show action and device, disable duplicates and allow cancelling only if safe | Keep `commandId` and state after rotation |
+| `ack` | Text according to level: local, provider, device or physical observation | Never turn a transport ack into a physical effect |
+| `failure` | Typed error, possible unknown result and next step | Do not automatically repeat ambiguous physical actions |
 
-`LoadState` debe poder llevar datos anteriores, `isStale`, `lastUpdated`, `error` y `refreshing`. Esto evita elegir entre una lista antigua y un indicador sin contexto.
+`LoadState` must be able to carry previous data, `isStale`, `lastUpdated`, `error` and `refreshing`. This avoids choosing between an old list and an indicator with no context.
 
-### 5.2 Demo frente a conexión real
+### 5.2 Demo versus real connection
 
-- Todas las superficies muestran `DEMO LOCAL` o el proveedor real y su estado, no solo las cuatro pestañas.
-- El banner identifica si los datos son sintéticos, cache local o respuesta real. Un dato cacheado de stock no lleva etiqueta demo.
-- El proveedor demo no se puede activar como recuperación de un error de stock. Cambiar a demo requiere una acción explícita y reinicia el ámbito de datos.
-- Una captura para documentación debe incluir el banner cuando corresponda. No se recorta para ocultar el carácter simulado.
-- Los ack demo usan texto específico, por ejemplo "reconocimiento local, sin acción física". Nunca se reutiliza "apertura correcta" para ese resultado.
+- All surfaces show `DEMO LOCAL` or the real provider and its state, not only the four tabs.
+- The banner identifies whether the data is synthetic, local cache or a real response. A cached stock datum is not labelled demo.
+- The demo provider cannot be activated as recovery from a stock error. Switching to demo requires an explicit action and restarts the data scope.
+- A capture for documentation must include the banner when applicable. It is not cropped to hide the simulated nature.
+- Demo acks use specific text, for example "local acknowledgement, no physical action". "Successful opening" is never reused for that result.
 
-### 5.3 Acciones físicas
+### 5.3 Physical actions
 
-1. Antes de enviar: comprobar capacidad, rol, estado de sesión y protección quick/biometría.
-2. Durante: mostrar `action-pending` y evitar una segunda orden. No usar un spinner como sustituto del estado.
-3. Con ack: mostrar el nivel exacto y su significado. `PROVIDER_ACCEPTED` no es "puerta abierta".
-4. Con timeout: mostrar resultado desconocido y opciones de refrescar/revisar. No repetir por defecto.
-5. Con evento posterior: correlacionar con `commandId` o llamada si existe y actualizar el mismo resultado, sin crear otro comando.
-6. Con unsupported o unknown: conservar la función en el inventario y explicar el bloqueo. No borrar unlock, F1, llamada o preview del diseño.
+1. Before sending: check capability, role, session state and quick/biometric protection.
+2. During: show `action-pending` and avoid a second order. Do not use a spinner as a substitute for the state.
+3. With ack: show the exact level and its meaning. `PROVIDER_ACCEPTED` is not "door open".
+4. With timeout: show unknown result and refresh/check options. Do not repeat by default.
+5. With a later event: correlate with `commandId` or call if it exists and update the same result, without creating another command.
+6. With unsupported or unknown: keep the feature in the inventory and explain the block. Do not delete unlock, F1, call or preview from the design.
 
-## 6. Accesibilidad, tamaños, tema y navegación
+## 6. Accessibility, sizes, theme and navigation
 
-### 6.1 Accesibilidad
+### 6.1 Accessibility
 
-- Objetivos táctiles mínimos de 48 dp, incluso iconos de preview, tabs, pager y selección.
-- Texto normal con contraste mínimo 4.5:1 y texto grande/iconos esenciales 3:1. Medir los pares reales, no inferirlos de la paleta.
-- No depender solo de rojo/verde o de los iconos online/offline. Añadir texto, forma y descripción para TalkBack.
-- `contentDescription` contextual: "Abrir portal, dispositivo online", no "botón". Los iconos decorativos se excluyen del árbol de accesibilidad.
-- `stateDescription` para switches, selección, grabación, habla, escucha y paneles. Acciones personalizadas para controles de video sin gestos obligatorios.
-- Foco visible, orden lógico y anuncios de error/progreso sin lectura repetitiva por recomposición.
-- Escalas de fuente 1.0, 1.3 y 2.0 sin recortes ni elipsis en mensajes críticos. Las filas crecen y las acciones pueden apilarse.
-- Soporte ES/EN y RTL para formularios, chevrons, texto y navegación. Los códigos/UID mantienen dirección LTR cuando proceda.
-- Respetar reducción de animación. Los progresos físicos no usan animación como única señal.
-- Permisos con explicación previa y alternativa cuando sea posible. No pedir micrófono, cámara o ubicación antes de entrar en la función que los necesita.
+- Minimum touch targets of 48 dp, including preview icons, tabs, pager and selection.
+- Normal text with minimum contrast 4.5:1 and large text/essential icons 3:1. Measure the real pairs, do not infer them from the palette.
+- Do not depend only on red/green or on the online/offline icons. Add text, shape and description for TalkBack.
+- Contextual `contentDescription`: "Open gate, device online", not "button". Decorative icons are excluded from the accessibility tree.
+- `stateDescription` for switches, selection, recording, talk, listen and panels. Custom actions for video controls without mandatory gestures.
+- Visible focus, logical order and error/progress announcements without repetitive reading by recomposition.
+- Font scales 1.0, 1.3 and 2.0 without clipping or ellipsis in critical messages. Rows grow and actions can stack.
+- ES/EN and RTL support for forms, chevrons, text and navigation. Codes/UIDs keep LTR direction when applicable.
+- Respect animation reduction. Physical progress does not use animation as the only signal.
+- Permissions with prior explanation and alternative when possible. Do not request microphone, camera or location before entering the feature that needs them.
 
-### 6.2 Tamaños y orientación
+### 6.2 Sizes and orientation
 
-Matriz mínima de validación:
+Minimum validation matrix:
 
-| Clase | Configuración | Comprobación |
+| Class | Configuration | Check |
 |---|---|---|
-| Teléfono estrecho | 320 dp de ancho, font 1.0 y 2.0 | Formularios, errores, acciones y bottom sheets sin recorte |
-| Teléfono habitual | 360 dp, font 1.0 y 1.3 | Todas las pantallas base y navegación |
-| Pantalla media | 600 dp | Rail o layout adaptativo, preview y galería |
-| Pantalla ancha | 840 dp | Paneles sin estirar tarjetas ni perder jerarquía |
-| Landscape | Preview, video y pairing crítico | Insets, controles, teclado y back stack |
-| Android con gestos y con botones | Insets y back | Sin acciones ocultas tras barras del sistema |
+| Narrow phone | 320 dp wide, font 1.0 and 2.0 | Forms, errors, actions and bottom sheets without clipping |
+| Common phone | 360 dp, font 1.0 and 1.3 | All base screens and navigation |
+| Medium screen | 600 dp | Rail or adaptive layout, preview and gallery |
+| Wide screen | 840 dp | Panels without stretching cards or losing hierarchy |
+| Landscape | Preview, video and critical pairing | Insets, controls, keyboard and back stack |
+| Android with gestures and with buttons | Insets and back | No actions hidden behind system bars |
 
-### 6.3 Tema claro y oscuro
+### 6.3 Light and dark theme
 
-El tema claro es la primera referencia funcional. El oscuro solo se habilita tras medir todos los pares de color, estados disabled, error, banners, mapas de selección y controles media. Preview y reproductor pueden permanecer oscuros en ambos temas. No se adopta un oscuro automático que reduzca contraste o haga invisibles iconos originales.
+The light theme is the first functional reference. The dark one is only enabled after measuring all colour pairs, disabled states, error, banners, selection maps and media controls. Preview and player can remain dark in both themes. An automatic dark mode that reduces contrast or makes original icons invisible is not adopted.
 
-## 7. Pruebas que debe producir la implementación
+## 7. Tests the implementation must produce
 
-### 7.1 Unitarias y de contrato
+### 7.1 Unit and contract tests
 
-1. ViewModels con todos los estados de cada fila y relojes/dispatchers deterministas.
-2. Reductores de estado para loading, empty, error, offline, unsupported, unknown, permission, pending, ack y failure.
-3. Navegación y back stack para las 33 representaciones no legacy, las 71 aristas de referencia y deep links.
-4. Cancelación de pairing, preview, llamada y eventos al salir, rotar o cambiar de cuenta.
-5. Acciones duplicadas por doble clic, recomposición y process death. Una acción física ambigua genera cero retries.
-6. Niveles de ack y mapeo de textos, incluidos fake y errores.
-7. Permisos Android, permisos de invitación y diferencias owner/shared.
-8. Páginas de 15, duplicados, gaps, selección y borrado.
-9. Parser QR/invitación, OEM, caducidad y secretos ausentes de estado persistente y logs.
-10. Persistencia y restauración de tab, scroll, pager, selección y posición de video.
+1. ViewModels with all the states of each row and deterministic clocks/dispatchers.
+2. State reducers for loading, empty, error, offline, unsupported, unknown, permission, pending, ack and failure.
+3. Navigation and back stack for the 33 non-legacy representations, the 71 reference edges and deep links.
+4. Cancellation of pairing, preview, call and events on exit, rotation or account change.
+5. Actions duplicated by double click, recomposition and process death. An ambiguous physical action generates zero retries.
+6. Ack levels and text mapping, including fake and errors.
+7. Android permissions, invitation permissions and owner/shared differences.
+8. Pages of 15, duplicates, gaps, selection and deletion.
+9. QR/invitation parser, OEM, expiry and secrets absent from persistent state and logs.
+10. Persistence and restoration of tab, scroll, pager, selection and video position.
 
-### 7.2 Compose e instrumentación
+### 7.2 Compose and instrumentation
 
-- Tests semánticos por pantalla para acciones, estados, descripciones y deshabilitado.
-- Tests de navegación real en emulador, incluidos process death, rotación, back gestual y llamada entrante.
-- Escenarios demo y fake separados de integración stock. El nombre del test declara la fuente.
-- Pruebas de accesibilidad con font 1.3 y 2.0, TalkBack manual en flujos críticos y contraste automatizado cuando sea fiable.
-- Pruebas de cámara, galería, micrófono, biometría y notificaciones solo con permisos y fixtures controlados.
-- Pruebas reales de archivos para captura, grabación, galería, compartir y guardar. Un registro `DemoMedia` no cuenta como archivo.
-- Suites stock y hardware solo cuando exista autorización, sin incluir secretos ni acciones físicas en el test ordinario.
+- Semantic tests per screen for actions, states, descriptions and disabled.
+- Real navigation tests on the emulator, including process death, rotation, gesture back and incoming call.
+- Demo and fake scenarios separated from stock integration. The test name declares the source.
+- Accessibility tests with font 1.3 and 2.0, manual TalkBack in critical flows and automated contrast when reliable.
+- Camera, gallery, microphone, biometrics and notification tests only with controlled permissions and fixtures.
+- Real file tests for capture, recording, gallery, share and save. A `DemoMedia` record does not count as a file.
+- Stock and hardware suites only when authorization exists, without including secrets or physical actions in the ordinary test.
 
-### 7.3 Capturas requeridas, todavía no producidas
+### 7.3 Required captures, not produced yet
 
-La implementación posterior debe generar capturas reales de la app en ejecución. No se aceptan composiciones, recursos `start.png` o `guide_display*.png` como si fueran capturas.
+The later implementation must generate real captures of the app running. Compositions, `start.png` resources or `guide_display*.png` are not accepted as if they were captures.
 
-| Lote | Contenido mínimo | Condición de aceptación |
+| Batch | Minimum content | Acceptance condition |
 |---|---|---|
-| Base | Una captura de cada una de las 32 superficies visuales no legacy | 360 dp, font 1.0, tema claro, banner demo/proveedor visible |
-| Estados críticos | Loading/error/empty/offline/unsupported/permission/pending/ack/failure en las pantallas donde aplican | Estado identificable y datos coherentes con su fuente |
-| Preview | Uno/cuatro paneles, portrait/landscape, offline, unsupported y ack | Controles legibles y sin fotograma sintético presentado como real |
-| Pairing | Permisos, QR, LAN vacío/resultados, AP/audio/progreso/fallo y bind | Cada etapa con origen real o demo explícito |
-| Llamada | Ringing, pending, accepted/rejected y answered elsewhere | `callId` y resultado coherentes |
-| Formularios | Validación, password visible/oculta sin secreto real, owner/shared | Sin datos personales ni credenciales |
-| Accesibilidad | 320 dp font 2.0, 600/840 dp, landscape y RTL en flujos seleccionados | Sin solapes, recortes ni pérdida de acciones |
-| Tema | Claro y, solo si se habilita, oscuro | Contraste documentado y controles visibles |
+| Base | One capture of each of the 32 non-legacy visual surfaces | 360 dp, font 1.0, light theme, demo/provider banner visible |
+| Critical states | Loading/error/empty/offline/unsupported/permission/pending/ack/failure on the screens where they apply | Identifiable state and data consistent with its source |
+| Preview | One/four panels, portrait/landscape, offline, unsupported and ack | Legible controls and no synthetic frame presented as real |
+| Pairing | Permissions, QR, empty/results LAN, AP/audio/progress/failure and bind | Each stage with real origin or explicit demo |
+| Call | Ringing, pending, accepted/rejected and answered elsewhere | Coherent `callId` and result |
+| Forms | Validation, visible/hidden password without a real secret, owner/shared | No personal data or credentials |
+| Accessibility | 320 dp font 2.0, 600/840 dp, landscape and RTL in selected flows | No overlaps, clipping or lost actions |
+| Theme | Light and, only if enabled, dark | Documented contrast and visible controls |
 
-Cada captura tendrá nombre estable `CAP-<pantalla>-<estado>-<configuracion>.png` y una entrada de manifiesto con ruta, SHA-256, fecha, serial de emulador no personal, API Android, tamaño, font scale, idioma, tema, modo demo/real y commit. `cache` se valida con test, no con imagen. Las cinco legacy solo se capturan si se reactivan.
+Each capture will have a stable name `CAP-<screen>-<state>-<configuration>.png` and a manifest entry with path, SHA-256, date, non-personal emulator serial, Android API, size, font scale, language, theme, demo/real mode and commit. `cache` is validated with a test, not with an image. The five legacy ones are only captured if they are reactivated.
 
-Comando de referencia para la fase posterior, con serial explícito y sin usar un teléfono físico:
+Reference command for the later phase, with an explicit serial and without using a physical phone:
 
 ```bash
-adb -s <emulador> exec-out screencap -p > <ruta-de-captura>.png
+adb -s <emulator> exec-out screencap -p > <capture-path>.png
 ```
 
-## 8. Puerta de revisión funcional y APK final
+## 8. Functional review gate and final APK
 
-La revisión posterior debe recorrer esta tabla y `analysis/architecture/provider-matrix.json` punto por punto. Para cada pantalla registrará navegación, estados, acciones, recursos, pruebas, captura y limitaciones. Para cada capacidad registrará API/wire, comportamiento, seguridad y hardware por separado.
+The later review must walk this table and `analysis/architecture/provider-matrix.json` point by point. For each screen it will record navigation, states, actions, resources, tests, capture and limitations. For each capability it will record API/wire, behaviour, security and hardware separately.
 
-Antes de entregar el APK se ejecutarán, como mínimo y según el entorno disponible:
+Before delivering the APK, the following will be run, at minimum and according to the available environment:
 
 ```bash
 ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:assembleDebugAndroidTest
 python3 analysis/architecture/verify_provider_architecture.py
-ANDROID_SERIAL=<emulador> ./gradlew :app:connectedDebugAndroidTest
+ANDROID_SERIAL=<emulator> ./gradlew :app:connectedDebugAndroidTest
 sha256sum app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Después se instalará ese APK en el emulador elegido y se repetirá un recorrido de humo: arranque, cuatro pestañas, alta, preview o unsupported, llamada, galería, configuración y navegación atrás. Se conservarán hash, ruta del APK, comandos, recuentos de tests y capturas reales. Compilar e instalar no certifica compatibilidad cloud ni hardware. Esta hoja no ha ejecutado esos comandos ni ha producido un APK.
+Afterwards that APK will be installed on the chosen emulator and a smoke walkthrough will be repeated: startup, four tabs, pairing, preview or unsupported, call, gallery, configuration and back navigation. The hash, APK path, commands, test counts and real captures will be kept. Building and installing does not certify cloud or hardware compatibility. This sheet has not run those commands nor produced an APK.
