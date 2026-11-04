@@ -83,3 +83,7 @@ The final audit covers 64 capabilities, 38 screens and 71 navigation edges with 
 ## Related projects
 
 - [wibox-daemon](https://github.com/gnacho/wibox-daemon): Go daemon for Linux that opens the doorbell over the local network.
+
+## License
+
+GNU Affero General Public License v3.0. See [LICENSE](LICENSE).
