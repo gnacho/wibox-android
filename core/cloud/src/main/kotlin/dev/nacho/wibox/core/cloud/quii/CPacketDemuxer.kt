@@ -62,8 +62,19 @@ object CPacketDemuxer {
         while (pos + 0x14 <= payload.size) {
             if (payload[pos] != 0.toByte() || payload[pos + 1] != 0.toByte() || payload[pos + 2] != 1.toByte()) break
             val header = parseHeader(payload, pos)
-            val end = pos + 0x14 + header.payloadLen
-            if (end > payload.size) break
+            if (header.payloadLen <= 0) {
+                // Corrupt or empty cpacket. Skip this header and keep looking for
+                // the next frame instead of giving up on the whole payload.
+                pos += 0x14
+                continue
+            }
+            // The QUII header length excludes the AES zero padding, so the last
+            // cpacket of a decrypted payload is truncated by up to 15 bytes. Take
+            // what is available instead of dropping the frame and the rest of the
+            // payload with it.
+            val end = (pos.toLong() + 0x14 + header.payloadLen.toLong())
+                .coerceAtMost(payload.size.toLong())
+                .toInt()
             val bitstream = payload.copyOfRange(pos + 0x14, end)
             when (header.frameType) {
                 0x00, 0x01, 0x09, 0x0A -> {

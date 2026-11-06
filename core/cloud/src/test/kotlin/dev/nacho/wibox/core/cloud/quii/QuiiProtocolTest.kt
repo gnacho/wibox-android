@@ -122,6 +122,41 @@ class QuiiProtocolTest {
         assertEquals(64, hashed.length)
     }
 
+    @Test
+    fun `truncated last cpacket keeps the bytes that are present`() {
+        // The header advertises 20 bytes but only 4 arrive: the AES padding makes
+        // the last cpacket of a payload short.
+        val payload = hex("000001e014000000000000000000011980026801aabbccdd")
+        val frames = CPacketDemuxer.demux(payload)
+        assertEquals(1, frames.size)
+        val video = frames[0] as MediaFrame.Video
+        assertEquals(4, video.bitstream.size)
+        assertEquals(hex("aabbccdd").toList(), video.bitstream.toList())
+    }
+
+    @Test
+    fun `frames before a truncated cpacket are still returned`() {
+        val payload = hex(
+            "000001e010000000000000000000011980026801000102030405060708090a0b0c0d0e0f" +
+                "000001e014000000000000000000011980026801aabbccdd",
+        )
+        val frames = CPacketDemuxer.demux(payload)
+        assertEquals(2, frames.size)
+        assertEquals(16, (frames[0] as MediaFrame.Video).bitstream.size)
+        assertEquals(4, (frames[1] as MediaFrame.Video).bitstream.size)
+    }
+
+    @Test
+    fun `zero length cpacket is skipped and later frames still demux`() {
+        val payload = hex(
+            "000001e000000000000000000000011980026801" +
+                "000001e010000000000000000000011980026801000102030405060708090a0b0c0d0e0f",
+        )
+        val frames = CPacketDemuxer.demux(payload)
+        assertEquals(1, frames.size)
+        assertEquals(16, (frames[0] as MediaFrame.Video).bitstream.size)
+    }
+
     private fun hex(s: String): ByteArray =
         s.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 
