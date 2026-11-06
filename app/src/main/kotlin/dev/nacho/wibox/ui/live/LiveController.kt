@@ -15,6 +15,7 @@ import androidx.lifecycle.LifecycleOwner
 import dev.nacho.wibox.core.cloud.quii.H264ParamSets
 import dev.nacho.wibox.core.cloud.quii.MediaFrame
 import dev.nacho.wibox.core.cloud.quii.QuiiLiveSession
+import dev.nacho.wibox.core.cloud.quii.VideoCodecAlignment
 import dev.nacho.wibox.data.AppContainer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -103,14 +104,14 @@ class LiveController(
     private var videoAwaitingKeyFrame = true
     private var videoSkippedCount = 0
     private var videoParamSetOnlyCount = 0
-    private var videoReconfigureCount = 0
     private var videoReconfigureCapLogged = false
 
-    /** Parameter sets y tamano con los que esta configurado el decoder ahora mismo. */
-    private var configuredSps: ByteArray? = null
-    private var configuredPps: ByteArray? = null
-    private var configuredWidth = 0
-    private var configuredHeight = 0
+    /**
+     * Lleva los parameter sets y el tamano con los que esta configurado el decoder, y
+     * evita reconstruirlo cuando el keyframe repite los mismos (que es lo normal) o
+     * cuando ya fallo con esos mismos parametros.
+     */
+    private val videoAlign = VideoCodecAlignment(maxRebuilds = MAX_VIDEO_RECONFIGURE)
 
     // SPS/PPS del propio timbre (H264 Main 352x288), extraidos de un IDR real.
     // Necesarios porque al engancharnos a mitad de stream no llegan en el bitstream.
@@ -518,14 +519,17 @@ class LiveController(
         videoAwaitingKeyFrame = true
         videoSkippedCount = 0
         videoParamSetOnlyCount = 0
-        videoReconfigureCount = 0
         videoReconfigureCapLogged = false
         _videoReady.value = false
         codec = configureVideoCodec(target, PROVISIONAL_WIDTH, PROVISIONAL_HEIGHT, fallbackSps, fallbackPps)
-        configuredSps = fallbackSps
-        configuredPps = fallbackPps
-        configuredWidth = PROVISIONAL_WIDTH
-        configuredHeight = PROVISIONAL_HEIGHT
+        videoAlign.reset(
+            VideoCodecAlignment.Signature(
+                sps = fallbackSps,
+                pps = fallbackPps,
+                width = PROVISIONAL_WIDTH,
+                height = PROVISIONAL_HEIGHT,
+            ),
+        )
     }
 
     /**
@@ -611,45 +615,54 @@ class LiveController(
     }
 
     /**
-     * Ajusta el decoder al SPS/PPS y al tamano que anuncia [frame]. Si ya coincide
-     * con lo configurado no hace nada. Devuelve true cuando ha reconfigurado.
+     * Ajusta el decoder al SPS/PPS y al tamano que anuncia [frame]. Devuelve true
+     * cuando ha reconstruido el decoder.
      */
     private fun alignVideoCodec(
         frame: MediaFrame.Video,
         inBand: H264ParamSets.ParameterSets,
     ): Boolean {
-        val width = if (frame.width > 0) frame.width else configuredWidth
-        val height = if (frame.height > 0) frame.height else configuredHeight
-        val sameParams = inBand.sps.contentEquals(configuredSps) && inBand.pps.contentEquals(configuredPps)
-        val sameSize = width == configuredWidth && height == configuredHeight
-        if (sameParams && sameSize) return false
-        if (videoReconfigureCount >= MAX_VIDEO_RECONFIGURE) {
-            if (!videoReconfigureCapLogged) {
-                videoReconfigureCapLogged = true
-                android.util.Log.w(
-                    "WIBOX-LIVE",
-                    "VIDEO RECONFIG tope alcanzado, se mantiene wh=${configuredWidth}x${configuredHeight}",
-                )
+        val current = videoAlign.configured
+        val width = if (frame.width > 0) frame.width else current?.width ?: PROVISIONAL_WIDTH
+        val height = if (frame.height > 0) frame.height else current?.height ?: PROVISIONAL_HEIGHT
+        val signature = VideoCodecAlignment.Signature(inBand.sps, inBand.pps, width, height)
+        when (videoAlign.decide(signature)) {
+            // El keyframe repite los parameter sets del stream: el decoder ya es el
+            // correcto y reconstruirlo solo cuesta trabajo (y, si falla, un error por
+            // GOP durante toda la sesion).
+            VideoCodecAlignment.Decision.ALREADY_ALIGNED -> return false
+            // Ya se intento con estos mismos parametros y fallo: no se repite.
+            VideoCodecAlignment.Decision.RETRY_SUPPRESSED -> return false
+            VideoCodecAlignment.Decision.CAPPED -> {
+                if (!videoReconfigureCapLogged) {
+                    videoReconfigureCapLogged = true
+                    android.util.Log.w(
+                        "WIBOX-LIVE",
+                        "VIDEO RECONFIG tope alcanzado, se mantiene wh=${current?.width}x${current?.height}",
+                    )
+                }
+                return false
             }
-            return false
+            VideoCodecAlignment.Decision.REBUILD -> Unit
         }
         val target = surface ?: return false
-        val rebuilt = runCatching {
+        val rebuilt = try {
             configureVideoCodec(target, width, height, inBand.sps, inBand.pps)
-        }.getOrElse { error ->
-            android.util.Log.e("WIBOX-LIVE", "VIDEO RECONFIG fallo, se conserva el decoder actual", error)
+        } catch (error: Exception) {
+            videoAlign.onRebuildFailed(signature)
+            android.util.Log.e(
+                "WIBOX-LIVE",
+                "VIDEO RECONFIG fallo con $signature: ${error::class.java.simpleName}: ${error.message}",
+                error,
+            )
             return false
         }
         releaseVideoCodec()
         codec = rebuilt
-        configuredSps = inBand.sps
-        configuredPps = inBand.pps
-        configuredWidth = width
-        configuredHeight = height
-        videoReconfigureCount++
+        videoAlign.onRebuilt(signature)
         android.util.Log.d(
             "WIBOX-LIVE",
-            "VIDEO RECONFIG n=$videoReconfigureCount wh=${width}x${height} sps=${inBand.sps.size}B pps=${inBand.pps.size}B",
+            "VIDEO RECONFIG n=${videoAlign.rebuildCount} wh=${width}x${height} sps=${inBand.sps.size}B pps=${inBand.pps.size}B",
         )
         return true
     }
@@ -674,8 +687,7 @@ class LiveController(
         // Los parameter sets en banda solo se dejan pasar cuando el decoder esta
         // configurado con ellos. Si la reconfiguracion no ha sido posible se quitan,
         // como se hacia antes, para no desalinear el decoder con un SPS ajeno.
-        val keepInBand = inBand != null &&
-            inBand.sps.contentEquals(configuredSps) && inBand.pps.contentEquals(configuredPps)
+        val keepInBand = inBand != null && videoAlign.matchesConfigured(inBand.sps, inBand.pps)
         try {
             val bitstream = if (keepInBand) frame.bitstream else H264ParamSets.stripParamSets(frame.bitstream)
             if (bitstream.isEmpty()) {
