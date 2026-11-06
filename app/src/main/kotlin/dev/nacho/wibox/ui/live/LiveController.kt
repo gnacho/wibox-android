@@ -15,6 +15,7 @@ import androidx.lifecycle.LifecycleOwner
 import dev.nacho.wibox.core.cloud.quii.H264ParamSets
 import dev.nacho.wibox.core.cloud.quii.MediaFrame
 import dev.nacho.wibox.core.cloud.quii.QuiiLiveSession
+import dev.nacho.wibox.core.cloud.quii.VideoPtsClock
 import dev.nacho.wibox.data.AppContainer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -105,6 +106,13 @@ class LiveController(
     private var videoParamSetOnlyCount = 0
     private var videoReconfigureCount = 0
     private var videoReconfigureCapLogged = false
+
+    /**
+     * Reloj de presentacion del decoder: avanza con el fps que anuncia el cpacket
+     * (el timbre emite a 20 fps) y cuenta tambien los frames que se descartan, que
+     * antes comprimian la linea de tiempo.
+     */
+    private val videoPts = VideoPtsClock()
 
     /** Parameter sets y tamano con los que esta configurado el decoder ahora mismo. */
     private var configuredSps: ByteArray? = null
@@ -520,6 +528,7 @@ class LiveController(
         videoParamSetOnlyCount = 0
         videoReconfigureCount = 0
         videoReconfigureCapLogged = false
+        videoPts.reset()
         _videoReady.value = false
         codec = configureVideoCodec(target, PROVISIONAL_WIDTH, PROVISIONAL_HEIGHT, fallbackSps, fallbackPps)
         configuredSps = fallbackSps
@@ -656,6 +665,9 @@ class LiveController(
 
     private fun feedVideo(frame: MediaFrame.Video) {
         lastFrameAt = System.currentTimeMillis()
+        // El PTS se calcula para cada frame recibido, aunque luego se descarte: asi el
+        // reloj no se comprime cuando hay que esperar un keyframe.
+        val ptsUs = videoPts.next(frame.fps)
         if (codec == null) {
             videoErrorCount++
             if (videoErrorCount <= 5) {
@@ -714,7 +726,7 @@ class LiveController(
             videoInputCount++
             if (videoInputCount <= 5) {
                 val head = bitstream.take(16).joinToString("") { "%02x".format(it) }
-                android.util.Log.d("WIBOX-LIVE", "VIDEO IN n=$videoInputCount size=${bitstream.size} key=${frame.keyFrame} wh=${frame.width}x${frame.height} pts=${videoInputCount * 40_000L} head=$head")
+                android.util.Log.d("WIBOX-LIVE", "VIDEO IN n=$videoInputCount size=${bitstream.size} key=${frame.keyFrame} wh=${frame.width}x${frame.height} fps=${frame.fps} pts=$ptsUs head=$head")
             }
             val index = decoder.dequeueInputBuffer(10_000)
             if (index >= 0) {
@@ -722,7 +734,7 @@ class LiveController(
                 input.clear()
                 input.put(bitstream)
                 val flags = if (frame.keyFrame) MediaCodec.BUFFER_FLAG_KEY_FRAME else 0
-                decoder.queueInputBuffer(index, 0, bitstream.size, videoInputCount * 40_000L, flags)
+                decoder.queueInputBuffer(index, 0, bitstream.size, ptsUs, flags)
             } else {
                 if (videoInputCount <= 5) {
                     android.util.Log.d("WIBOX-LIVE", "VIDEO input no disponible")
