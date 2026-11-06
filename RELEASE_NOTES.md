@@ -26,11 +26,11 @@ First release that manages to open the doorbell camera and paint video on the ph
 
 ## What is not in the repository
 
-The manufacturer's native SDK (`libqv-p2p-v2.so`), its client certificates and the doorbell credentials are not published. The binary is proprietary and the certificates and passwords are data from a real device. Without them the project builds and starts, but the live view cannot open a tunnel.
+The manufacturer's native SDK (`libqv-p2p-v2.so`), its client certificate and key and the doorbell credentials are not published. The binary is proprietary and the certificate is a real key pair from the vendor. Without them the project builds and starts, but the live view cannot open a tunnel.
 
 To use it locally two things are needed:
 
-- `app/src/main/assets/client.pem`, `client.txt` and `qv_ca.pem`, extracted from the official APK.
+- The SDK in `app/src/main/jniLibs/arm64-v8a/libqv-p2p-v2.so`, plus `app/src/main/assets/client.pem` and `client.txt`, extracted from the official APK. The trust anchor is not listed: it is the same Qualvision root already versioned as `app/src/main/assets/ca.pem`, and the app hands that file to the SDK.
 - In `local.properties`: `wibox.account`, `wibox.password`, `wibox.clientId` and `wibox.unlockPassword`.
 
 The credentials can also be passed through the environment (`WIBOX_ACCOUNT`, `WIBOX_PASSWORD`, `WIBOX_CLIENT_ID`, `WIBOX_UNLOCK_PASSWORD`).
