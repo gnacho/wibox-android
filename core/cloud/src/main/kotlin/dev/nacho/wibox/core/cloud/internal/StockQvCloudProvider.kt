@@ -3,15 +3,19 @@ package dev.nacho.wibox.core.cloud.internal
 import dev.nacho.wibox.core.cloud.ActionCommand
 import dev.nacho.wibox.core.cloud.ActionOutcome
 import dev.nacho.wibox.core.cloud.ActionPort
+import dev.nacho.wibox.core.cloud.ActionType
 import dev.nacho.wibox.core.cloud.AppUpgradeInfo
 import dev.nacho.wibox.core.cloud.AppUpgradeRequest
 import dev.nacho.wibox.core.cloud.CapabilityKey
 import dev.nacho.wibox.core.cloud.CapabilitySnapshot
+import dev.nacho.wibox.core.cloud.CloudAction
 import dev.nacho.wibox.core.cloud.CloudCredentials
+import dev.nacho.wibox.core.cloud.CloudDevice
 import dev.nacho.wibox.core.cloud.CloudEvent
 import dev.nacho.wibox.core.cloud.CloudEventType
 import dev.nacho.wibox.core.cloud.CloudSession
 import dev.nacho.wibox.core.cloud.CredentialMaterial
+import dev.nacho.wibox.core.cloud.DeviceDataSource
 import dev.nacho.wibox.core.cloud.DevicePort
 import dev.nacho.wibox.core.cloud.DeviceRef
 import dev.nacho.wibox.core.cloud.DeviceSnapshot
@@ -145,9 +149,14 @@ internal class StockQvCloudProvider(
         cloud.unsubscribeDeviceShadows(deviceIds, reason).toSubscriptionAck()
     }
 
-    override suspend fun listDevices(): List<DeviceSnapshot> {
-        ensureOpen("listDevices")
-        throw ProviderError.Unsupported("listDevices", CapabilityKey("devices.list"))
+    override suspend fun listDevices(): List<DeviceSnapshot> = providerCall(
+        "listDevices",
+        CapabilityKey("devices.list"),
+    ) {
+        cloud.listDevices()
+            .filter { it.id.isNotBlank() }
+            .distinctBy { it.id }
+            .map { it.toSnapshot() }
     }
 
     override suspend fun discoverRegionalServices() {
@@ -167,10 +176,7 @@ internal class StockQvCloudProvider(
     override fun observeEvents(): Flow<EventStreamItem> = flow {
         ensureOpen("observeEvents")
         try {
-            cloud.observeEvents().collect {
-                throw ProviderError.Unsupported("observeEvents", CapabilityKey("events.realtime"))
-            }
-            throw ProviderError.Unsupported("observeEvents", CapabilityKey("events.realtime"))
+            cloud.observeEvents().collect { emit(EventStreamItem.Envelope(it.toEnvelope())) }
         } catch (error: Throwable) {
             throw error.toProviderError("observeEvents", CapabilityKey("events.realtime"))
         }
@@ -178,15 +184,33 @@ internal class StockQvCloudProvider(
 
     override suspend fun execute(command: ActionCommand): ActionOutcome {
         ensureOpen("performAction")
-        val capability = when (command.type) {
-            dev.nacho.wibox.core.cloud.ActionType.UNLOCK -> "actions.unlock"
-            dev.nacho.wibox.core.cloud.ActionType.F1 -> "actions.f1"
-            dev.nacho.wibox.core.cloud.ActionType.CALL_GUARD -> "actions.call_guard"
-            dev.nacho.wibox.core.cloud.ActionType.CALL_ACCEPT -> "actions.call_accept"
-            dev.nacho.wibox.core.cloud.ActionType.CALL_REJECT -> "actions.call_reject"
-            dev.nacho.wibox.core.cloud.ActionType.START_CALL, dev.nacho.wibox.core.cloud.ActionType.STOP_CALL -> "calls.lifecycle"
+        val capability = CapabilityKey(capabilityFor(command.type))
+        val action = when (command.type) {
+            ActionType.UNLOCK -> CloudAction.UNLOCK
+            ActionType.F1 -> CloudAction.F1
+            ActionType.CALL_GUARD -> CloudAction.CALL_GUARD
+            ActionType.START_CALL -> CloudAction.START_CALL
+            ActionType.STOP_CALL -> CloudAction.STOP_CALL
+            ActionType.CALL_ACCEPT, ActionType.CALL_REJECT ->
+                throw ProviderError.Unsupported("performAction", capability)
         }
-        throw ProviderError.Unsupported("performAction", CapabilityKey(capability))
+        val ack = providerCall("performAction", capability) {
+            cloud.performAction(command.device.id, action)
+        }
+        return if (ack.providerCode == 0) {
+            ActionOutcome.providerAccepted(command.commandId, ack.providerCode)
+        } else {
+            ActionOutcome.rejected(command.commandId, ack.providerCode)
+        }
+    }
+
+    private fun capabilityFor(type: ActionType): String = when (type) {
+        ActionType.UNLOCK -> "actions.unlock"
+        ActionType.F1 -> "actions.f1"
+        ActionType.CALL_GUARD -> "actions.call_guard"
+        ActionType.CALL_ACCEPT -> "actions.call_accept"
+        ActionType.CALL_REJECT -> "actions.call_reject"
+        ActionType.START_CALL, ActionType.STOP_CALL -> "calls.lifecycle"
     }
 
     override suspend fun checkAppUpgrade(request: AppUpgradeRequest): AppUpgradeInfo = providerCall(
@@ -204,6 +228,14 @@ internal class StockQvCloudProvider(
         state = state,
         opaqueId = opaqueId,
         validUntilMillis = accessTokenExpiresAtMillis,
+    )
+
+    private fun CloudDevice.toSnapshot(): DeviceSnapshot = DeviceSnapshot(
+        device = DeviceRef(ProviderId.STOCK_QVCLOUD, id),
+        displayName = null,
+        declaredModel = null,
+        source = DeviceDataSource.CLOUD,
+        fresh = true,
     )
 
     private fun dev.nacho.wibox.core.cloud.DeviceShadow.toSnapshot(): ShadowSnapshot = ShadowSnapshot(

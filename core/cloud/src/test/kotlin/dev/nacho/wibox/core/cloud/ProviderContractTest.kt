@@ -160,10 +160,10 @@ class ProviderContractTest {
     }
 
     @Test
-    fun actionsFailBeforeLegacyExecutionAndAckLevelsStayDistinct() = runTest {
+    fun unsupportedActionsFailBeforeLegacyExecutionAndAckLevelsStayDistinct() = runTest {
         val cloud = FakeLegacyCloud()
         val provider = provider(cloud)
-        val command = actionCommand()
+        val command = actionCommand(ActionType.CALL_ACCEPT)
 
         val error = assertFailsWith<ProviderError.Unsupported> { provider.actions.execute(command) }
 
@@ -180,10 +180,10 @@ class ProviderContractTest {
     }
 
     @Test
-    fun listAndDiscoveryRemainUnsupportedWithoutEmptySuccess() = runTest {
+    fun listDevicesReturnsTheLegacyResultAndDiscoveryStaysUnsupported() = runTest {
         val provider = provider(FakeLegacyCloud())
 
-        assertFailsWith<ProviderError.Unsupported> { provider.devices.listDevices() }
+        assertEquals(emptyList(), provider.devices.listDevices())
         assertFailsWith<ProviderError.Unsupported> { provider.devices.discoverRegionalServices() }
         provider.close()
     }
@@ -269,11 +269,11 @@ class ProviderContractTest {
         clientId = "fixture-upgrade-client",
     )
 
-    private fun actionCommand(): ActionCommand = ActionCommand(
+    private fun actionCommand(type: ActionType = ActionType.UNLOCK): ActionCommand = ActionCommand(
         commandId = "fixture-command",
         device = DeviceRef(ProviderId.STOCK_QVCLOUD, "fixture-device-001"),
         channel = 1,
-        type = ActionType.UNLOCK,
+        type = type,
     )
 
     private fun eventEnvelope(): EventEnvelope = EventEnvelope(

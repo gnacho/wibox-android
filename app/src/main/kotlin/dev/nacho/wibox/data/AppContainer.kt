@@ -10,14 +10,22 @@ import dev.nacho.wibox.core.cloud.DeviceDataSource
 import dev.nacho.wibox.core.cloud.DeviceRef
 import dev.nacho.wibox.core.cloud.DeviceRole
 import dev.nacho.wibox.core.cloud.DeviceSnapshot
+import dev.nacho.wibox.core.cloud.CloudSession
 import dev.nacho.wibox.core.cloud.ProviderId
 import dev.nacho.wibox.core.cloud.ProviderError
+import dev.nacho.wibox.core.cloud.ProviderSessionContext
 import dev.nacho.wibox.core.cloud.ShareInvitation
+import dev.nacho.wibox.core.cloud.TokenStore
 import dev.nacho.wibox.core.cloud.UserAuthCloud
 import dev.nacho.wibox.core.cloud.UserAuthCloudFactory
 import dev.nacho.wibox.core.cloud.UserAuthException
+import dev.nacho.wibox.core.cloud.WiboxCloudConfig
+import dev.nacho.wibox.core.cloud.WiboxCloudFactory
+import dev.nacho.wibox.core.cloud.WiboxProvider
+import dev.nacho.wibox.core.cloud.WiboxProviderFactory
 import dev.nacho.wibox.core.cloud.diag.LiveDiag
 import dev.nacho.wibox.core.cloud.UserAuthTimeoutException
+import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.Dispatchers
@@ -38,6 +46,14 @@ class AppContainer(
     private val appContext: Context? = null,
 ) {
     private val provider = DemoWiboxProvider(persist = demoStore::save)
+
+    /**
+     * Real stock provider. Built only when the build carries account credentials
+     * (wibox.account/wibox.password or WIBOX_ACCOUNT/WIBOX_PASSWORD). It is the
+     * primary device source; the verified userauth list is the fallback while
+     * RealWiboxCloud still answers Unsupported for the cloud device list.
+     */
+    private val cloudProvider: WiboxProvider? = createCloudProvider()
 
     private val userAuthCloud by lazy(userAuthCloudFactory)
 
@@ -126,13 +142,13 @@ class AppContainer(
 
     private suspend fun resolveAccess(deviceId: String): CloudAccess {
         val auth = userAuthCloud
-        if (provider.cloudCredentials() == null && REAL_CLOUD_ACCOUNT.isEmpty()) {
+        if (!hasCloudAccount()) {
             throw IllegalStateException(
                 "sin credenciales del timbre: define wibox.account y wibox.password en local.properties " +
                     "o acepta una invitacion desde la app",
             )
         }
-        val login = loginWithFallback(auth, provider.cloudCredentials())
+        val login = loginWithFallback(auth, provider.cloudCredentials()).first
         val token = userAuthCloud.getDeviceToken(deviceId)
         LiveDiag.add("token ok key=" + token.dataEncodeKey.length + "B")
         return CloudAccess(
@@ -150,12 +166,15 @@ class AppContainer(
      * contrasena o cuenta, reintento con la cuenta vinculada al timbre. Las
      * invitaciones caducan y dejan credenciales muertas en el snapshot, que
      * sombreaban a las buenas y daban result=100100003.
+     *
+     * Devuelve el login y las credenciales que funcionaron, para poder
+     * reemplazar las muertas en el snapshot.
      */
     private suspend fun loginWithFallback(
         auth: UserAuthCloud,
         stored: Pair<String, String>?,
-    ): dev.nacho.wibox.core.cloud.UserAuthLogin {
-        if (stored != null) {
+    ): Pair<dev.nacho.wibox.core.cloud.UserAuthLogin, Pair<String, String>> {
+        if (stored != null && stored.first.isNotEmpty() && stored.second.isNotEmpty()) {
             try {
                 val login = auth.login(stored.first, stored.second)
                 android.util.Log.d(
@@ -163,7 +182,7 @@ class AppContainer(
                     "cloud login OK (guardadas) session=" + (login.session?.isNotBlank() == true),
                 )
                 LiveDiag.add("login guardadas ok")
-                return login
+                return login to stored
             } catch (e: UserAuthException) {
                 val retry = e.result == RESULT_PASSWORD_ERROR || e.result == RESULT_ACCOUNT_MISSING
                 android.util.Log.d(
@@ -174,13 +193,17 @@ class AppContainer(
                 if (!retry) throw e
             }
         }
-        val login = auth.login(REAL_CLOUD_ACCOUNT, REAL_CLOUD_PASSWORD)
+        if (!hasBuildCloudAccount()) {
+            throw IllegalStateException("stored cloud credentials were rejected and no build credentials are configured")
+        }
+        val fallback = REAL_CLOUD_ACCOUNT to REAL_CLOUD_PASSWORD
+        val login = auth.login(fallback.first, fallback.second)
         android.util.Log.d(
             "WIBOX-LIVE",
             "cloud login OK (respaldo) session=" + (login.session?.isNotBlank() == true),
         )
         LiveDiag.add("login respaldo ok")
-        return login
+        return login to fallback
     }
 
     /**
@@ -424,8 +447,9 @@ class AppContainer(
         return remote
     }
 
-    /** Login ya hecho + get-device-list + merge al provider (el caller registra logs de fallo). */
+    /** Login ya hecho + lista de dispositivos + merge al provider (el caller registra logs de fallo). */
     private suspend fun syncCloudAndMerge(): List<dev.nacho.wibox.core.cloud.UserAuthDevice> {
+        val fromProvider = stockDevices()
         val devices = userAuthCloud.getDeviceList()
         android.util.Log.d(
             "WIBOX-ACCEPT",
@@ -433,18 +457,44 @@ class AppContainer(
                 devices.joinToString(separator = ", ") { it.id + "/" + it.model + "/" + it.name + if (it.fromShare) " (share)" else "" },
         )
         provider.mergeCloudDevices(
-            devices.map { d ->
-                DemoDevice(
-                    id = d.id,
-                    name = d.name.ifBlank { "Wi-Box" },
-                    model = d.model.ifBlank { "Wi-Box" },
-                    online = true,
-                    shared = d.fromShare,
-                )
-            },
+            if (fromProvider.isNotEmpty()) fromProvider else devices.map { it.toDemoDevice() },
         )
         return devices
     }
+
+    /**
+     * Devices reported by the stock provider. RealWiboxCloud still answers
+     * Unsupported for `listDevices`, so an empty result sends the caller back to
+     * the verified userauth list instead of leaving the catalogue empty.
+     */
+    private suspend fun stockDevices(): List<DemoDevice> {
+        val stock = cloudProvider ?: return emptyList()
+        return try {
+            stock.devices.listDevices().map { it.toDemoDevice() }
+        } catch (error: Exception) {
+            android.util.Log.d(
+                "WIBOX-ACCEPT",
+                "STOCK DEVICES UNAVAILABLE " + error::class.java.simpleName + ": " + error.message,
+            )
+            emptyList()
+        }
+    }
+
+    private fun dev.nacho.wibox.core.cloud.UserAuthDevice.toDemoDevice(): DemoDevice = DemoDevice(
+        id = id,
+        name = name.ifBlank { "Wi-Box" },
+        model = model.ifBlank { "Wi-Box" },
+        online = true,
+        shared = fromShare,
+    )
+
+    private fun DeviceSnapshot.toDemoDevice(): DemoDevice = DemoDevice(
+        id = device.id,
+        name = displayName?.takeIf { it.isNotBlank() } ?: "Wi-Box",
+        model = declaredModel?.takeIf { it.isNotBlank() } ?: "Wi-Box",
+        online = presence != dev.nacho.wibox.core.cloud.DevicePresence.OFFLINE,
+        shared = role == DeviceRole.SHARED,
+    )
 
     val repository = WiboxRepository(
         provider = provider,
@@ -485,13 +535,17 @@ class AppContainer(
             // si no la lista se queda con los dispositivos de demo y el timbre real no aparece.
             startLocalApi()
 
-            val startup = provider.cloudCredentials() ?: (REAL_CLOUD_ACCOUNT to REAL_CLOUD_PASSWORD)
-            if (startup.first.isNotEmpty() && startup.second.isNotEmpty()) {
+            if (hasCloudAccount()) {
                 appScope.launch {
                     try {
-                        userAuthCloud.login(startup.first, startup.second)
+                        val used = loginWithFallback(userAuthCloud, provider.cloudCredentials()).second
+                        // Las credenciales guardadas de una invitacion caducada se reemplazan
+                        // por las que acaban de funcionar, para no volver a sombrearlas.
+                        if (provider.cloudCredentials() != used) {
+                            provider.saveCloudCredentials(used.first, used.second)
+                        }
                         syncCloudAndMerge()
-                        android.util.Log.d("WIBOX-ACCEPT", "STARTUP SYNC OK account=" + startup.first)
+                        android.util.Log.d("WIBOX-ACCEPT", "STARTUP SYNC OK account=" + used.first)
                     } catch (error: Exception) {
                         android.util.Log.d(
                             "WIBOX-ACCEPT",
@@ -587,10 +641,48 @@ class AppContainer(
 
     suspend fun initialize() = repository.prepare()
 
-    fun close() = repository.close()
+    fun close() {
+        runCatching { cloudProvider?.close() }
+        repository.close()
+    }
+
+    /** True when this install has an account: stored by an accept or baked into the build. */
+    private fun hasCloudAccount(): Boolean {
+        val stored = provider.cloudCredentials()
+        if (stored != null && stored.first.isNotEmpty() && stored.second.isNotEmpty()) return true
+        return hasBuildCloudAccount()
+    }
+
+    private fun hasBuildCloudAccount(): Boolean =
+        REAL_CLOUD_ACCOUNT.isNotEmpty() && REAL_CLOUD_PASSWORD.isNotEmpty()
+
+    /**
+     * Builds the stock provider over the real QVCloud client. Selected only when
+     * the build carries credentials: installs that only have invitation
+     * credentials keep using the verified userauth channel.
+     */
+    private fun createCloudProvider(): WiboxProvider? {
+        if (!hasBuildCloudAccount()) return null
+        val cloud = WiboxCloudFactory.create(
+            config = WiboxCloudConfig(
+                baseUrl = REAL_CLOUD_BASE_URL,
+                clientId = REAL_CLOUD_CLIENT_ID,
+                regionId = REAL_CLOUD_REGION_ID,
+            ),
+            tokenStore = EphemeralTokenStore(),
+        )
+        return WiboxProviderFactory.stockQvCloud(
+            cloud = cloud,
+            sessionContext = ProviderSessionContext(
+                installationId = UUID.randomUUID().toString(),
+                accountAlias = REAL_CLOUD_ACCOUNT,
+            ),
+        )
+    }
 
     companion object {
         private const val REAL_CLOUD_BASE_URL = "https://r1-8.qvcloud.net"
+        private const val REAL_CLOUD_REGION_ID = "1"
         // Cuenta vinculada al timbre. Nunca en el repo: sale de local.properties
         // (wibox.account / wibox.password) o de variables de entorno. Vacio = sin
         // credenciales de respaldo, la app usa solo las guardadas al aceptar la invitacion.
@@ -628,5 +720,24 @@ class AppContainer(
                 appContext = appContext,
             )
         }
+    }
+}
+
+/**
+ * Token store for the stock provider. This build does not authenticate against
+ * the OAuth channel, so the session stays in memory and never reaches disk.
+ */
+private class EphemeralTokenStore : TokenStore {
+    @Volatile
+    private var session: CloudSession? = null
+
+    override suspend fun load(): CloudSession? = session
+
+    override suspend fun save(session: CloudSession) {
+        this.session = session
+    }
+
+    override suspend fun clear() {
+        session = null
     }
 }
