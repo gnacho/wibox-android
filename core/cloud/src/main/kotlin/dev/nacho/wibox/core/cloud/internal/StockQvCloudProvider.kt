@@ -8,6 +8,7 @@ import dev.nacho.wibox.core.cloud.AppUpgradeInfo
 import dev.nacho.wibox.core.cloud.AppUpgradeRequest
 import dev.nacho.wibox.core.cloud.CapabilityKey
 import dev.nacho.wibox.core.cloud.CapabilitySnapshot
+import dev.nacho.wibox.core.cloud.ChannelRef
 import dev.nacho.wibox.core.cloud.CloudAction
 import dev.nacho.wibox.core.cloud.CloudCredentials
 import dev.nacho.wibox.core.cloud.CloudDevice
@@ -16,8 +17,10 @@ import dev.nacho.wibox.core.cloud.CloudEventType
 import dev.nacho.wibox.core.cloud.CloudSession
 import dev.nacho.wibox.core.cloud.CredentialMaterial
 import dev.nacho.wibox.core.cloud.DeviceDataSource
+import dev.nacho.wibox.core.cloud.DevicePermissionCodec
 import dev.nacho.wibox.core.cloud.DevicePort
 import dev.nacho.wibox.core.cloud.DeviceRef
+import dev.nacho.wibox.core.cloud.DeviceRole
 import dev.nacho.wibox.core.cloud.DeviceSnapshot
 import dev.nacho.wibox.core.cloud.EventEnvelope
 import dev.nacho.wibox.core.cloud.EventPort
@@ -230,13 +233,22 @@ internal class StockQvCloudProvider(
         validUntilMillis = accessTokenExpiresAtMillis,
     )
 
-    private fun CloudDevice.toSnapshot(): DeviceSnapshot = DeviceSnapshot(
-        device = DeviceRef(ProviderId.STOCK_QVCLOUD, id),
-        displayName = null,
-        declaredModel = null,
-        source = DeviceDataSource.CLOUD,
-        fresh = true,
-    )
+    private fun CloudDevice.toSnapshot(): DeviceSnapshot {
+        val device = DeviceRef(ProviderId.STOCK_QVCLOUD, id)
+        val channels = (1..channelNumber.coerceAtLeast(1)).map { ChannelRef(device, it) }
+        return DeviceSnapshot(
+            device = device,
+            displayName = name?.takeIf { it.isNotBlank() },
+            declaredModel = model?.takeIf { it.isNotBlank() },
+            role = if (shared) DeviceRole.SHARED else DeviceRole.OWNER,
+            permissions = powers?.takeIf { it.isNotBlank() }
+                ?.let(DevicePermissionCodec::decode)
+                .orEmpty(),
+            channels = channels,
+            source = DeviceDataSource.CLOUD,
+            fresh = true,
+        )
+    }
 
     private fun dev.nacho.wibox.core.cloud.DeviceShadow.toSnapshot(): ShadowSnapshot = ShadowSnapshot(
         device = DeviceRef(ProviderId.STOCK_QVCLOUD, device.id),

@@ -3,7 +3,7 @@ package dev.nacho.wibox.core.cloud
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpStatusCode
-import kotlinx.coroutines.flow.single
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -61,7 +61,9 @@ class EventAndUnsupportedTest {
         assertTrue(cloud.capabilities.supports(CloudCapability.OAUTH_PASSWORD))
         assertTrue(cloud.capabilities.supports(CloudCapability.SHADOW_HTTP))
         assertFalse(cloud.capabilities.supports(CloudCapability.REALTIME_EVENTS))
-        assertFailsWith<CloudError.Unsupported> { cloud.observeEvents().single() }
+        assertFalse(cloud.capabilities.supports(CloudCapability.DEVICE_LIST))
+        assertFalse(cloud.capabilities.supports(CloudCapability.PHYSICAL_ACTIONS))
+        assertEquals(emptyList(), cloud.observeEvents().toList())
         assertFailsWith<CloudError.Unsupported> { cloud.listDevices() }
         assertFailsWith<CloudError.Unsupported> { cloud.discoverServices() }
         assertFailsWith<CloudError.Unsupported> {

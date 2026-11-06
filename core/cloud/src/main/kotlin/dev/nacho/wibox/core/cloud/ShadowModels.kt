@@ -1,6 +1,18 @@
 package dev.nacho.wibox.core.cloud
 
-data class CloudDevice(val id: String)
+/**
+ * Device of the account. [ShadowWire] only fills [id], the account directory
+ * (get-device-list) also knows the alias, the model, the channels and the powers
+ * the account holds over it.
+ */
+data class CloudDevice(
+    val id: String,
+    val name: String? = null,
+    val model: String? = null,
+    val channelNumber: Int = 1,
+    val shared: Boolean = false,
+    val powers: String? = null,
+)
 
 data class DeviceShadow(
     val device: CloudDevice,

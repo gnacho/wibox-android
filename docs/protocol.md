@@ -24,9 +24,9 @@ The tests use `MockEngine`, injected clock and storage, fictional fixtures and t
 | P-ERROR-HTTP | E035 and HTTP behaviour observed statically | 401, 403 and remaining errors | Typed errors and no automatic retry | `ErrorAndSafetyTest.mapsHttpErrorsWithoutRetryOrSecretLeakage` | No provider error envelope is invented |
 | P-ERROR-WIRE | OAuth and Shadow DTOs | Network, timeout, parsing and incomplete response | Typed errors without false state | `ErrorAndSafetyTest` | There are no retries nor ambiguous recovery |
 | U-SERVICE-DISCOVERY | E034, E040 and `QvLocationManager` | `discoverServices` | `Unsupported` | `EventAndUnsupportedTest.capabilitiesAndUnsupportedOperationsNeverClaimRuntimeSupport` | Dynamic discovery is not solved |
-| U-DEVICE-LIST | E004, E010, E020 | `listDevices` | `Unsupported` | `EventAndUnsupportedTest.capabilitiesAndUnsupportedOperationsNeverClaimRuntimeSupport` | The complete HTTP/XML contract of `getDevList` is missing |
-| U-REALTIME | E037 to E041, E063, E073 | `observeEvents` | `Unsupported` | The same capabilities test | MQTT is present but disabled by default and without dynamic proof |
-| U-ACTIONS | E019, E023, E025 | `performAction` | `Unsupported` | The same capabilities test | There is no complete cloud wire nor verified physical ack |
+| U-DEVICE-LIST | E004, E010, E020, section 16 of this document | `listDevices` | Implemented over the account directory injected by the owner of the userauth session (`get-device-list`) | `RealCloudWiringTest.listDevicesMapsTheAccountDirectoryAndDropsInvalidIdentifiers` | The account session and its cookie belong to the app. An unwired directory answers `Unsupported`, never an empty catalogue |
+| U-REALTIME | E037 to E041, E048, E056, E063, E073 | `observeEvents` | Stream fed with decoded push payloads, each one parsed by `parseAlarmEvent` | `RealCloudWiringTest.observeEventsEmitsParsedPushPayloadsAndSkipsUnknownOnes` | The vendor MQTT shadow is disabled by default and this app has no push receiver yet, so without an injected source the stream stays empty |
+| U-ACTIONS | E019, E023, E025 | `performAction` | Delegated to the injected transport, wired to the QUII live session for unlock (transparent command 4) | `RealCloudWiringTest.performActionDelegatesToTheInjectedTransportAndKeepsItsCode` | F1 and the guard call have no verified transport, and this code does not prove the physical opening |
 | U-REGISTER | E004, E010, smali `com.quvii.qvweb.userauth` | Opaque registration and `userLogin` | Contract closed by smali, without an exposed operation | Section 14 and documentation | Real gateway response pending capture, the reference app never got to send the POST due to the TLS block |
 | U-MEDIA | E011, E021, E023, E042 | Audio and video | Not implemented | Capability review | Native P2P not reimplemented and original binaries forbidden |
 
@@ -142,7 +142,7 @@ Route `/openapi-tdk/device/status/unsub`. It uses the same envelope with `subDat
 
 `AlarmEvent` and `NotReadCount` must be integers. A missing or non-numeric `SensorChNo` is represented as -1, same as the static parser. The date is kept as text because neither zone nor full format has been fixed. Other fields are kept. An unknown alarm code produces `Unsupported`, and an invalid mandatory integer produces `Parse`.
 
-`observeEvents` is not an empty flow nor a simulated success: collecting it produces `CloudError.Unsupported`.
+`observeEvents` does not open a socket and does not simulate events. It returns a stream fed with the push payloads injected by the owner of the push transport, and each payload goes through `parseAlarmEvent`, so an unknown alarm code is skipped and a known one is emitted. Without an injected source the stream stays empty. The vendor MQTT shadow remains disabled and is not used.
 
 ## 7. Errors and retries
 
@@ -171,7 +171,7 @@ Regional selection and obtaining OAuth, Shadow and MQTT services require the dyn
 
 ## 9. MQTT disabled
 
-The APK contains Paho, topics, QoS 1, heartbeat and reconnection, but `SUPPORT_DEVICE_SHADOW=false` prevents initialization by default according to E063 and E073. The Paho classes are not complete in the JADX output. No MQTT client, connection, heartbeat or replay is implemented. The HTTP subscription does not activate MQTT and `observeEvents` returns `Unsupported`.
+The APK contains Paho, topics, QoS 1, heartbeat and reconnection, but `SUPPORT_DEVICE_SHADOW=false` prevents initialization by default according to E063 and E073. The Paho classes are not complete in the JADX output. No MQTT client, connection, heartbeat or replay is implemented. The HTTP subscription does not activate MQTT and `observeEvents` is fed by push payloads, not by this channel.
 
 ## 10. Native P2P not reimplemented
 
