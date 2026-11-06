@@ -12,6 +12,7 @@ import android.os.SystemClock
 import android.view.PixelCopy
 import android.view.Surface
 import androidx.lifecycle.LifecycleOwner
+import dev.nacho.wibox.core.cloud.quii.H264ParamSets
 import dev.nacho.wibox.core.cloud.quii.MediaFrame
 import dev.nacho.wibox.core.cloud.quii.QuiiLiveSession
 import dev.nacho.wibox.data.AppContainer
@@ -94,6 +95,7 @@ class LiveController(
     @Volatile
     private var videoAwaitingKeyFrame = true
     private var videoSkippedCount = 0
+    private var videoParamSetOnlyCount = 0
 
     // SPS/PPS del propio timbre (H264 Main 352x288), extraidos de un IDR real.
     // Necesarios porque al engancharnos a mitad de stream no llegan en el bitstream.
@@ -220,6 +222,7 @@ class LiveController(
                     videoOutputCount = 0
                     videoErrorCount = 0
                     videoSkippedCount = 0
+                    videoParamSetOnlyCount = 0
                     videoAwaitingKeyFrame = true
                     _videoReady.value = false
                     startVideo(session)
@@ -497,6 +500,7 @@ class LiveController(
         android.util.Log.d("WIBOX-LIVE", "VIDEO codec released, creando decoder")
         videoAwaitingKeyFrame = true
         videoSkippedCount = 0
+        videoParamSetOnlyCount = 0
         _videoReady.value = false
         val format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, 640, 480)
         format.setByteBuffer("csd-0", java.nio.ByteBuffer.wrap(byteArrayOf(0, 0, 0, 1) + fallbackSps))
@@ -577,8 +581,22 @@ class LiveController(
             return
         }
         try {
+            // El decoder ya lleva el SPS/PPS buenos en csd-0/csd-1. El timbre
+            // repite en banda un SPS distinto que rompe el IDR, asi que se quita
+            // antes de empujar el bitstream.
+            val bitstream = H264ParamSets.stripParamSets(frame.bitstream)
+            if (bitstream.isEmpty()) {
+                videoParamSetOnlyCount++
+                if (videoParamSetOnlyCount <= 5 || videoParamSetOnlyCount % 100 == 0) {
+                    android.util.Log.d(
+                        "WIBOX-LIVE",
+                        "VIDEO descartado, solo parameter sets n=$videoParamSetOnlyCount",
+                    )
+                }
+                return
+            }
             if (videoAwaitingKeyFrame) {
-                val bytes = frame.bitstream
+                val bytes = bitstream
                 if (!hasNalType(bytes, 5)) {
                     videoSkippedCount++
                     if (videoSkippedCount <= 5 || videoSkippedCount % 100 == 0) {
@@ -601,16 +619,16 @@ class LiveController(
             }
             videoInputCount++
             if (videoInputCount <= 5) {
-                val head = frame.bitstream.take(16).joinToString("") { "%02x".format(it) }
-                android.util.Log.d("WIBOX-LIVE", "VIDEO IN n=$videoInputCount size=${frame.bitstream.size} key=${frame.keyFrame} wh=${frame.width}x${frame.height} pts=${videoInputCount * 40_000L} head=$head")
+                val head = bitstream.take(16).joinToString("") { "%02x".format(it) }
+                android.util.Log.d("WIBOX-LIVE", "VIDEO IN n=$videoInputCount size=${bitstream.size} key=${frame.keyFrame} wh=${frame.width}x${frame.height} pts=${videoInputCount * 40_000L} head=$head")
             }
             val index = decoder.dequeueInputBuffer(10_000)
             if (index >= 0) {
                 val input = decoder.getInputBuffer(index) ?: return
                 input.clear()
-                input.put(frame.bitstream)
+                input.put(bitstream)
                 val flags = if (frame.keyFrame) MediaCodec.BUFFER_FLAG_KEY_FRAME else 0
-                decoder.queueInputBuffer(index, 0, frame.bitstream.size, videoInputCount * 40_000L, flags)
+                decoder.queueInputBuffer(index, 0, bitstream.size, videoInputCount * 40_000L, flags)
             } else if (videoInputCount <= 5) {
                 android.util.Log.d("WIBOX-LIVE", "VIDEO input no disponible")
             }
