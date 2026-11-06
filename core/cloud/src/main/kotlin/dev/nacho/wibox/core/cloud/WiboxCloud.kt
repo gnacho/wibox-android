@@ -26,10 +26,27 @@ interface WiboxCloud : Closeable {
 }
 
 object WiboxCloudFactory {
+    /**
+     * @param deviceDirectory account channel that answers the device list. The
+     *        stock cloud serves it over userauth, outside this HTTP client.
+     * @param actionTransport transport of the physical actions (unlock, F1), which
+     *        travel inside a live session.
+     * @param alarmPayloads push payloads that carry alarm events.
+     */
     @JvmStatic
     fun create(
         config: WiboxCloudConfig,
         tokenStore: TokenStore,
         clock: CloudClock = CloudClock { System.currentTimeMillis() },
-    ): WiboxCloud = RealWiboxCloud.createDefault(config, tokenStore, clock)
+        deviceDirectory: CloudDeviceDirectory? = null,
+        actionTransport: CloudActionTransport? = null,
+        alarmPayloads: CloudAlarmPayloads? = null,
+    ): WiboxCloud = RealWiboxCloud.createDefault(
+        config = config,
+        tokenStore = tokenStore,
+        clock = clock,
+        deviceDirectory = deviceDirectory,
+        actionTransport = actionTransport,
+        alarmPayloads = alarmPayloads,
+    )
 }

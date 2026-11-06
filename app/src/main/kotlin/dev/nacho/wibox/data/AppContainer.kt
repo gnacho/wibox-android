@@ -448,29 +448,46 @@ class AppContainer(
     }
 
     /** Login ya hecho + lista de dispositivos + merge al provider (el caller registra logs de fallo). */
-    private suspend fun syncCloudAndMerge(): List<dev.nacho.wibox.core.cloud.UserAuthDevice> {
+    private suspend fun syncCloudAndMerge(): List<DemoDevice> {
         val fromProvider = stockDevices()
+        val devices = if (fromProvider.isNotEmpty()) fromProvider else userAuthDevices()
+        provider.mergeCloudDevices(devices)
+        return devices
+    }
+
+    /**
+     * Canal userauth verificado (get-device-list): respaldo cuando el proveedor
+     * stock no puede responder, no la fuente principal.
+     */
+    private suspend fun userAuthDevices(): List<DemoDevice> {
         val devices = userAuthCloud.getDeviceList()
         android.util.Log.d(
             "WIBOX-ACCEPT",
             "GET-DEVICE-LIST OK n=" + devices.size + " " +
                 devices.joinToString(separator = ", ") { it.id + "/" + it.model + "/" + it.name + if (it.fromShare) " (share)" else "" },
         )
-        provider.mergeCloudDevices(
-            if (fromProvider.isNotEmpty()) fromProvider else devices.map { it.toDemoDevice() },
-        )
-        return devices
+        return devices.map { it.toDemoDevice() }
     }
 
     /**
-     * Devices reported by the stock provider. RealWiboxCloud still answers
-     * Unsupported for `listDevices`, so an empty result sends the caller back to
-     * the verified userauth list instead of leaving the catalogue empty.
+     * Devices reported by the stock provider over the account directory. An empty
+     * result (no provider, no session) sends the caller back to the userauth list
+     * instead of leaving the catalogue empty.
      */
     private suspend fun stockDevices(): List<DemoDevice> {
         val stock = cloudProvider ?: return emptyList()
         return try {
-            stock.devices.listDevices().map { it.toDemoDevice() }
+            val devices = stock.devices.listDevices().map { it.toDemoDevice() }
+            if (devices.isNotEmpty()) {
+                android.util.Log.d(
+                    "WIBOX-ACCEPT",
+                    "STOCK DEVICES OK n=" + devices.size + " " +
+                        devices.joinToString(separator = ", ") {
+                            it.id + "/" + it.model + "/" + it.name + if (it.shared) " (share)" else ""
+                        },
+                )
+            }
+            devices
         } catch (error: Exception) {
             android.util.Log.d(
                 "WIBOX-ACCEPT",
@@ -616,17 +633,6 @@ class AppContainer(
                     emptyList()
                 }
             }
-            provider.mergeCloudDevices(
-                cloudDevices.map { d ->
-                    DemoDevice(
-                        id = d.id,
-                        name = d.name.ifBlank { displayName },
-                        model = d.model.ifBlank { "Wi-Box" },
-                        online = true,
-                        shared = d.fromShare,
-                    )
-                },
-            )
             val primary = cloudDevices.firstOrNull { it.id == invitation.deviceId } ?: cloudDevices.firstOrNull()
             DeviceSnapshot(
                 device = DeviceRef(ProviderId.STOCK_QVCLOUD, primary?.id ?: invitation.deviceId),
@@ -670,6 +676,10 @@ class AppContainer(
                 regionId = REAL_CLOUD_REGION_ID,
             ),
             tokenStore = EphemeralTokenStore(),
+            deviceDirectory = dev.nacho.wibox.core.cloud.CloudDeviceDirectory { accountDevices() },
+            actionTransport = dev.nacho.wibox.core.cloud.CloudActionTransport { deviceId, action ->
+                performDeviceAction(deviceId, action)
+            },
         )
         return WiboxProviderFactory.stockQvCloud(
             cloud = cloud,
@@ -678,6 +688,55 @@ class AppContainer(
                 accountAlias = REAL_CLOUD_ACCOUNT,
             ),
         )
+    }
+
+    /** Lista de dispositivos de la cuenta por el canal userauth (get-device-list). */
+    private suspend fun accountDevices(): List<dev.nacho.wibox.core.cloud.CloudDevice> {
+        val stored = provider.cloudCredentials() ?: (REAL_CLOUD_ACCOUNT to REAL_CLOUD_PASSWORD)
+        loginWithFallback(userAuthCloud, stored)
+        return userAuthCloud.getDeviceList().map {
+            dev.nacho.wibox.core.cloud.CloudDevice(
+                id = it.id,
+                name = it.name.ifBlank { null },
+                model = it.model.ifBlank { null },
+                channelNumber = it.channelNum,
+                shared = it.fromShare,
+                powers = it.powers.ifBlank { null },
+            )
+        }
+    }
+
+    /**
+     * Acciones fisicas: la apertura va dentro de una sesion QUII, con la misma
+     * orden transparente que usa el reproductor. F1 y la llamada al guarda no
+     * tienen transporte verificado, asi que se declaran no soportadas en vez de
+     * inventar el protocolo.
+     */
+    private suspend fun performDeviceAction(
+        deviceId: String,
+        action: dev.nacho.wibox.core.cloud.CloudAction,
+    ): dev.nacho.wibox.core.cloud.CloudActionAcknowledgement {
+        if (action != dev.nacho.wibox.core.cloud.CloudAction.UNLOCK) {
+            throw dev.nacho.wibox.core.cloud.CloudError.Unsupported(
+                "performAction",
+                "Only unlock has a verified transport; F1 and the guard call are not implemented",
+            )
+        }
+        // Si el reproductor ya tiene la sesion abierta se reutiliza: abrir otra
+        // deja al timbre respondiendo BUSY.
+        val active = activeSdkSession?.takeIf { activeSdkDeviceId == deviceId }
+        val session = active ?: openSdkTunnelLive(deviceId)
+        return try {
+            dev.nacho.wibox.core.cloud.CloudActionAcknowledgement(
+                providerCode = session.unlockDoor(),
+                data = null,
+            )
+        } finally {
+            if (active == null) {
+                runCatching { session.close() }
+                closeSdkPort(deviceId)
+            }
+        }
     }
 
     companion object {

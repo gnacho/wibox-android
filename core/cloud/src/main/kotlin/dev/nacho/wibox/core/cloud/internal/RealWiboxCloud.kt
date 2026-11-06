@@ -4,11 +4,14 @@ import dev.nacho.wibox.core.cloud.AppUpgradeInfo
 import dev.nacho.wibox.core.cloud.AppUpgradeRequest
 import dev.nacho.wibox.core.cloud.CloudAction
 import dev.nacho.wibox.core.cloud.CloudActionAcknowledgement
+import dev.nacho.wibox.core.cloud.CloudActionTransport
+import dev.nacho.wibox.core.cloud.CloudAlarmPayloads
 import dev.nacho.wibox.core.cloud.CloudCapabilities
 import dev.nacho.wibox.core.cloud.CloudCapability
 import dev.nacho.wibox.core.cloud.CloudClock
 import dev.nacho.wibox.core.cloud.CloudCredentials
 import dev.nacho.wibox.core.cloud.CloudDevice
+import dev.nacho.wibox.core.cloud.CloudDeviceDirectory
 import dev.nacho.wibox.core.cloud.CloudError
 import dev.nacho.wibox.core.cloud.CloudEvent
 import dev.nacho.wibox.core.cloud.CloudService
@@ -17,6 +20,8 @@ import dev.nacho.wibox.core.cloud.DeviceShadow
 import dev.nacho.wibox.core.cloud.ShadowAcknowledgement
 import dev.nacho.wibox.core.cloud.ShadowUnsubscribeReason
 import dev.nacho.wibox.core.cloud.TokenStore
+import dev.nacho.wibox.core.cloud.UserAuthException
+import dev.nacho.wibox.core.cloud.UserAuthTimeoutException
 import dev.nacho.wibox.core.cloud.WiboxCloud
 import dev.nacho.wibox.core.cloud.WiboxCloudConfig
 import io.ktor.client.HttpClient
@@ -48,6 +53,9 @@ internal class RealWiboxCloud(
     tokenStore: TokenStore,
     clock: CloudClock,
     private val httpClient: HttpClient,
+    private val deviceDirectory: CloudDeviceDirectory? = null,
+    private val actionTransport: CloudActionTransport? = null,
+    private val alarmPayloads: CloudAlarmPayloads? = null,
 ) : WiboxCloud {
     private val baseUrl: String = validateAndNormalizeBaseUrl(config)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -55,13 +63,15 @@ internal class RealWiboxCloud(
     private val sessions = SessionManager(tokenStore, clock, scope, ::passwordGrant, ::refreshGrant)
 
     override val capabilities = CloudCapabilities(
-        supported = setOf(
-            CloudCapability.OAUTH_PASSWORD,
-            CloudCapability.OAUTH_REFRESH,
-            CloudCapability.SHADOW_HTTP,
-            CloudCapability.OFFLINE_ALARM_PARSING,
-            CloudCapability.APP_UPGRADE_CHECK,
-        ),
+        supported = buildSet {
+            add(CloudCapability.OAUTH_PASSWORD)
+            add(CloudCapability.OAUTH_REFRESH)
+            add(CloudCapability.SHADOW_HTTP)
+            add(CloudCapability.OFFLINE_ALARM_PARSING)
+            add(CloudCapability.APP_UPGRADE_CHECK)
+            if (deviceDirectory != null) add(CloudCapability.DEVICE_LIST)
+            if (actionTransport != null) add(CloudCapability.PHYSICAL_ACTIONS)
+        },
     )
 
     override suspend fun authenticate(credentials: CloudCredentials): CloudSession {
@@ -163,18 +173,47 @@ internal class RealWiboxCloud(
 
     override fun parseAlarmEvent(payload: Map<String, String>): CloudEvent = AlarmEventParser.parse(payload)
 
+    /**
+     * Alarm events travel as push payloads (FCM on the stock app), not as a socket
+     * this client can open: the stock MQTT shadow is disabled in the vendor SDK and
+     * its runtime was never proven. The owner of the push transport injects the
+     * decoded payloads, and each one is parsed with the same contract as
+     * [parseAlarmEvent]. Without an injected source the stream stays empty and no
+     * event is invented.
+     */
     override fun observeEvents(): Flow<CloudEvent> = flow {
-        throw CloudError.Unsupported(
-            "observeEvents",
-            "MQTT and push transports are not implemented",
-        )
+        ensureOpen()
+        val source = alarmPayloads ?: return@flow
+        source.collect { payload ->
+            ensureOpen()
+            val event = try {
+                parseAlarmEvent(payload)
+            } catch (error: CloudError) {
+                if (error is CloudError.Closed) throw error
+                return@collect
+            }
+            emit(event)
+        }
     }
 
+    /**
+     * Devices of the signed in account, as answered by the injected account
+     * directory (userauth `get-device-list`). This client does not own that
+     * session, so an unwired directory is reported as Unsupported instead of
+     * returning an empty catalogue that reads like "no devices".
+     */
     override suspend fun listDevices(): List<CloudDevice> {
-        throw CloudError.Unsupported(
+        ensureOpen()
+        val directory = deviceDirectory ?: throw CloudError.Unsupported(
             "listDevices",
-            "The user authentication and device-list wire contract is incomplete",
+            "The account channel that answers get-device-list is not wired in this client",
         )
+        val devices = try {
+            directory.listDevices()
+        } catch (error: Throwable) {
+            throw mapTransportError("listDevices", error)
+        }
+        return devices.filter { it.id.isNotBlank() }.distinctBy { it.id }
     }
 
     override suspend fun discoverServices(): Map<CloudService, String> {
@@ -184,11 +223,24 @@ internal class RealWiboxCloud(
         )
     }
 
+    /**
+     * Physical actions run over the device live session, not over this HTTP
+     * client. The injected transport performs them and reports the provider code;
+     * without a transport the operation stays Unsupported instead of faking an
+     * acknowledgement.
+     */
     override suspend fun performAction(deviceId: String, action: CloudAction): CloudActionAcknowledgement {
-        throw CloudError.Unsupported(
+        ensureOpen()
+        if (deviceId.isBlank()) throw CloudError.InvalidInput("performAction")
+        val transport = actionTransport ?: throw CloudError.Unsupported(
             "performAction",
-            "Physical action transport and acknowledgement are unverified",
+            "The physical action transport is not wired in this client",
         )
+        return try {
+            transport.performAction(deviceId, action)
+        } catch (error: Throwable) {
+            throw mapTransportError("performAction", error)
+        }
     }
 
     private fun deviceField(id: String): DeviceFieldDto =
@@ -276,6 +328,8 @@ internal class RealWiboxCloud(
     private fun mapTransportError(operation: String, error: Throwable): Throwable = when (error) {
         is CloudError -> error
         is HttpRequestTimeoutException, is SocketTimeoutException -> CloudError.Timeout(operation)
+        is UserAuthTimeoutException -> CloudError.Timeout(operation)
+        is UserAuthException -> CloudError.Provider(operation, error.result)
         is CancellationException -> error
         else -> CloudError.Network(operation)
     }
@@ -296,6 +350,9 @@ internal class RealWiboxCloud(
             config: WiboxCloudConfig,
             tokenStore: TokenStore,
             clock: CloudClock,
+            deviceDirectory: CloudDeviceDirectory? = null,
+            actionTransport: CloudActionTransport? = null,
+            alarmPayloads: CloudAlarmPayloads? = null,
         ): RealWiboxCloud {
             validateAndNormalizeBaseUrl(config)
             val client = HttpClient(OkHttp) {
@@ -311,7 +368,15 @@ internal class RealWiboxCloud(
                     }
                 }
             }
-            return RealWiboxCloud(config, tokenStore, clock, client)
+            return RealWiboxCloud(
+                config = config,
+                tokenStore = tokenStore,
+                clock = clock,
+                httpClient = client,
+                deviceDirectory = deviceDirectory,
+                actionTransport = actionTransport,
+                alarmPayloads = alarmPayloads,
+            )
         }
 
         private fun validateAndNormalizeBaseUrl(config: WiboxCloudConfig): String {
