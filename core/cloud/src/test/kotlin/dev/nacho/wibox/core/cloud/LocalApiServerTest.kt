@@ -19,7 +19,10 @@ class LocalApiServerTest {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private lateinit var server: LocalApiServer
-    private val port = 18087
+
+    /** Puerto efimero: dos pasadas seguidas no chocan con TIME_WAIT. */
+    private val port = 0
+    private val serverPort: Int get() = server.boundPort
 
     private val backend = object : LocalApiBackend {
         override suspend fun devices() = listOf(
@@ -33,6 +36,7 @@ class LocalApiServerTest {
     fun setUp() {
         server = LocalApiServer(port = port, token = "secret", backend = backend, scope = scope)
         assertTrue(server.start())
+        assertTrue(server.boundPort > 0)
         Thread.sleep(200)
     }
 
@@ -84,7 +88,7 @@ class LocalApiServerTest {
     }
 
     private fun get(path: String, bearer: String? = null): Pair<Int, String> {
-        val connection = URL("http://127.0.0.1:$port$path").openConnection() as HttpURLConnection
+        val connection = URL("http://127.0.0.1:$serverPort$path").openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
         connection.connectTimeout = 3_000
         connection.readTimeout = 3_000
