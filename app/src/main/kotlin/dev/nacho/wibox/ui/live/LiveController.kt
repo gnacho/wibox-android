@@ -179,7 +179,7 @@ class LiveController(
         }
     }
 
-    fun start(deviceId: String, autoUnlock: Boolean = false, channel: Int = 1, stream: Int = 1) {
+    fun start(deviceId: String, autoUnlock: Boolean = false, channel: Int = 1, stream: Int = 2) {
         android.util.Log.d("WIBOX-LIVE", "start($deviceId) state=" + _state.value)
         timedOut.value = false
         // En vivo siempre reconecta: si la sesion esta viva pero sin imagen, el

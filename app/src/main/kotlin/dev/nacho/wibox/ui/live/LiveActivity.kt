@@ -46,7 +46,7 @@ class LiveActivity : ComponentActivity() {
         val autoStart = intent.getBooleanExtra(EXTRA_AUTO_START, false)
         val autoUnlock = intent.getBooleanExtra(EXTRA_AUTO_UNLOCK, false)
         val channel = intent.getIntExtra(EXTRA_CHANNEL, 1)
-        val stream = intent.getIntExtra(EXTRA_STREAM, 1)
+        val stream = intent.getIntExtra(EXTRA_STREAM, 2)
         dev.nacho.wibox.core.cloud.quii.LiveTuning.apParam =
             intent.getIntExtra(EXTRA_AP, 2).let { if (it < 0) null else it }
         dev.nacho.wibox.core.cloud.quii.LiveTuning.inner = intent.getBooleanExtra(EXTRA_INNER, false)
