@@ -669,7 +669,7 @@ class LiveController(
         // reconfigura antes de empujarlo, que es lo que evita los macrobloques y el
         // verde saturado de una sesion con otro tamano.
         val inBand = if (frame.keyFrame) H264ParamSets.extractParameterSets(frame.bitstream) else null
-        if (inBand != null) alignVideoCodec(frame, inBand)
+        val reconfigured = if (inBand != null) alignVideoCodec(frame, inBand) else false
         val decoder = codec ?: return
         // Los parameter sets en banda solo se dejan pasar cuando el decoder esta
         // configurado con ellos. Si la reconfiguracion no ha sido posible se quitan,
@@ -723,8 +723,13 @@ class LiveController(
                 input.put(bitstream)
                 val flags = if (frame.keyFrame) MediaCodec.BUFFER_FLAG_KEY_FRAME else 0
                 decoder.queueInputBuffer(index, 0, bitstream.size, videoInputCount * 40_000L, flags)
-            } else if (videoInputCount <= 5) {
-                android.util.Log.d("WIBOX-LIVE", "VIDEO input no disponible")
+            } else {
+                if (videoInputCount <= 5) {
+                    android.util.Log.d("WIBOX-LIVE", "VIDEO input no disponible")
+                }
+                // Un decoder recien creado que se pierde su IDR no puede decodificar
+                // P frames: se vuelve a esperar keyframe en vez de arrastrar el croma.
+                if (reconfigured) videoAwaitingKeyFrame = true
             }
             val info = MediaCodec.BufferInfo()
             while (true) {
@@ -743,6 +748,7 @@ class LiveController(
             }
         } catch (error: Exception) {
             videoErrorCount++
+            if (reconfigured) videoAwaitingKeyFrame = true
             if (videoErrorCount <= 5) {
                 android.util.Log.e("WIBOX-LIVE", "VIDEO ERROR n=$videoErrorCount", error)
             }
