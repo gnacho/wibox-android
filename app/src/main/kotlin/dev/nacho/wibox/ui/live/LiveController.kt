@@ -78,6 +78,13 @@ class LiveController(
     private val MAX_IMAGE_CYCLES = 10
     private val CONNECT_P2P_ATTEMPTS = 3
 
+    /** Tamano provisional del decoder hasta que el primer frame anuncia el real. */
+    private val PROVISIONAL_WIDTH = 640
+    private val PROVISIONAL_HEIGHT = 480
+
+    /** Tope de reconfiguraciones por sesion, por si el stream alterna parameter sets. */
+    private val MAX_VIDEO_RECONFIGURE = 8
+
     /** El timbre responde HANG_UP con motivo 1 cuando el canal esta ocupado. */
     private val HANGUP_BUSY = 1
 
@@ -96,9 +103,19 @@ class LiveController(
     private var videoAwaitingKeyFrame = true
     private var videoSkippedCount = 0
     private var videoParamSetOnlyCount = 0
+    private var videoReconfigureCount = 0
+    private var videoReconfigureCapLogged = false
+
+    /** Parameter sets y tamano con los que esta configurado el decoder ahora mismo. */
+    private var configuredSps: ByteArray? = null
+    private var configuredPps: ByteArray? = null
+    private var configuredWidth = 0
+    private var configuredHeight = 0
 
     // SPS/PPS del propio timbre (H264 Main 352x288), extraidos de un IDR real.
     // Necesarios porque al engancharnos a mitad de stream no llegan en el bitstream.
+    // Es solo el punto de partida: la sesion puede anunciar otro tamano y el primer
+    // keyframe trae los parameter sets reales, que mandan sobre estos.
     private val fallbackSps: ByteArray = hexBytes("474d401e99a05825a100000303e800009c4084")
     private val fallbackPps: ByteArray = hexBytes("48ee3c80")
 
@@ -501,12 +518,32 @@ class LiveController(
         videoAwaitingKeyFrame = true
         videoSkippedCount = 0
         videoParamSetOnlyCount = 0
+        videoReconfigureCount = 0
+        videoReconfigureCapLogged = false
         _videoReady.value = false
-        val format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, 640, 480)
-        format.setByteBuffer("csd-0", java.nio.ByteBuffer.wrap(byteArrayOf(0, 0, 0, 1) + fallbackSps))
-        format.setByteBuffer("csd-1", java.nio.ByteBuffer.wrap(byteArrayOf(0, 0, 0, 1) + fallbackPps))
+        codec = configureVideoCodec(target, PROVISIONAL_WIDTH, PROVISIONAL_HEIGHT, fallbackSps, fallbackPps)
+        configuredSps = fallbackSps
+        configuredPps = fallbackPps
+        configuredWidth = PROVISIONAL_WIDTH
+        configuredHeight = PROVISIONAL_HEIGHT
+    }
+
+    /**
+     * Crea y arranca un decoder H264 con los parameter sets y el tamano indicados.
+     * El codec devuelto queda listo para recibir bitstream, y el llamador es el
+     * responsable de liberarlo.
+     */
+    private fun configureVideoCodec(
+        target: Surface,
+        width: Int,
+        height: Int,
+        sps: ByteArray,
+        pps: ByteArray,
+    ): MediaCodec {
+        val format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height)
+        format.setByteBuffer("csd-0", java.nio.ByteBuffer.wrap(byteArrayOf(0, 0, 0, 1) + sps))
+        format.setByteBuffer("csd-1", java.nio.ByteBuffer.wrap(byteArrayOf(0, 0, 0, 1) + pps))
         val colorMode = dev.nacho.wibox.core.cloud.quii.LiveTuning.colorMode
-        android.util.Log.d("WIBOX-LIVE", "VIDEO colorMode=$colorMode")
         runCatching {
             when (colorMode) {
                 1 -> {
@@ -526,17 +563,20 @@ class LiveController(
                 }
             }
         }.onFailure { android.util.Log.w("WIBOX-LIVE", "color aspects fail", it) }
+        val created = runCatching { MediaCodec.createByCodecName("c2.android.avc.decoder") }
+            .getOrElse { MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_AVC) }
+        try {
+            created.configure(format, target, null, 0)
+            created.start()
+        } catch (error: Exception) {
+            runCatching { created.release() }
+            throw error
+        }
         android.util.Log.d(
             "WIBOX-LIVE",
-            "VIDEO csd sps=${fallbackSps.size}B pps=${fallbackPps.size}B",
+            "VIDEO csd sps=${sps.size}B pps=${pps.size}B wh=${width}x${height} colorMode=$colorMode codec=${created.name}",
         )
-        codec = runCatching { MediaCodec.createByCodecName("c2.android.avc.decoder") }
-            .getOrElse { MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_AVC) }
-            .apply {
-                android.util.Log.d("WIBOX-LIVE", "VIDEO codec=$name")
-                configure(format, target, null, 0)
-                start()
-            }
+        return created
     }
 
     private fun releaseVideoCodec() {
@@ -570,21 +610,74 @@ class LiveController(
         return false
     }
 
+    /**
+     * Ajusta el decoder al SPS/PPS y al tamano que anuncia [frame]. Si ya coincide
+     * con lo configurado no hace nada. Devuelve true cuando ha reconfigurado.
+     */
+    private fun alignVideoCodec(
+        frame: MediaFrame.Video,
+        inBand: H264ParamSets.ParameterSets,
+    ): Boolean {
+        val width = if (frame.width > 0) frame.width else configuredWidth
+        val height = if (frame.height > 0) frame.height else configuredHeight
+        val sameParams = inBand.sps.contentEquals(configuredSps) && inBand.pps.contentEquals(configuredPps)
+        val sameSize = width == configuredWidth && height == configuredHeight
+        if (sameParams && sameSize) return false
+        if (videoReconfigureCount >= MAX_VIDEO_RECONFIGURE) {
+            if (!videoReconfigureCapLogged) {
+                videoReconfigureCapLogged = true
+                android.util.Log.w(
+                    "WIBOX-LIVE",
+                    "VIDEO RECONFIG tope alcanzado, se mantiene wh=${configuredWidth}x${configuredHeight}",
+                )
+            }
+            return false
+        }
+        val target = surface ?: return false
+        val rebuilt = runCatching {
+            configureVideoCodec(target, width, height, inBand.sps, inBand.pps)
+        }.getOrElse { error ->
+            android.util.Log.e("WIBOX-LIVE", "VIDEO RECONFIG fallo, se conserva el decoder actual", error)
+            return false
+        }
+        releaseVideoCodec()
+        codec = rebuilt
+        configuredSps = inBand.sps
+        configuredPps = inBand.pps
+        configuredWidth = width
+        configuredHeight = height
+        videoReconfigureCount++
+        android.util.Log.d(
+            "WIBOX-LIVE",
+            "VIDEO RECONFIG n=$videoReconfigureCount wh=${width}x${height} sps=${inBand.sps.size}B pps=${inBand.pps.size}B",
+        )
+        return true
+    }
+
     private fun feedVideo(frame: MediaFrame.Video) {
         lastFrameAt = System.currentTimeMillis()
-        val decoder = codec
-        if (decoder == null) {
+        if (codec == null) {
             videoErrorCount++
             if (videoErrorCount <= 5) {
                 android.util.Log.w("WIBOX-LIVE", "VIDEO sin codec, frame descartado n=$videoErrorCount")
             }
             return
         }
+        // El decoder arranca con unos parameter sets de referencia porque al
+        // engancharnos a mitad de stream no hay frame del que sacarlos. El keyframe
+        // trae los del stream real: si no coinciden con los configurados se
+        // reconfigura antes de empujarlo, que es lo que evita los macrobloques y el
+        // verde saturado de una sesion con otro tamano.
+        val inBand = if (frame.keyFrame) H264ParamSets.extractParameterSets(frame.bitstream) else null
+        if (inBand != null) alignVideoCodec(frame, inBand)
+        val decoder = codec ?: return
+        // Los parameter sets en banda solo se dejan pasar cuando el decoder esta
+        // configurado con ellos. Si la reconfiguracion no ha sido posible se quitan,
+        // como se hacia antes, para no desalinear el decoder con un SPS ajeno.
+        val keepInBand = inBand != null &&
+            inBand.sps.contentEquals(configuredSps) && inBand.pps.contentEquals(configuredPps)
         try {
-            // El decoder ya lleva el SPS/PPS buenos en csd-0/csd-1. El timbre
-            // repite en banda un SPS distinto que rompe el IDR, asi que se quita
-            // antes de empujar el bitstream.
-            val bitstream = H264ParamSets.stripParamSets(frame.bitstream)
+            val bitstream = if (keepInBand) frame.bitstream else H264ParamSets.stripParamSets(frame.bitstream)
             if (bitstream.isEmpty()) {
                 videoParamSetOnlyCount++
                 if (videoParamSetOnlyCount <= 5 || videoParamSetOnlyCount % 100 == 0) {
@@ -613,7 +706,8 @@ class LiveController(
                     videoAwaitingKeyFrame = false
                     android.util.Log.d(
                         "WIBOX-LIVE",
-                        "VIDEO KEYFRAME recibido tras ${videoSkippedCount} descartes size=${bytes.size}",
+                        "VIDEO KEYFRAME recibido tras ${videoSkippedCount} descartes size=${bytes.size} " +
+                            "inBand=${keepInBand}",
                     )
                 }
             }
