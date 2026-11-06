@@ -43,7 +43,7 @@ The detail of those fields, the order in which they appear in the QR code and th
 - Android SDK in `~/Android/Sdk` or configured through `ANDROID_HOME`.
 - Android platform 37.0 and Build Tools 37.0.0.
 - For instrumented tests, an emulator or Android device visible through ADB.
-- For the live view, the manufacturer's native SDK in `app/src/main/jniLibs/arm64-v8a/` and its client certificates in `app/src/main/assets/`. They are not versioned: they are proprietary and carry the credentials of a real doorbell.
+- For the live view, the manufacturer's native SDK in `app/src/main/jniLibs/arm64-v8a/` plus the client certificate and key in `app/src/main/assets/` (`client.pem`, `client.txt`). They are not versioned: they are proprietary and the key belongs to the vendor. The Qualvision root CA is versioned as `assets/ca.pem` and reused for the SDK, so no `qv_ca.pem` copy is needed. Without them the app runs on the pure Kotlin path and reports it once in the log.
 - Doorbell credentials in `local.properties` (`wibox.account`, `wibox.password`, `wibox.clientId`, `wibox.unlockPassword`) or in the environment. Accepting an invitation from the app also works, which stores a temporary account.
 
 `local.properties`, credentials and tokens are not versioned.

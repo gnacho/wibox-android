@@ -43,7 +43,7 @@ El detalle de esos campos, el orden en que aparecen en el QR y su papel en el re
 - Android SDK en `~/Android/Sdk` o configurado mediante `ANDROID_HOME`.
 - Platform Android 37.0 y Build Tools 37.0.0.
 - Para pruebas instrumentadas, un emulador o dispositivo Android visible mediante ADB.
-- Para la vista en vivo, el SDK nativo del fabricante en `app/src/main/jniLibs/arm64-v8a/` y sus certificados de cliente en `app/src/main/assets/`. No se versionan: son propietarios y llevan credenciales de un timbre real.
+- Para la vista en vivo, el SDK nativo del fabricante en `app/src/main/jniLibs/arm64-v8a/` y el certificado y la clave de cliente en `app/src/main/assets/` (`client.pem`, `client.txt`). No se versionan: son propietarios y la clave es del fabricante. La CA raíz de Qualvision sí está versionada como `assets/ca.pem` y se reutiliza para el SDK, así que no hace falta ninguna copia `qv_ca.pem`. Sin ese material la app funciona por la vía Kotlin pura y lo explica una sola vez en el log.
 - Credenciales del timbre en `local.properties` (`wibox.account`, `wibox.password`, `wibox.clientId`, `wibox.unlockPassword`) o en el entorno. También vale aceptar una invitación desde la app, que guarda una cuenta temporal.
 
 `local.properties`, credenciales y tokens no se versionan.

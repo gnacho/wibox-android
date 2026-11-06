@@ -3,12 +3,18 @@ package com.quvii.p2pv2
 import android.content.Context
 import android.util.Log
 import dev.nacho.wibox.core.cloud.quii.UstDiscovery
+import dev.nacho.wibox.data.NativeSdkAssets
 import java.io.File
 
 /**
  * Wake the doorbell through the vendor SDK instead of the MQTT UST packet.
  * The server accepts our device-awaken but the hardware stays asleep, so we
  * reuse the same native call the stock app performs.
+ *
+ * The SDK is optional. A public build does not carry the vendor library nor its
+ * client certificate, so [ensureClient] checks the material once, explains what
+ * is missing in a single log line and leaves the callers on the pure Kotlin
+ * path.
  */
 object NativeP2PWake {
 
@@ -28,6 +34,17 @@ object NativeP2PWake {
     @Volatile
     private var clientReady = false
 
+    /** The material check cannot change while the process lives, so it runs once. */
+    @Volatile
+    private var preflightDone = false
+
+    @Volatile
+    private var preflightPassed = false
+
+    /** The stack trace of a failed start is written once, not on every call. */
+    @Volatile
+    private var failureLogged = false
+
     @Volatile
     private var lastError: String? = null
 
@@ -38,13 +55,18 @@ object NativeP2PWake {
 
     fun lastPort(): Int = lastPort
 
+    @Synchronized
     fun ensureClient(context: Context, caPem: ByteArray): Boolean {
         if (clientReady) return true
+        if (!preflight(context)) return false
         return runCatching {
             val dir = File(context.filesDir, "qvsdk").apply { mkdirs() }
-            val ca = copyAsset(context, "qv_ca.pem", dir)
-            val cert = copyAsset(context, "client.pem", dir)
-            val key = copyAsset(context, "client.txt", dir)
+            // The SDK takes the trust anchor as a path. Our own asset is the same
+            // Qualvision root, so it is written here instead of asking for a
+            // second copy of a certificate that is already in the repository.
+            val ca = File(dir, NativeSdkAssets.CA).apply { writeBytes(caPem) }
+            val cert = copyAsset(context, NativeSdkAssets.CLIENT_CERT, dir)
+            val key = copyAsset(context, NativeSdkAssets.CLIENT_KEY, dir)
             val services = UstDiscovery.queryServices(SERVICE_URL, CLIENT_ID, OEM, APP_ID.toInt(), caPem)
             val ust = services.ustMqttUrl ?: error("sin ustMqttUrl")
             val ustTest = services.ustTestAddress ?: ""
@@ -70,12 +92,58 @@ object NativeP2PWake {
             )
             Log.d(TAG, "createP2PClient rc=$rc ust=$ust test=$ustTest")
             clientReady = rc == 0
-            if (rc != 0) lastError = "createP2PClient rc=$rc"
+            if (rc != 0) {
+                lastError = "createP2PClient rc=$rc"
+                logFailureOnce(null)
+            }
             clientReady
         }.getOrElse {
             lastError = it.message ?: it::class.java.simpleName
-            Log.e(TAG, "createP2PClient fail", it)
+            logFailureOnce(it)
             false
+        }
+    }
+
+    /**
+     * Checks the material only a local build carries. A public clone has neither
+     * the vendor library nor the client certificate, and asking for them on every
+     * call left the same stack trace in the log on each session. The answer cannot
+     * change while the process lives, so it is computed once and reported once.
+     */
+    @Synchronized
+    private fun preflight(context: Context): Boolean {
+        if (preflightDone) return preflightPassed
+        preflightDone = true
+        val missing = NativeSdkAssets.missing(
+            hasAsset = { name -> assetPresent(context, name) },
+            hasNativeLibrary = nativeLibraryLoaded(),
+        )
+        preflightPassed = missing.isEmpty()
+        if (!preflightPassed) {
+            lastError = NativeSdkAssets.describe(missing)
+            Log.w(TAG, lastError!!)
+        }
+        return preflightPassed
+    }
+
+    private fun assetPresent(context: Context, name: String): Boolean =
+        runCatching { context.assets.open(name).use { true } }.getOrDefault(false)
+
+    private fun nativeLibraryLoaded(): Boolean = runCatching {
+        System.loadLibrary(NativeSdkAssets.NATIVE_LIBRARY)
+        true
+    }.getOrElse {
+        Log.d(TAG, "loadLibrary ${NativeSdkAssets.NATIVE_LIBRARY} fail ${it.javaClass.simpleName}")
+        false
+    }
+
+    private fun logFailureOnce(error: Throwable?) {
+        if (failureLogged) return
+        failureLogged = true
+        if (error == null) {
+            Log.e(TAG, "createP2PClient fail: $lastError")
+        } else {
+            Log.e(TAG, "createP2PClient fail: $lastError", error)
         }
     }
 
