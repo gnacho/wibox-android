@@ -22,9 +22,21 @@ object QuiiCrypto {
         return cipher.doFinal(enc)
     }
 
+    /**
+     * Descifra solo el prefijo cifrado de [data] y deja el resto tal cual: en un
+     * cpacket de media solo va cifrado el prefijo que anuncia la cabecera y el H264
+     * viaja en claro.
+     *
+     * [prefixLen] puede no ser multiplo de 16 (la cabecera lo anuncia en crudo). Se
+     * redondea hacia abajo y se descifran solo los bloques completos, conservando el
+     * sobrante tal cual llego: con un valor desalineado, `aesCbcDecrypt` lanzaba y
+     * `decodeChained` perdia el resto del blob.
+     */
     fun aesCbcDecryptAlignedPrefix(key: ByteArray, data: ByteArray, prefixLen: Int): ByteArray {
-        val prefix = aesCbcDecrypt(key, data.copyOfRange(0, prefixLen))
-        return prefix + data.copyOfRange(prefixLen, data.size)
+        val prefix = prefixLen.coerceIn(0, data.size)
+        val aligned = prefix - prefix % 16
+        if (aligned <= 0) return data.copyOf()
+        return aesCbcDecrypt(key, data.copyOfRange(0, aligned)) + data.copyOfRange(aligned, data.size)
     }
 
     fun zeroPad(data: ByteArray): ByteArray {

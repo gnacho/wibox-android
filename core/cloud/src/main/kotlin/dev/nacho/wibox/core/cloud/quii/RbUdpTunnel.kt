@@ -49,6 +49,9 @@ class RbUdpTunnel(
     private var rxStreamNextRemoteId: Int? = null
     private var rxStreamPackets = 0
     private var rxKcpBuffer = ByteArray(0)
+    private var loggedGapSkips = 0
+    /** Cola de reordenacion del carril de datos (issue #26). */
+    private val rxReorder = RbUdpReorderBuffer()
     private var connectId = 0
     private var peerLogicId = 0
 
@@ -89,6 +92,8 @@ class RbUdpTunnel(
     private var playSyncJob: Job? = null
 
     fun start(scope: CoroutineScope) {
+        rxReorder.reset()
+        loggedGapSkips = 0
         socket.soTimeout = 500
         rxJob = scope.launch(Dispatchers.IO) { receiveLoop() }
         // Bootstrap control (word4=0, word8=0x01000000 bootstrap lane0, ids 0/0)
@@ -198,6 +203,7 @@ class RbUdpTunnel(
             try {
                 socket.receive(packet)
             } catch (_: java.net.SocketTimeoutException) {
+                flushExpiredStreamData()
                 continue
             } catch (_: Exception) {
                 if (stopped.get()) break else continue
@@ -235,36 +241,25 @@ class RbUdpTunnel(
         if (quiiPlaySent) quiiIncoming.emit(payload)
     }
 
-    private suspend fun handleDataPayload(raw: ByteArray) {
+    internal suspend fun handleDataPayload(raw: ByteArray) {
         val status16 = readU32Le(raw, 0x14) and 0xFFFF
         if (status16 != STREAM_STATUS16 && status16 != DIRECT_STATUS16) return
         val buffer = raw.copyOfRange(0x1C, raw.size)
         if (buffer.isEmpty()) return
         val packetLocalId = readU32Le(raw, 0x0C).toInt()
-        val expected = rxStreamNextRemoteId
-        if (expected == null || packetLocalId == expected) {
-            rxStreamNextRemoteId = packetLocalId + buffer.size
-            rxKcpBuffer += buffer
+        val expected = rxReorder.nextRemoteId
+        val inOrder = expected == null || packetLocalId == expected
+        val delivered = rxReorder.offer(packetLocalId, buffer)
+        rxStreamNextRemoteId = rxReorder.nextRemoteId
+        if (delivered.isNotEmpty()) {
             if (rxStreamPackets < 12) {
                 println("WIBOX-TUNNEL STREAM-RX status=%08x local=%08x remote=%08x w4=%08x w8=%08x payload=${buffer.size}B head=${buffer.take(32).joinToString("") { "%02x".format(it) }}".format(readU32Le(raw, 0x14).toInt(), packetLocalId, readU32Le(raw, 0x10).toInt(), readU32Le(raw, 0x04).toInt(), readU32Le(raw, 0x08).toInt()))
             }
-            // receive/stream.py feed(): conserva un frame KCP parcial para el siguiente paquete.
-            var offset = 0
-            var anyFrame = false
-            while (offset + 0x18 <= rxKcpBuffer.size) {
-                if (readU32Le(rxKcpBuffer, offset).toInt() != -1) break
-                val packetLen = readU32Le(rxKcpBuffer, offset + 4).toInt()
-                if (packetLen < 0x18 || packetLen > 20 * 1024 * 1024) break
-                if (packetLen > rxKcpBuffer.size - offset) break
-                dispatchKcpFrame(rxKcpBuffer.copyOfRange(offset, offset + packetLen))
-                anyFrame = true
-                offset += packetLen
-            }
-            rxKcpBuffer = rxKcpBuffer.copyOfRange(offset, rxKcpBuffer.size)
-            if (!anyFrame && offset == 0 && rxKcpBuffer.size >= 4 && readU32Le(rxKcpBuffer, 0).toInt() != -1) {
-                quiiIncoming.emit(rxKcpBuffer)
-                rxKcpBuffer = ByteArray(0)
-            }
+            for (payload in delivered) consumeStreamPayload(payload)
+        }
+        if (rxReorder.gapsSkipped != loggedGapSkips) {
+            loggedGapSkips = rxReorder.gapsSkipped
+            println("WIBOX-TUNNEL STREAM-GAP hueco=${rxReorder.gapsSkipped} esperado=%08x llego=%08x siguiente=%08x".format(expected ?: 0, packetLocalId, rxStreamNextRemoteId ?: 0))
         }
         // ACK acumulativo del stream: tambien para duplicados y paquetes fuera de orden.
         val ackRemoteId = rxStreamNextRemoteId ?: return
@@ -277,8 +272,44 @@ class RbUdpTunnel(
         )
         rxStreamPackets++
         if (rxStreamPackets <= 12 || rxStreamPackets % 100 == 0) {
-            println("WIBOX-TUNNEL STREAM-ACK next=%08x local=%08x inOrder=${expected == null || packetLocalId == expected}".format(ackRemoteId, packetLocalId))
+            println("WIBOX-TUNNEL STREAM-ACK next=%08x local=%08x inOrder=$inOrder".format(ackRemoteId, packetLocalId))
         }
+    }
+
+    /**
+     * Recibe en orden los payloads del carril de datos y reensambla los frames KCP.
+     * Conserva un frame KCP parcial para el siguiente paquete (receive/stream.py feed).
+     */
+    private suspend fun consumeStreamPayload(buffer: ByteArray) {
+        rxKcpBuffer += buffer
+        var offset = 0
+        var anyFrame = false
+        while (offset + 0x18 <= rxKcpBuffer.size) {
+            if (readU32Le(rxKcpBuffer, offset).toInt() != -1) break
+            val packetLen = readU32Le(rxKcpBuffer, offset + 4).toInt()
+            if (packetLen < 0x18 || packetLen > 20 * 1024 * 1024) break
+            if (packetLen > rxKcpBuffer.size - offset) break
+            dispatchKcpFrame(rxKcpBuffer.copyOfRange(offset, offset + packetLen))
+            anyFrame = true
+            offset += packetLen
+        }
+        rxKcpBuffer = rxKcpBuffer.copyOfRange(offset, rxKcpBuffer.size)
+        if (!anyFrame && offset == 0 && rxKcpBuffer.size >= 4 && readU32Le(rxKcpBuffer, 0).toInt() != -1) {
+            quiiIncoming.emit(rxKcpBuffer)
+            rxKcpBuffer = ByteArray(0)
+        }
+    }
+
+    /** Suelta los paquetes retenidos cuyo hueco ya no se va a rellenar. */
+    internal suspend fun flushExpiredStreamData() {
+        val delivered = rxReorder.pollGaps()
+        if (delivered.isEmpty()) return
+        rxStreamNextRemoteId = rxReorder.nextRemoteId
+        if (rxReorder.gapsSkipped != loggedGapSkips) {
+            loggedGapSkips = rxReorder.gapsSkipped
+            println("WIBOX-TUNNEL STREAM-GAP hueco=${rxReorder.gapsSkipped} siguiente=%08x".format(rxStreamNextRemoteId ?: 0))
+        }
+        for (payload in delivered) consumeStreamPayload(payload)
     }
 
     private suspend fun dispatchKcpFrame(frame: ByteArray) {

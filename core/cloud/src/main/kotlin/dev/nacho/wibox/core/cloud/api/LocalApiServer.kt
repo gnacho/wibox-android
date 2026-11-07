@@ -9,6 +9,7 @@ import kotlinx.coroutines.withContext
 import java.io.BufferedInputStream
 import java.io.OutputStream
 import java.net.InetAddress
+import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketException
@@ -50,13 +51,22 @@ class LocalApiServer(
 
     val isRunning: Boolean get() = acceptJob?.isActive == true
 
+    /**
+     * Puerto en el que escucha el servidor. Con `port = 0` es el que asigna el
+     * sistema, que solo se conoce despues de `start()`.
+     */
+    val boundPort: Int get() = serverSocket?.localPort ?: port
+
     fun start(): Boolean {
         if (isRunning) return true
         return runCatching {
-            val socket = ServerSocket(port, 8, InetAddress.getByName("0.0.0.0"))
+            val socket = ServerSocket()
+            // Sin esto, reiniciar con conexiones en TIME_WAIT falla al enlazar.
+            socket.reuseAddress = true
+            socket.bind(InetSocketAddress(InetAddress.getByName("0.0.0.0"), port), 8)
             serverSocket = socket
             acceptJob = scope.launch(Dispatchers.IO) { acceptLoop(socket) }
-            log("api listening on 0.0.0.0:$port")
+            log("api listening on 0.0.0.0:${socket.localPort}")
             true
         }.getOrElse {
             log("api start failed: ${it.javaClass.simpleName}: ${it.message}")
