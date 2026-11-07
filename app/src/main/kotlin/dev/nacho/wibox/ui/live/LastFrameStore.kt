@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.io.ByteArrayOutputStream
 import java.io.File
 
 object LastFrameStore {
@@ -12,26 +13,43 @@ object LastFrameStore {
     val revision: StateFlow<Long> = _revision
 
     fun load(context: Context, deviceId: String): Bitmap? {
-        val file = file(context, deviceId)
-        return if (file.isFile) BitmapFactory.decodeFile(file.absolutePath) else null
+        val bytes = LastFrameFiles.read(directory(context), deviceId) ?: return null
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     }
 
     fun save(context: Context, deviceId: String, bitmap: Bitmap) {
-        val file = file(context, deviceId)
-        file.parentFile?.mkdirs()
-        val temporary = File(file.parentFile, "${file.name}.tmp")
-        temporary.outputStream().buffered().use { output ->
-            check(bitmap.compress(Bitmap.CompressFormat.JPEG, 90, output))
-        }
+        val output = ByteArrayOutputStream()
+        check(bitmap.compress(Bitmap.CompressFormat.JPEG, 90, output))
+        LastFrameFiles.write(directory(context), deviceId, output.toByteArray())
+        _revision.value++
+    }
+
+    private fun directory(context: Context): File = File(context.filesDir, "last-frames")
+}
+
+/**
+ * File plumbing of the last decoded frame, split from the bitmap codec so the
+ * persistence can be exercised without Android. The frame is written to disk, not kept
+ * in memory, so the device card still has a thumbnail after leaving the live screen.
+ */
+internal object LastFrameFiles {
+
+    fun read(directory: File, deviceId: String): ByteArray? {
+        val file = File(directory, lastFrameFileName(deviceId))
+        if (!file.isFile) return null
+        return runCatching { file.readBytes() }.getOrNull()
+    }
+
+    fun write(directory: File, deviceId: String, bytes: ByteArray) {
+        directory.mkdirs()
+        val file = File(directory, lastFrameFileName(deviceId))
+        val temporary = File(directory, "${file.name}.tmp")
+        temporary.writeBytes(bytes)
         if (!temporary.renameTo(file)) {
             temporary.copyTo(file, overwrite = true)
             temporary.delete()
         }
-        _revision.value++
     }
-
-    private fun file(context: Context, deviceId: String): File =
-        File(File(context.filesDir, "last-frames"), lastFrameFileName(deviceId))
 }
 
 internal fun lastFrameFileName(deviceId: String): String {

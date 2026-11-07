@@ -474,11 +474,15 @@ fun DeviceConfigScreen(
                         },
                         tag = "config_motion_alerts",
                     )
-                    WiboxOptionRow(
-                        stringResource(R.string.firmware_version),
-                        { navigator.navigateInventory(AppDestinationRequest("upgrade", deviceId = deviceId)) },
-                        tag = "config_upgrade",
-                    )
+                }
+                // Solo lectura: la version de firmware se consulta por la red local y no
+                // escribe nada, asi que tambien esta disponible para un timbre compartido.
+                WiboxOptionRow(
+                    stringResource(R.string.firmware_version),
+                    { navigator.navigateInventory(AppDestinationRequest("upgrade", deviceId = deviceId)) },
+                    tag = "config_upgrade",
+                )
+                if (device.role == DeviceRole.OWNER) {
                     WiboxOptionRow(
                         stringResource(R.string.share_manage_title),
                         { navigator.navigateInventory(AppDestinationRequest("share_manage", deviceId = deviceId)) },
