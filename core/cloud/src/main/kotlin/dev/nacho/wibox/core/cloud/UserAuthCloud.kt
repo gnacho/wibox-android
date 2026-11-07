@@ -25,7 +25,7 @@ private const val LOGIN_CACHE_TTL_MS = 10 * 60 * 1000L
  */
 class UserAuthCloud internal constructor(
     private val wire: UserAuthWire,
-) {
+) : UserAuthGateway {
 
     private data class CachedLogin(
         val account: String,
@@ -92,13 +92,12 @@ class UserAuthCloud internal constructor(
      * autenticados posteriores (get-device-list). La password es LA MISMA que se
      * envio en el accept con need-create=1.
      */
-    suspend fun login(account: String, password: String, force: Boolean = false): UserAuthLogin {
-        return loginMutex.withLock {
+    override suspend fun login(account: String, password: String): UserAuthLogin =
+        loginMutex.withLock {
             val now = System.currentTimeMillis()
             cachedLogin
                 ?.takeIf {
-                    !force &&
-                        it.account == account &&
+                    it.account == account &&
                         it.password == password &&
                         now - it.completedAtMs < LOGIN_CACHE_TTL_MS
                 }
@@ -134,20 +133,20 @@ class UserAuthCloud internal constructor(
             cachedLogin = CachedLogin(account, password, login, System.currentTimeMillis())
             login
         }
-    }
 
-    suspend fun getShareLink(): String {
-        val response = wire.command("get-share-link", linkedMapOf())
+    override suspend fun getShareLink(): String {
+        val response = wire.command("get-share-link", linkedMapOf(), authenticated = true)
         if (!response.isSuccess) throw UserAuthException("get-share-link", response.result ?: -1, response.content)
         return response.content["invite-page"].orEmpty().ifBlank {
             throw UserAuthException("get-share-link", -1, response.content, "get-share-link returned no invite-page")
         }
     }
 
-    suspend fun listShareGroups(deviceId: String): List<ShareGroup> {
+    override suspend fun listShareGroups(deviceId: String): List<ShareGroup> {
         val response = wire.command(
             "get-share-group-list",
             linkedMapOf("device-id" to deviceId),
+            authenticated = true,
             contentClass = "com.quvii.qvweb.userauth.bean.request.NoLoginShareListReqContent",
         )
         if (!response.isSuccess) throw UserAuthException("get-share-group-list", response.result ?: -1, response.content)
@@ -157,7 +156,7 @@ class UserAuthCloud internal constructor(
         }
     }
 
-    suspend fun createShareGroup(
+    override suspend fun createShareGroup(
         deviceId: String,
         displayName: String,
         permissions: Set<DevicePermission>,
@@ -169,6 +168,7 @@ class UserAuthCloud internal constructor(
                 "share-group-memo" to displayName,
                 "powers" to DevicePermissionCodec.encode(permissions),
             ),
+            authenticated = true,
             contentClass = "com.quvii.qvweb.userauth.bean.request.NoLoginShareCreateReqContent",
         )
         if (!response.isSuccess) {
@@ -183,7 +183,7 @@ class UserAuthCloud internal constructor(
         )
     }
 
-    suspend fun updateShareGroup(
+    override suspend fun updateShareGroup(
         id: String,
         displayName: String,
         permissions: Set<DevicePermission>,
@@ -195,15 +195,17 @@ class UserAuthCloud internal constructor(
                 "share-group-memo" to displayName,
                 "powers" to DevicePermissionCodec.encode(permissions),
             ),
+            authenticated = true,
             contentClass = "com.quvii.qvweb.userauth.bean.request.NoLoginShareUpdateReqContent",
         )
         if (!response.isSuccess) throw UserAuthException("update-share-group-config", response.result ?: -1, response.content)
     }
 
-    suspend fun deleteShareGroup(id: String) {
+    override suspend fun deleteShareGroup(id: String) {
         val response = wire.command(
             "delete-share-group",
             linkedMapOf("share-group-id" to id),
+            authenticated = true,
             contentClass = "com.quvii.qvweb.userauth.bean.request.NoLoginShareDeleteReqContent",
         )
         if (!response.isSuccess) throw UserAuthException("delete-share-group", response.result ?: -1, response.content)

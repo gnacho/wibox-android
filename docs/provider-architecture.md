@@ -214,9 +214,7 @@ The captured provider routes are `/auth/user`, `/auth/user/deli`, `/auth/nologin
 
 In the stock APK, the screens that look like user screens (`activity_share_manage.xml`, titled "Users", and `activity_share_device.xml`, titled "New user") are actually the list of people a device is shared with and the screen that generates the invitation: 120 dp QR code, link, expiry of the "available before" kind, copy and the system share sheet. There is no account creation, no roles other than owner and guest, and no invitations that exist without a device behind them.
 
-The app already covers those two destinations (`share_manage` and `share_device`, with `share_bind` to accept) over local invitations. What is missing is the real provider, not the model.
-
-Conclusion for the product: there are no account operations to implement against this provider. Any "users" screen is the invitation list of a device, and it must be presented as such instead of promising account management that the protocol does not have.
+That list, however, is a real channel and it is not local: `get-share-group-list` reads it, `generate-nologin-share-invitation` creates one, `update-share-group-config` edits its name and permissions and `delete-share-group` revokes it, all of them on the authenticated duplex endpoint `/auth/user;jus_duplex=up` with the XStream envelope of section 17 of `protocol.md`. `core/cloud` exposes it as the `CloudUserAdministration` port and `UserAuthUserAdministration` is the real implementation; the app uses it for list, create, edit and revoke, and keeps the local catalogue only when the install has no account yet. The commands are owner operations: a guest account sees the device as `from-share=1` and the gateway rejects the read with `100101129` and the edit with `100101126`, which the app surfaces as an authorization error. The contract comes from the decoded APK and has not been captured on the wire yet, because the only account available is a guest one.
 
 ### 5.9 Errors and retries
 

@@ -47,6 +47,24 @@ class AppContainer(
 ) {
     private val provider = DemoWiboxProvider(persist = demoStore::save)
 
+    private val userAuthCloud by lazy(userAuthCloudFactory)
+
+    /**
+     * Real channel of the people a device is shared with: userauth share groups, the
+     * only user model the provider has. Without an account it reports no session and
+     * the repository keeps the local catalogue.
+     */
+    private val userAdministration: dev.nacho.wibox.core.cloud.CloudUserAdministration by lazy {
+        dev.nacho.wibox.core.cloud.UserAuthUserAdministration(
+            gateway = userAuthCloud,
+            credentials = { sessionCredentials() },
+        )
+    }
+
+    private val invitationOperations by lazy {
+        UserAuthInvitationOperations(userAdministration) { sessionCredentials() != null }
+    }
+
     /**
      * Real stock provider. Built only when the build carries account credentials
      * (wibox.account/wibox.password or WIBOX_ACCOUNT/WIBOX_PASSWORD). It is the
@@ -54,14 +72,6 @@ class AppContainer(
      * RealWiboxCloud still answers Unsupported for the cloud device list.
      */
     private val cloudProvider: WiboxProvider? = createCloudProvider()
-
-    private val userAuthCloud by lazy(userAuthCloudFactory)
-
-    private val invitationOperations by lazy {
-        UserAuthInvitationOperations(userAuthCloudFactory) {
-            provider.cloudCredentials() ?: (REAL_CLOUD_ACCOUNT to REAL_CLOUD_PASSWORD)
-        }
-    }
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -663,6 +673,17 @@ class AppContainer(
         REAL_CLOUD_ACCOUNT.isNotEmpty() && REAL_CLOUD_PASSWORD.isNotEmpty()
 
     /**
+     * Account of this install: the one stored by an accept, else the baked-in one.
+     * Null means there is no session to manage users with.
+     */
+    private fun sessionCredentials(): Pair<String, String>? {
+        provider.cloudCredentials()
+            ?.takeIf { it.first.isNotBlank() && it.second.isNotBlank() }
+            ?.let { return it }
+        return if (hasBuildCloudAccount()) REAL_CLOUD_ACCOUNT to REAL_CLOUD_PASSWORD else null
+    }
+
+    /**
      * Builds the stock provider over the real QVCloud client. Selected only when
      * the build carries credentials: installs that only have invitation
      * credentials keep using the verified userauth channel.
@@ -680,6 +701,7 @@ class AppContainer(
             actionTransport = dev.nacho.wibox.core.cloud.CloudActionTransport { deviceId, action ->
                 performDeviceAction(deviceId, action)
             },
+            userAdministration = userAdministration,
         )
         return WiboxProviderFactory.stockQvCloud(
             cloud = cloud,
