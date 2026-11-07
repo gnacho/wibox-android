@@ -482,13 +482,14 @@ fun DeviceConfigScreen(
                     { navigator.navigateInventory(AppDestinationRequest("upgrade", deviceId = deviceId)) },
                     tag = "config_upgrade",
                 )
-                if (device.role == DeviceRole.OWNER) {
-                    WiboxOptionRow(
-                        stringResource(R.string.share_manage_title),
-                        { navigator.navigateInventory(AppDestinationRequest("share_manage", deviceId = deviceId)) },
-                        tag = "config_share",
-                    )
-                }
+                // La pantalla de usuarios consulta el gateway y muestra el error del
+                // servidor cuando la cuenta no tiene permiso, asi que se ofrece
+                // tambien en un timbre compartido en vez de esconder la opcion.
+                WiboxOptionRow(
+                    stringResource(R.string.share_manage_title),
+                    { navigator.navigateInventory(AppDestinationRequest("share_manage", deviceId = deviceId)) },
+                    tag = "config_share",
+                )
                 WiboxOptionRow(
                     text = stringResource(R.string.time_sync),
                     onClick = { viewModel.syncTime() },
