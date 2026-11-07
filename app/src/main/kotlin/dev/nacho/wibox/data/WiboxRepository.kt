@@ -81,8 +81,9 @@ class WiboxRepository(
         displayName: String,
         permissions: Set<DevicePermission>,
     ): InvitationRecord {
-        if (cloudInvitations == null) return operations.createInvitation(deviceId, displayName, permissions)
-        val created = cloudInvitations.create(deviceId, displayName, permissions)
+        val remote = remoteInvitations()
+        if (remote == null) return operations.createInvitation(deviceId, displayName, permissions)
+        val created = remote.create(deviceId, displayName, permissions)
         storeInvitations(snapshot.invitations.filterNot { it.id == created.id } + created)
         return created
     }
@@ -91,25 +92,35 @@ class WiboxRepository(
         displayName: String,
         permissions: Set<DevicePermission>,
     ): InvitationRecord {
-        if (cloudInvitations == null) return operations.updateInvitation(id, displayName, permissions)
-        cloudInvitations.update(id, displayName, permissions)
+        val remote = remoteInvitations()
+        if (remote == null) return operations.updateInvitation(id, displayName, permissions)
+        remote.update(id, displayName, permissions)
         val existing = snapshot.invitations.first { it.id == id }
         val updated = existing.copy(displayName = displayName, permissions = permissions)
         storeInvitations(snapshot.invitations.map { if (it.id == id) updated else it })
         return updated
     }
     suspend fun deleteInvitation(id: String) {
-        if (cloudInvitations == null) {
+        val remote = remoteInvitations()
+        if (remote == null) {
             operations.deleteInvitation(id)
             return
         }
-        cloudInvitations.delete(id)
+        remote.delete(id)
         storeInvitations(snapshot.invitations.filterNot { it.id == id })
     }
     suspend fun refreshInvitations(deviceId: String) {
-        val remote = cloudInvitations?.list(deviceId) ?: return
-        storeInvitations(snapshot.invitations.filterNot { it.deviceId == deviceId } + remote)
+        val remote = remoteInvitations() ?: return
+        storeInvitations(snapshot.invitations.filterNot { it.deviceId == deviceId } + remote.list(deviceId))
     }
+
+    /**
+     * Cloud user channel, only when this install has an account. An install without
+     * one keeps the local catalogue instead of failing every invitation with an
+     * authentication error.
+     */
+    private fun remoteInvitations(): CloudInvitationOperations? =
+        cloudInvitations?.takeIf { it.available }
     private suspend fun storeInvitations(invitations: List<InvitationRecord>) {
         operations.mergeInvitations(invitations)
     }

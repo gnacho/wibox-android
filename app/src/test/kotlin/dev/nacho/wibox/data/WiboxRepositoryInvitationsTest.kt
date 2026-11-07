@@ -47,12 +47,42 @@ class WiboxRepositoryInvitationsTest {
         }
     }
 
-    private class FakeCloudInvitationOperations : CloudInvitationOperations {
+    @Test
+    fun installWithoutASessionKeepsTheLocalInvitations() = runTest {
+        val store = InMemoryDemoStore()
+        val provider = DemoWiboxProvider(persist = store::save)
+        val cloud = FakeCloudInvitationOperations(available = false)
+        val repository = WiboxRepository(
+            provider = provider,
+            operations = provider,
+            actionCoordinator = ActionCoordinator(provider, InMemoryActionJournalStore()),
+            restore = { provider.initializeDemo(store.load() ?: DemoFixtures.initial()) },
+            cloudInvitations = cloud,
+        )
+        try {
+            repository.prepare()
+            repository.refreshInvitations("WIBOX7410001")
+            assertTrue("sin sesion no se llama al canal cloud", cloud.calls == 0)
+
+            val created = repository.createInvitation("WIBOX7410001", "Ana", setOf(DevicePermission.PREVIEW))
+            assertTrue(created.id.startsWith("invitation-"))
+            assertEquals("Ana", created.displayName)
+            assertEquals(0, cloud.calls)
+        } finally {
+            repository.close()
+        }
+    }
+
+    private class FakeCloudInvitationOperations(override val available: Boolean = true) : CloudInvitationOperations {
+        var calls = 0
         var lastName = ""
         var lastPermissions = emptySet<DevicePermission>()
         var deletedId = ""
 
-        override suspend fun list(deviceId: String): List<InvitationRecord> = listOf(record("g1", deviceId, "Remoto"))
+        override suspend fun list(deviceId: String): List<InvitationRecord> {
+            calls++
+            return listOf(record("g1", deviceId, "Remoto"))
+        }
 
         override suspend fun create(
             deviceId: String,
