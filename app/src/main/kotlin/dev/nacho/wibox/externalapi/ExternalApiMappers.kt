@@ -75,6 +75,7 @@ internal object ExternalApiMappers {
             is ProviderError.NotFound -> WireApiErrorCode.NOT_FOUND to WireRetryPolicy.DO_NOT_RETRY
             is ProviderError.Conflict -> WireApiErrorCode.CONFLICT to WireRetryPolicy.MANUAL_RETRY
             is ProviderError.InvitationUsed -> WireApiErrorCode.CONFLICT to WireRetryPolicy.DO_NOT_RETRY
+            is ProviderError.InvitationExpired -> WireApiErrorCode.CONFLICT to WireRetryPolicy.DO_NOT_RETRY
             is ProviderError.Authentication -> WireApiErrorCode.AUTHENTICATION to WireRetryPolicy.REAUTHENTICATE
             is ProviderError.Authorization -> WireApiErrorCode.PROVIDER_AUTHORIZATION to WireRetryPolicy.MANUAL_RETRY
             is ProviderError.PlatformPermission -> WireApiErrorCode.PROVIDER_AUTHORIZATION to WireRetryPolicy.MANUAL_RETRY

@@ -41,6 +41,7 @@ enum class PairingError {
     EMPTY_FIELDS,
     DUPLICATE,
     INVITATION_USED,
+    INVITATION_EXPIRED,
     INVALID,
     NETWORK,
     UNSUPPORTED,
@@ -273,8 +274,11 @@ class PairingViewModel(
                     provisionStage = ProvisionStage.OUTCOME_UNKNOWN,
                 )
             } catch (error: ProviderError.InvitationUsed) {
-                Log.d("WIBOX-ACCEPT", "BIND: invitation already used (100151007)")
+                Log.d("WIBOX-ACCEPT", "BIND: invitation already used (100152007)")
                 mutableState.value = mutableState.value.copy(binding = false, bindError = PairingError.INVITATION_USED)
+            } catch (error: ProviderError.InvitationExpired) {
+                Log.d("WIBOX-ACCEPT", "BIND: invitation expired or unknown (100151007)")
+                mutableState.value = mutableState.value.copy(binding = false, bindError = PairingError.INVITATION_EXPIRED)
             } catch (error: ProviderError.Conflict) {
                 mutableState.value = mutableState.value.copy(binding = false, bindError = PairingError.DUPLICATE)
             } catch (error: ProviderError.Timeout) {

@@ -39,6 +39,15 @@ sealed class ProviderError(
             operation,
             capability,
             ProviderRetryPolicy.DO_NOT_RETRY,
+            providerCode = 100152007,
+        )
+
+    class InvitationExpired(operation: String, capability: CapabilityKey? = null) :
+        ProviderError(
+            "Invitation expired or unknown",
+            operation,
+            capability,
+            ProviderRetryPolicy.DO_NOT_RETRY,
             providerCode = 100151007,
         )
 

@@ -126,6 +126,7 @@
     <string name="invitation_invalid">Invalid or incomplete invitation. Required fields: InviteCode, OwnerId, OemId, AppVersion, DeviceId, From and AppId.</string>
     <string name="empty_required_fields">Complete all required fields.</string>
     <string name="invitation_used">This invitation was already used. Create a new one in the official app and scan the new code.</string>
+    <string name="invitation_expired">This invitation expired or is not valid. Ask for a new code in the official app and scan it soon: the code only lives for a short time.</string>
     <string name="duplicate_device">A device with this name or UID already exists.</string>
     <string name="add_device_failed">Could not add the device.</string>
     <string name="preview">Preview</string>

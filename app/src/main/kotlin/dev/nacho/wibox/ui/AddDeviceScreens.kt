@@ -693,6 +693,7 @@ private fun addDeviceErrorText(error: PairingError): String = when (error) {
     PairingError.EMPTY_FIELDS -> stringResource(R.string.empty_required_fields)
     PairingError.DUPLICATE -> stringResource(R.string.duplicate_device)
     PairingError.INVITATION_USED -> stringResource(R.string.invitation_used)
+    PairingError.INVITATION_EXPIRED -> stringResource(R.string.invitation_expired)
     PairingError.UNSUPPORTED -> stringResource(R.string.unsupported_local)
     else -> stringResource(R.string.add_device_failed)
 }
