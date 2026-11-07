@@ -1,3 +1,56 @@
+# v0.4.0 - The live view now goes the fast way
+
+November 7, 2026
+
+This release closes the gap with the official app. The video no longer comes in at the wrong size, the decoder is no longer rebuilt on every keyframe, and above all the tunnel is opened by the manufacturer's SDK through its local port instead of the long pure Kotlin path. It is also the first release that can manage the users of the doorbell, and the first that tells the truth when the account has no permission to do it.
+
+## What works, verified on a OnePlus Open (CPH2551)
+
+- Fast path through the vendor SDK. `createP2PClient rc=0` and `LIVE source=sdk-tunnel`: the app opens the doorbell port through the SDK instead of waiting for the MQTT and `p2pconnect` round trip. Before, every attempt fell back to the slow path because a certificate asset was missing.
+- The missing asset was not needed. `qv_ca.pem` was a redundant copy of the `ca.pem` already in the repository, so the app now hands that file to the SDK. The vendor client certificate, its key and the `.so` remain local and uncommitted, and a build without them says so once and falls back instead of failing on every call.
+- Correct frame size. The app asks for `stream = 2`, the same one the Go daemon uses, so frames arrive at 352x288 with an in-band SPS that matches the decoder. Before it asked for 688x576 with parameters of 352x288, which is where the green blocks came from.
+- Correct frame timing. The presentation timestamp of every frame comes from the frame rate announced by the stream, 20 fps, so the decoder no longer runs 25 fps against a 20 fps source. Discarded frames also advance the clock.
+- No more decoder rebuilds. The decoder is only rebuilt when the parameter sets really change. When the keyframe repeats the same SPS and PPS it logs `VIDEO RECONFIG omitido, csd ya coincide con el decoder`, and a real failure now prints the exception message instead of an empty line.
+- Out of order packets are reordered, not dropped. The RB-UDP tunnel keeps a bounded queue by packet id, delivers in order and only skips a gap after a short timeout, so the H.264 stream no longer carries holes.
+- Encrypted media prefix aligned to whole AES blocks, so a prefix that is not a multiple of 16 decrypts what it can instead of aborting the whole chain.
+- Device list comes from the cloud. `listDevices` asks the real provider, and the userauth list stays only as a fallback. `performAction` unlocks the door through the same transport, and `observeEvents` emits parsed alarms when a payload source is wired.
+- User management. The app speaks the real share group commands of the vendor gateway (`get-share-group-list`, `generate-nologin-share-invitation`, `update-share-group-config`, `delete-share-group`, `get-share-link`) on the authenticated channel. The commands were sent to the wrong endpoint before; the stock app only uses `/auth/user`.
+- The users screen is reachable on shared devices too. The row was hidden behind an owner check, so with a doorbell that arrives as shared the whole feature was unreachable. The screen now opens and shows the server answer: `get-share-link` returns `result=0`, and `get-share-group-list` returns `100101129` on an account that is not the owner, which the app shows as "not authorized for this device".
+- Read only firmware version for shared devices, and the last frame of the live view persisted per device so the card keeps a thumbnail without opening the stream.
+- Tests: 166 in `core/cloud` and 53 in `app`, all deterministic and without network, plus the `bridge` probe in Go with 18 tests under `-race`.
+
+## What does not work yet
+
+- Creating an invitation needs the owner account. The share group commands answer `100101129` (`EmErrNoPowerGetShareGroup`) when the doorbell is shared, so this build cannot issue a fresh invitation code by itself.
+- Per installation enrolment is not verified end to end. The probe exists and reproduces the gateway envelope, but it needs a fresh invitation code and the `DeviceId` that the official app prints on the "New user" screen.
+- Changing the doorbell WiFi network is not implemented. The command is classified as local only, it was never captured from the stock app and a wrong write can leave the doorbell without network and without physical access to recover it.
+- Talk to the visitor is not in the app either. The speaker only exists on the LAN channel, and the cloud tunnel does not expose it.
+- Colour still comes out with a green or cyan cast on the Shield's Tegra decoder where it was measured. It has not been measured on the target phone.
+
+## What is not in the repository
+
+The manufacturer's native SDK (`libqv-p2p-v2.so`), its client certificate and key and the doorbell credentials are not published. The binary is proprietary and the certificate is a real key pair from the vendor. Without them the project builds and starts, the live view falls back to the slow path and no tunnel is opened.
+
+To use it locally two things are needed:
+
+- The SDK in `app/src/main/jniLibs/arm64-v8a/libqv-p2p-v2.so`, plus `app/src/main/assets/client.pem` and `client.txt`, extracted from the official APK. The trust anchor is not listed: it is the same Qualvision root already versioned as `app/src/main/assets/ca.pem`, and the app hands that file to the SDK.
+- In `local.properties`: `wibox.account`, `wibox.password`, `wibox.clientId` and `wibox.unlockPassword`.
+
+The credentials can also be passed through the environment (`WIBOX_ACCOUNT`, `WIBOX_PASSWORD`, `WIBOX_CLIENT_ID`, `WIBOX_UNLOCK_PASSWORD`).
+
+## How it was tested
+
+- 166 deterministic `core/cloud` tests and 53 `app` tests green, without network.
+- 18 Go tests in `bridge` under `-race`, against a fake gateway.
+- Real device runs over ADB on a OnePlus Open: `createP2PClient rc=0`, `LIVE source=sdk-tunnel`, frames at 352x288 with the in-band SPS, 20 fps timestamps and a clean picture on screen.
+- The users screen was opened on the real device with an account that sees the doorbell as shared, and the log shows the exact answer of the gateway for both commands.
+
+## Pending
+
+- A fresh invitation code from the owner account plus the `DeviceId`, to run the enrolment probe and close the per installation enrolment.
+- A capture of the stock app changing the WiFi network, or access to the doorbell access point, to implement the WiFi screen with something more than a guess.
+- Confirm whether a busy channel frees itself over time, and measure the colour on the target phone.
+
 # v0.3.0 - Live view through the SDK tunnel
 
 November 4, 2026
