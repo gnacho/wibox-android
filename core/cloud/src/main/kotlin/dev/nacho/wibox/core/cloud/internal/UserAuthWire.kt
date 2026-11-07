@@ -116,7 +116,35 @@ class UserAuthWire(
         contentClass: String? = null,
         timeoutMs: Long = commandTimeoutMs,
     ): UserAuthResponse = commandMutex.withLock {
-        coroutineScope {
+        var attempt = 0
+        while (true) {
+            try {
+                return@withLock commandOnce(command, content, session, userData, authenticated, contentClass, timeoutMs)
+            } catch (stale: StaleSessionException) {
+                Log.w(TAG, "UP FAILED status=" + stale.status + " cmd=" + command + " attempt=" + attempt)
+                if (attempt == 1) throw stale
+                attempt++
+                resetSession()
+            }
+        }
+        @Suppress("UNREACHABLE_CODE")
+        error("unreachable")
+    }
+
+    /**
+     * Un solo intento del comando. Si el canal up no contesta 200 la sesion ya no
+     * existe en el gateway, y eso se senala con [StaleSessionException] para que el
+     * llamador renueve la cookie en vez de esperar un down que nunca llegara.
+     */
+    private suspend fun commandOnce(
+        command: String,
+        content: Map<String, String>,
+        session: String,
+        userData: String,
+        authenticated: Boolean,
+        contentClass: String?,
+        timeoutMs: Long,
+    ): UserAuthResponse = coroutineScope {
         Log.d(TAG, "command ENTER cmd=" + command)
         val sessionId = ensureSession()
         Log.d(TAG, "command START cmd=" + command + " content=" + content)
@@ -178,6 +206,9 @@ class UserAuthWire(
             }
             val upBody = upResponse.bodyAsText()
             Log.d(TAG, "UP DONE status=" + upResponse.status.value + " bodyLen=" + upBody.length)
+            if (upResponse.status.value != 200) {
+                throw StaleSessionException(upResponse.status.value)
+            }
             if (upBody.isNotBlank()) {
                 val fromUp = runCatching { UserAuthEnvelope.parse(upBody) }.getOrNull()
                 if (fromUp != null) {
@@ -198,7 +229,6 @@ class UserAuthWire(
             downJob.cancelAndJoin()
         }
     }
-    }
 
     private fun extractJsessionid(setCookie: String): String? {
         val match = Regex("jsessionid=([^;]+)").find(setCookie) ?: return null
@@ -215,3 +245,10 @@ class UserAuthWire(
         }
     }
 }
+
+/**
+ * El canal up contesto con un status distinto de 200. Verificado contra el gateway:
+ * una cookie jsessionid desconocida o ausente devuelve 404 con el cuerpo vacio, asi
+ * que esperar la respuesta por el down solo produce un timeout largo.
+ */
+class StaleSessionException(val status: Int) : Exception("userauth up channel answered HTTP $status")
