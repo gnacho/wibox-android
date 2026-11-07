@@ -1,3 +1,36 @@
+# v0.4.1 - Accepting an invitation no longer hangs
+
+November 7, 2026
+
+Two fixes over v0.4.0, both around pairing with an invitation. One of them was a real hang: accepting an invitation could sit on "Accepting the invitation" for 75 seconds and then time out.
+
+## What works, verified on a OnePlus Open (CPH2551)
+
+- **The stale userauth session is renewed instead of waited out.** When the gateway does not know the session any more it answers `404` with an empty body on the up channel and never sends a down packet. The app used to ignore the status and keep polling until the timeout. Now it drops the session, opens a new one and retries once, and a second failure surfaces the error immediately. Real logcat of an accept: `UP DONE status=404 bodyLen=0`, one retry, `UP DONE status=200 bodyLen=0`, `DOWN RESPONSE result=100151007 command=accept-nologin-share-invitation polls=0`. The answer arrives in about 470 ms instead of 75 s.
+- **An expired invitation is no longer reported as already used, and an already used one is no longer reported as a network error.** The vendor codes are `100151007` (`EmErrServerUExpiredOrIllegalInvitation`, expired or unknown) and `100152007` (`EmErrServerDExceedDevviceShareLimits`, already used), and the app had them swapped and incomplete. The message now tells the truth and asks for a fresh code instead of suggesting a retry that cannot work.
+- Both paths were exercised on the phone with a code that had already been consumed: the invitation is parsed, the accept is sent, the gateway rejects it and the screen explains why.
+
+## What does not work yet
+
+- **A successful invitation acceptance on the phone still needs a fresh code from the owner account.** The per-installation enrolment itself is proven: the `bridge/` probe accepted a fresh invitation against the real gateway with `result: 0`, got a new account with its own password, the device model, its powers and an expiry date. Codes expire quickly and the server answers `100151007` for an expired one, so the last end to end run in the app needs a code scanned soon after it is generated.
+- **Changing the doorbell WiFi is still out.** The stock commands were never captured on the wire and a wrong write can leave the bell offline with no physical access to recover it.
+- Listing, creating, editing and revoking share groups is owner only. With a shared account the gateway answers `100101129` and the app shows "not authorized for this device" instead of an empty list.
+
+## What is not in the repository
+
+Same as in v0.4.0: the vendor native SDK, its client certificate and private key, and the account credentials. The Qualvision root is already versioned as `app/src/main/assets/ca.pem`, and the app hands that file to the SDK, so no extra trust anchor is needed.
+
+## How it was tested
+
+- `core/cloud`: 168 tests, 0 failures, including the two new stale session cases (exactly one retry with a fresh cookie, and a fast failure instead of a 60 s wait).
+- `app`: 58 tests, 0 failures, including the invitation error code mapping.
+- `:app:assembleDebug` builds, and the APK was installed and driven on the real phone over ADB.
+
+## Pending
+
+- Run the invitation flow in the app with a fresh owner code to watch the success path end to end.
+- WiFi configuration, once the stock exchange can be captured or the bell is on a controlled network.
+
 # v0.4.0 - The live view now goes the fast way
 
 November 7, 2026
