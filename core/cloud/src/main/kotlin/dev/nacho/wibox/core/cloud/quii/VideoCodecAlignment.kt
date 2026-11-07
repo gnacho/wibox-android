@@ -11,6 +11,10 @@ package dev.nacho.wibox.core.cloud.quii
  * The last failing input is remembered as well, so a rebuild that cannot succeed with
  * these exact parameter sets is attempted once and not retried until the stream
  * announces something different.
+ *
+ * The size is only a hint. When the parameter sets match the ones the decoder already
+ * uses and it is producing frames, a different size only corrects the provisional
+ * value used at creation and the decoder is left alone.
  */
 class VideoCodecAlignment(private val maxRebuilds: Int = 8) {
 
@@ -43,6 +47,13 @@ class VideoCodecAlignment(private val maxRebuilds: Int = 8) {
         /** The decoder is already configured with these parameter sets and this size. */
         ALREADY_ALIGNED,
 
+        /**
+         * The parameter sets are the ones the decoder already uses and it is producing
+         * frames, so the different size is only the provisional one being corrected.
+         * There is nothing to rebuild: the SPS carries the real size.
+         */
+        SIZE_ADOPTED,
+
         /** A rebuild with these exact inputs already failed. */
         RETRY_SUPPRESSED,
 
@@ -70,8 +81,19 @@ class VideoCodecAlignment(private val maxRebuilds: Int = 8) {
         rebuildCount = 0
     }
 
-    fun decide(incoming: Signature): Decision {
-        if (configured == incoming) return Decision.ALREADY_ALIGNED
+    fun decide(incoming: Signature, decoderProducingOutput: Boolean = false): Decision {
+        val current = configured
+        if (current == incoming) return Decision.ALREADY_ALIGNED
+        // The decoder is created with a provisional size until the stream announces
+        // the real one. When the parameter sets already match and frames are coming
+        // out, the size is only a correction of that estimate: rebuilding throws work
+        // away and, on some devices, fails because the surface is still bound.
+        if (decoderProducingOutput && current != null &&
+            current.sps.contentEquals(incoming.sps) &&
+            current.pps.contentEquals(incoming.pps)
+        ) {
+            return Decision.SIZE_ADOPTED
+        }
         if (failed == incoming) return Decision.RETRY_SUPPRESSED
         if (rebuildCount >= maxRebuilds) return Decision.CAPPED
         return Decision.REBUILD
@@ -82,6 +104,14 @@ class VideoCodecAlignment(private val maxRebuilds: Int = 8) {
         configured = signature
         failed = null
         rebuildCount++
+    }
+
+    /**
+     * Records the size the stream announced for parameter sets the decoder already
+     * uses. No rebuild happens, so the session budget is untouched.
+     */
+    fun onSizeAdopted(signature: Signature) {
+        configured = signature
     }
 
     /** Records that a rebuild with [signature] failed, so it is not retried as is. */

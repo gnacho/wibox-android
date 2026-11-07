@@ -33,6 +33,45 @@ class VideoCodecAlignmentTest {
     }
 
     @Test
+    fun `a size correction is adopted while the decoder is producing frames`() {
+        // Sesion real: el decoder nace con 640x480 provisional y el stream anuncia
+        // 352x288 con los mismos parameter sets.
+        val guard = VideoCodecAlignment(maxRebuilds = 3)
+            .also { it.reset(sig(width = 640, height = 480)) }
+        val incoming = sig(width = 352, height = 288)
+        assertEquals(
+            VideoCodecAlignment.Decision.SIZE_ADOPTED,
+            guard.decide(incoming, decoderProducingOutput = true),
+        )
+        guard.onSizeAdopted(incoming)
+        assertEquals(VideoCodecAlignment.Decision.ALREADY_ALIGNED, guard.decide(incoming, decoderProducingOutput = true))
+        assertEquals(0, guard.rebuildCount)
+        // El mismo tamano con otros parameter sets si es un cambio de verdad.
+        val other = sig(width = 352, height = 288, spsBytes = byteArrayOf(0x47, 0x4D, 0x40, 0x1F))
+        assertEquals(VideoCodecAlignment.Decision.REBUILD, guard.decide(other, decoderProducingOutput = true))
+    }
+
+    @Test
+    fun `a size correction rebuilds before the decoder has painted anything`() {
+        val guard = VideoCodecAlignment(maxRebuilds = 3)
+            .also { it.reset(sig(width = 640, height = 480)) }
+        assertEquals(
+            VideoCodecAlignment.Decision.REBUILD,
+            guard.decide(sig(width = 352, height = 288), decoderProducingOutput = false),
+        )
+    }
+
+    @Test
+    fun `adopting the size does not consume the rebuild budget`() {
+        val guard = VideoCodecAlignment(maxRebuilds = 1)
+            .also { it.reset(sig(width = 640, height = 480)) }
+        guard.onSizeAdopted(sig(width = 352, height = 288))
+        assertEquals(0, guard.rebuildCount)
+        val changed = sig(width = 688, height = 576, spsBytes = byteArrayOf(0x47, 0x4D, 0x40, 0x1F))
+        assertEquals(VideoCodecAlignment.Decision.REBUILD, guard.decide(changed, decoderProducingOutput = true))
+    }
+
+    @Test
     fun `different parameter sets trigger a rebuild`() {
         val guard = alignment()
         val other = sig(spsBytes = byteArrayOf(0x47, 0x4D, 0x40, 0x1F))

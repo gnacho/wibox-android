@@ -106,6 +106,7 @@ class LiveController(
     private var videoSkippedCount = 0
     private var videoParamSetOnlyCount = 0
     private var videoReconfigureCapLogged = false
+    private var videoReconfigureFailures = 0
 
     /**
      * Reloj de presentacion del decoder: avanza con el fps que anuncia el cpacket
@@ -528,6 +529,7 @@ class LiveController(
         videoSkippedCount = 0
         videoParamSetOnlyCount = 0
         videoReconfigureCapLogged = false
+        videoReconfigureFailures = 0
         videoPts.reset()
         _videoReady.value = false
         codec = configureVideoCodec(target, PROVISIONAL_WIDTH, PROVISIONAL_HEIGHT, fallbackSps, fallbackPps)
@@ -635,11 +637,21 @@ class LiveController(
         val width = if (frame.width > 0) frame.width else current?.width ?: PROVISIONAL_WIDTH
         val height = if (frame.height > 0) frame.height else current?.height ?: PROVISIONAL_HEIGHT
         val signature = VideoCodecAlignment.Signature(inBand.sps, inBand.pps, width, height)
-        when (videoAlign.decide(signature)) {
+        when (videoAlign.decide(signature, decoderProducingOutput = videoOutputCount > 0)) {
             // El keyframe repite los parameter sets del stream: el decoder ya es el
             // correcto y reconstruirlo solo cuesta trabajo (y, si falla, un error por
             // GOP durante toda la sesion).
             VideoCodecAlignment.Decision.ALREADY_ALIGNED -> return false
+            // El decoder ya usa estos parameter sets y esta pintando: el tamano que
+            // anuncia el stream solo corrige el provisional con el que se creo.
+            VideoCodecAlignment.Decision.SIZE_ADOPTED -> {
+                videoAlign.onSizeAdopted(signature)
+                android.util.Log.d(
+                    "WIBOX-LIVE",
+                    "VIDEO RECONFIG omitido, csd ya coincide con el decoder; wh real $width" + "x$height",
+                )
+                return false
+            }
             // Ya se intento con estos mismos parametros y fallo: no se repite.
             VideoCodecAlignment.Decision.RETRY_SUPPRESSED -> return false
             VideoCodecAlignment.Decision.CAPPED -> {
@@ -655,18 +667,34 @@ class LiveController(
             VideoCodecAlignment.Decision.REBUILD -> Unit
         }
         val target = surface ?: return false
+        // El codec viejo se suelta ANTES de configurar el nuevo: crear un segundo
+        // decoder sobre la misma Surface lanza IllegalArgumentException en algunos
+        // equipos. Se guarda su firma para poder volver a el si la configuracion nueva
+        // no arranca y no quedarse sin decoder.
+        val previous = current
+        releaseVideoCodec()
         val rebuilt = try {
             configureVideoCodec(target, width, height, inBand.sps, inBand.pps)
         } catch (error: Exception) {
             videoAlign.onRebuildFailed(signature)
-            android.util.Log.e(
-                "WIBOX-LIVE",
-                "VIDEO RECONFIG fallo con $signature: ${error::class.java.simpleName}: ${error.message}",
-                error,
-            )
+            videoReconfigureFailures++
+            if (videoReconfigureFailures == 1) {
+                android.util.Log.e(
+                    "WIBOX-LIVE",
+                    "VIDEO RECONFIG fallo con $signature: " +
+                        "${error::class.java.simpleName}: ${error.message ?: error.toString()}",
+                    error,
+                )
+            } else {
+                android.util.Log.w(
+                    "WIBOX-LIVE",
+                    "VIDEO RECONFIG fallo con $signature: " +
+                        "${error::class.java.simpleName}: ${error.message ?: error.toString()}",
+                )
+            }
+            restoreVideoCodec(target, previous)
             return false
         }
-        releaseVideoCodec()
         codec = rebuilt
         videoAlign.onRebuilt(signature)
         android.util.Log.d(
@@ -674,6 +702,31 @@ class LiveController(
             "VIDEO RECONFIG n=${videoAlign.rebuildCount} wh=${width}x${height} sps=${inBand.sps.size}B pps=${inBand.pps.size}B",
         )
         return true
+    }
+
+    /** Vuelve a levantar el decoder con la firma anterior tras un rebuild fallido. */
+    private fun restoreVideoCodec(
+        target: Surface,
+        previous: VideoCodecAlignment.Signature?,
+    ) {
+        if (previous == null) return
+        val restored = runCatching {
+            configureVideoCodec(target, previous.width, previous.height, previous.sps, previous.pps)
+        }
+        restored.onSuccess {
+            codec = it
+            android.util.Log.d(
+                "WIBOX-LIVE",
+                "VIDEO RECONFIG deshecho, se mantiene wh=${previous.width}x${previous.height}",
+            )
+        }
+        restored.onFailure {
+            android.util.Log.e(
+                "WIBOX-LIVE",
+                "VIDEO RECONFIG sin decoder: ${it::class.java.simpleName}: ${it.message ?: it.toString()}",
+                it,
+            )
+        }
     }
 
     private fun feedVideo(frame: MediaFrame.Video) {
