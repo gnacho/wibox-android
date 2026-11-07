@@ -8,13 +8,14 @@ package dev.nacho.wibox.core.cloud.quii
  * there is nothing to rebuild: doing it anyway throws work away and, if the rebuild
  * fails, paints the same failure in the log every GOP for the whole session.
  *
+ * The size is only a hint. The SPS already carries the real resolution, and the size
+ * given at creation is provisional until the first keyframe announces it, so a
+ * different size with the same parameter sets is adopted instead of rebuilding the
+ * decoder. Only a change of parameter sets is a real change of stream.
+ *
  * The last failing input is remembered as well, so a rebuild that cannot succeed with
  * these exact parameter sets is attempted once and not retried until the stream
  * announces something different.
- *
- * The size is only a hint. When the parameter sets match the ones the decoder already
- * uses and it is producing frames, a different size only corrects the provisional
- * value used at creation and the decoder is left alone.
  */
 class VideoCodecAlignment(private val maxRebuilds: Int = 8) {
 
@@ -48,9 +49,9 @@ class VideoCodecAlignment(private val maxRebuilds: Int = 8) {
         ALREADY_ALIGNED,
 
         /**
-         * The parameter sets are the ones the decoder already uses and it is producing
-         * frames, so the different size is only the provisional one being corrected.
-         * There is nothing to rebuild: the SPS carries the real size.
+         * The parameter sets are the ones the decoder already uses, so the different
+         * size only corrects the provisional value used at creation. There is nothing
+         * to rebuild: the SPS carries the real resolution.
          */
         SIZE_ADOPTED,
 
@@ -81,14 +82,14 @@ class VideoCodecAlignment(private val maxRebuilds: Int = 8) {
         rebuildCount = 0
     }
 
-    fun decide(incoming: Signature, decoderProducingOutput: Boolean = false): Decision {
+    fun decide(incoming: Signature): Decision {
         val current = configured
         if (current == incoming) return Decision.ALREADY_ALIGNED
         // The decoder is created with a provisional size until the stream announces
-        // the real one. When the parameter sets already match and frames are coming
-        // out, the size is only a correction of that estimate: rebuilding throws work
-        // away and, on some devices, fails because the surface is still bound.
-        if (decoderProducingOutput && current != null &&
+        // the real one. When the parameter sets already match, the size is only a
+        // correction of that estimate: rebuilding throws work away and, on some
+        // devices, fails because the surface is still bound.
+        if (current != null &&
             current.sps.contentEquals(incoming.sps) &&
             current.pps.contentEquals(incoming.pps)
         ) {

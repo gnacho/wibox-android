@@ -637,18 +637,18 @@ class LiveController(
         val width = if (frame.width > 0) frame.width else current?.width ?: PROVISIONAL_WIDTH
         val height = if (frame.height > 0) frame.height else current?.height ?: PROVISIONAL_HEIGHT
         val signature = VideoCodecAlignment.Signature(inBand.sps, inBand.pps, width, height)
-        when (videoAlign.decide(signature, decoderProducingOutput = videoOutputCount > 0)) {
+        when (videoAlign.decide(signature)) {
             // El keyframe repite los parameter sets del stream: el decoder ya es el
             // correcto y reconstruirlo solo cuesta trabajo (y, si falla, un error por
             // GOP durante toda la sesion).
             VideoCodecAlignment.Decision.ALREADY_ALIGNED -> return false
-            // El decoder ya usa estos parameter sets y esta pintando: el tamano que
-            // anuncia el stream solo corrige el provisional con el que se creo.
+            // Mismos parameter sets y otro tamano: el SPS ya lleva la resolucion real,
+            // asi que el tamano solo corrige el provisional con el que se creo.
             VideoCodecAlignment.Decision.SIZE_ADOPTED -> {
                 videoAlign.onSizeAdopted(signature)
                 android.util.Log.d(
                     "WIBOX-LIVE",
-                    "VIDEO RECONFIG omitido, csd ya coincide con el decoder; wh real $width" + "x$height",
+                    "VIDEO RECONFIG omitido, csd ya coincide con el decoder; wh real ${width}x$height",
                 )
                 return false
             }
