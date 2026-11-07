@@ -36,3 +36,7 @@ core/cloud/src/test/kotlin/dev/nacho/wibox/core/cloud/UserAcceptLiveTest.kt
 core/cloud/src/test/kotlin/dev/nacho/wibox/core/cloud/UserLoginLiveTest.kt
 core/cloud/src/test/kotlin/dev/nacho/wibox/core/cloud/WakeExperimentLiveTest.kt
 core/cloud/src/test/kotlin/dev/nacho/wibox/core/cloud/WakeVariantLiveTest.kt
+
+# Sonda Go del enrolamiento (binario local)
+bridge/wibox-enrol
+bridge/bridge
