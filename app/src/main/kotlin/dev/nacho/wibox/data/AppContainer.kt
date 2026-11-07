@@ -602,11 +602,7 @@ class AppContainer(
             } catch (timeout: UserAuthTimeoutException) {
                 throw ProviderError.Timeout("acceptShareInvitation")
             } catch (rejected: UserAuthException) {
-                throw when (rejected.result) {
-                    100151007 -> ProviderError.InvitationUsed("acceptShareInvitation")
-                    100100003 -> ProviderError.Conflict("acceptShareInvitation")
-                    else -> ProviderError.Network("acceptShareInvitation")
-                }
+                throw invitationAcceptError(rejected.result)
             }
             // Credenciales de la cuenta nologin creada/vinculada: se registran para poder
             // reutilizarlas (login + get-device-list en sesiones futuras).
