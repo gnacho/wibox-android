@@ -396,7 +396,84 @@ The real cause, confirmed when capturing the correct accept from the official ap
 
 A real accept with `result=0` was captured by running the official app on the emulator and scanning an invitation with a real webcam (`-camera-back webcam0`, the `v4l2loopback` virtual camera did not deliver an image to the scanner). The real request and response are in section 14 alongside the rest of the duplex contract. The success response creates the nologin account and returns `account`, `id`, `name`, `data-encode-key`, `dynamic-password`, `password-expired`, `transparent-basedata`, `powers` and `model`.
 
-## 17. Verification
+## 17. Device users: the share group channel
+
+The provider has no accounts, roles or member lists. What its "Users" screen
+(`activity_share_manage.xml`) shows is the list of people a device is shared with: one
+share group per invitation, with a name, the granted permissions, the expiry and the
+code printed in the QR. This section documents that channel, which is what the app uses
+to list, create, edit and revoke a user.
+
+### 17.1 Transport and envelope
+
+Evidence: `com/quvii/qvweb/userauth/bean/UserAuthConst.java` (the nine
+`COMMAND_NO_LOGIN_SHARE_*` constants), `qvweb/userauth/UserAuthRequestHelper.java`
+(the four request builders and their beans), `qvweb/userauth/api/UserApi.java` (the
+target) and `publico/common/SDKStatus.java` (error codes).
+
+Every share group command goes through `HttpUserAuthManager.upChannelCommand`, which
+posts to `/auth/user;jus_duplex=up`: the **authenticated** duplex endpoint, with the
+session token in the envelope header, not the `/auth/nologin` one used by the accept.
+The envelope is the same XStream shape documented in section 16: `content` first with
+the bean class attribute, then `header`, kebab-case field names and an empty `version`.
+The `client` block carries app 2021, type 3 and OEM `G0021`.
+
+### 17.2 Commands
+
+| Command | Request bean | Content fields |
+|---|---|---|
+| `get-share-group-list` | `NoLoginShareListReqContent` | `device-id` |
+| `generate-nologin-share-invitation` | `NoLoginShareCreateReqContent` | `device-id`, `share-group-memo`, `powers` (`share-group-id` is optional and empty when creating) |
+| `update-share-group-config` | `NoLoginShareUpdateReqContent` | `share-group-id`, `share-group-memo`, `powers` |
+| `delete-share-group` | `NoLoginShareDeleteReqContent` | `share-group-id` |
+| `get-share-link` | none | empty content; answers `invite-page` |
+
+`powers` is the comma separated list of permission codes used by the invitation model
+(1 preview, 3 playback, 4 alarm, 1001 unlock, 1002 F1, 1003 call guard), the same codes
+the accept returns in its `powers` field.
+
+Responses:
+
+- `get-share-group-list` answers `content` with `count`, `invite-page` and one nested
+  `<share-group>` per person: `share-group-id`, `share-group-memo`, `powers`,
+  `share-code`, `share-group-count`, `share-group-limits` and `expire-time`
+  (epoch in seconds).
+- `generate-nologin-share-invitation` answers a flat `content` with `share-group-id`,
+  `share-code`, `invite-page`, `expire-time`, `expire-minutes` and `device-id`.
+- The update and the delete answer `content` with only the header result. Its
+  parameters are positional in the stock builder: id, powers, memo.
+
+The invitation link of section 15 is the same `invite-page` the create returns, so a
+real creation gives both the code and the page without inventing them.
+
+### 17.3 Owner only: error codes
+
+Managing the share groups is an owner operation. On a guest account the gateway
+answers:
+
+| Code | Constant | Meaning |
+|---|---|---|
+| `100101129` | `EmErrNoPowerGetShareGroup` | no permission to read the share groups |
+| `100101126` | `EmErrNoPowerUpdateShareDeviceMemoAndPowers` | no permission to edit them |
+| `100101127` | `EmErrBeyondShareGroupGeneralLimit` | share group limit reached |
+| `100101123` | `EmErrGenerateShareCodeFailed` | the gateway could not mint a code |
+| `100101124` | `EmErrGenerateShareUrlFailed` | the gateway could not mint the invite page |
+
+The account this project has tested with sees the device as shared
+(`from-share=1`), so it is expected to get `100101129` when listing users. The app maps
+it to an authorization error instead of hiding it.
+
+### 17.4 State of the evidence
+
+This contract is static evidence: it is read from the decoded APK and the beans, not
+captured from the wire. It has not been exercised against the real gateway, for two
+reasons that are worth keeping written down: there is no owner account available (the
+only account sees the device as shared), and creating an invitation is a write in the
+user's doorbell that nobody authorised from this repository. The first real attempt
+should be a `get-share-group-list` with an owner session, which is read-only and tells
+apart `result=0` from `100101129` in one step.
+
+## 18. Verification
 
 ```bash
 python3 core/cloud/verify_upgrade_contract.py
