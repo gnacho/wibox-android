@@ -16,6 +16,9 @@ import dev.nacho.wibox.core.cloud.CloudError
 import dev.nacho.wibox.core.cloud.CloudEvent
 import dev.nacho.wibox.core.cloud.CloudService
 import dev.nacho.wibox.core.cloud.CloudSession
+import dev.nacho.wibox.core.cloud.CloudUserAdministration
+import dev.nacho.wibox.core.cloud.CloudUserInvitation
+import dev.nacho.wibox.core.cloud.DevicePermission
 import dev.nacho.wibox.core.cloud.DeviceShadow
 import dev.nacho.wibox.core.cloud.ShadowAcknowledgement
 import dev.nacho.wibox.core.cloud.ShadowUnsubscribeReason
@@ -56,6 +59,7 @@ internal class RealWiboxCloud(
     private val deviceDirectory: CloudDeviceDirectory? = null,
     private val actionTransport: CloudActionTransport? = null,
     private val alarmPayloads: CloudAlarmPayloads? = null,
+    private val userAdministration: CloudUserAdministration? = null,
 ) : WiboxCloud {
     private val baseUrl: String = validateAndNormalizeBaseUrl(config)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -70,6 +74,7 @@ internal class RealWiboxCloud(
             add(CloudCapability.OFFLINE_ALARM_PARSING)
             add(CloudCapability.APP_UPGRADE_CHECK)
             if (deviceDirectory != null) add(CloudCapability.DEVICE_LIST)
+            if (userAdministration != null) add(CloudCapability.USER_MANAGEMENT)
             if (actionTransport != null) add(CloudCapability.PHYSICAL_ACTIONS)
         },
     )
@@ -243,6 +248,73 @@ internal class RealWiboxCloud(
         }
     }
 
+    /**
+     * People the device is shared with. The userauth share groups are answered by the
+     * injected account channel, never by this HTTP client.
+     */
+    override suspend fun listUsers(deviceId: String): List<CloudUserInvitation> {
+        ensureOpen()
+        if (deviceId.isBlank()) throw CloudError.InvalidInput("listUsers")
+        val administration = requireUserAdministration("listUsers")
+        return try {
+            administration.listUsers(deviceId)
+        } catch (error: Throwable) {
+            throw mapTransportError("listUsers", error)
+        }
+    }
+
+    /**
+     * Creates an invitation for a person. The gateway also answers the code printed in
+     * the QR and the invite page, so nothing is invented on this side.
+     */
+    override suspend fun createUserInvitation(
+        deviceId: String,
+        displayName: String,
+        permissions: Set<DevicePermission>,
+    ): CloudUserInvitation {
+        ensureOpen()
+        if (deviceId.isBlank()) throw CloudError.InvalidInput("createUserInvitation")
+        val administration = requireUserAdministration("createUserInvitation")
+        return try {
+            administration.createInvitation(deviceId, displayName, permissions)
+        } catch (error: Throwable) {
+            throw mapTransportError("createUserInvitation", error)
+        }
+    }
+
+    override suspend fun updateUserInvitation(
+        id: String,
+        displayName: String,
+        permissions: Set<DevicePermission>,
+    ) {
+        ensureOpen()
+        if (id.isBlank()) throw CloudError.InvalidInput("updateUserInvitation")
+        val administration = requireUserAdministration("updateUserInvitation")
+        try {
+            administration.updateInvitation(id, displayName, permissions)
+        } catch (error: Throwable) {
+            throw mapTransportError("updateUserInvitation", error)
+        }
+    }
+
+    /** Revokes an invitation: the person loses access to the device. */
+    override suspend fun revokeUserInvitation(id: String) {
+        ensureOpen()
+        if (id.isBlank()) throw CloudError.InvalidInput("revokeUserInvitation")
+        val administration = requireUserAdministration("revokeUserInvitation")
+        try {
+            administration.revokeInvitation(id)
+        } catch (error: Throwable) {
+            throw mapTransportError("revokeUserInvitation", error)
+        }
+    }
+
+    private fun requireUserAdministration(operation: String): CloudUserAdministration =
+        userAdministration ?: throw CloudError.Unsupported(
+            operation,
+            "The account channel that manages device users is not wired in this client",
+        )
+
     private fun deviceField(id: String): DeviceFieldDto =
         DeviceFieldDto(id, listOf(ProtocolRoutes.DEVICE_STATE_FIELD))
 
@@ -353,6 +425,7 @@ internal class RealWiboxCloud(
             deviceDirectory: CloudDeviceDirectory? = null,
             actionTransport: CloudActionTransport? = null,
             alarmPayloads: CloudAlarmPayloads? = null,
+            userAdministration: CloudUserAdministration? = null,
         ): RealWiboxCloud {
             validateAndNormalizeBaseUrl(config)
             val client = HttpClient(OkHttp) {
@@ -376,6 +449,7 @@ internal class RealWiboxCloud(
                 deviceDirectory = deviceDirectory,
                 actionTransport = actionTransport,
                 alarmPayloads = alarmPayloads,
+                userAdministration = userAdministration,
             )
         }
 

@@ -212,10 +212,77 @@ class RealCloudWiringTest {
         provider.close()
     }
 
+    @Test
+    fun userManagementDelegatesToTheAccountChannelAndKeepsItsErrors() = runTest {
+        val created = mutableListOf<Pair<String, Set<DevicePermission>>>()
+        val administration = FakeUserAdministration(
+            onCreate = { deviceId, name, permissions ->
+                created += name to permissions
+                CloudUserInvitation(
+                    id = "g-new",
+                    deviceId = deviceId,
+                    displayName = name,
+                    shareCode = "NEW12345",
+                    expiresAtMillis = 1,
+                    permissions = permissions,
+                    invitePage = "https://share.example/invite?InviteCode=NEW12345",
+                    ownerId = "2041769",
+                )
+            },
+        )
+        val cloud = wiredCloud(userAdministration = administration)
+
+        val users = cloud.listUsers("23123csfewyk")
+        assertEquals(listOf("g1"), users.map { it.id })
+        val invitation = cloud.createUserInvitation(
+            "23123csfewyk",
+            "Ana",
+            setOf(DevicePermission.PREVIEW, DevicePermission.UNLOCK),
+        )
+        assertEquals("g-new", invitation.id)
+        assertEquals("NEW12345", invitation.shareCode)
+        assertEquals(listOf("Ana" to setOf(DevicePermission.PREVIEW, DevicePermission.UNLOCK)), created)
+        cloud.updateUserInvitation("g-new", "Ana editada", setOf(DevicePermission.PREVIEW))
+        cloud.revokeUserInvitation("g-new")
+        assertEquals("g-new", administration.updated)
+        assertEquals("g-new", administration.revoked)
+        assertTrue(cloud.capabilities.supports(CloudCapability.USER_MANAGEMENT))
+        cloud.close()
+    }
+
+    @Test
+    fun userManagementStaysUnsupportedWithoutAnAccountChannel() = runTest {
+        val cloud = wiredCloud()
+
+        val error = assertFailsWith<CloudError.Unsupported> { cloud.listUsers("23123csfewyk") }
+        assertEquals("listUsers", error.operation)
+        assertFailsWith<CloudError.Unsupported> { cloud.revokeUserInvitation("g1") }
+        assertFailsWith<CloudError.InvalidInput> { cloud.listUsers(" ") }
+        assertFalse(cloud.capabilities.supports(CloudCapability.USER_MANAGEMENT))
+        cloud.close()
+    }
+
+    @Test
+    fun aGuestAccountSurfacesAsNotAuthorized() = runTest {
+        val cloud = wiredCloud(
+            userAdministration = FakeUserAdministration(
+                onList = { throw CloudError.Authorization("listUsers") },
+            ),
+        )
+
+        assertFailsWith<CloudError.Authorization> { cloud.listUsers("23123csfewyk") }
+        cloud.close()
+
+        val broken = wiredCloud(userAdministration = FakeUserAdministration(onList = { error("fixture") }))
+        assertFailsWith<CloudError.Network> { broken.listUsers("23123csfewyk") }
+        broken.close()
+    }
+
     private fun wiredCloud(
         deviceDirectory: CloudDeviceDirectory? = null,
         actionTransport: CloudActionTransport? = null,
         alarmPayloads: CloudAlarmPayloads? = null,
+        userAdministration: CloudUserAdministration? = null,
     ): RealWiboxCloud = RealWiboxCloud(
         config = testConfig(),
         tokenStore = RecordingTokenStore(fixtureSession()),
@@ -224,7 +291,49 @@ class RealCloudWiringTest {
         deviceDirectory = deviceDirectory,
         actionTransport = actionTransport,
         alarmPayloads = alarmPayloads,
+        userAdministration = userAdministration,
     )
+
+    private class FakeUserAdministration(
+        private val onList: suspend () -> List<CloudUserInvitation> = {
+            listOf(
+                CloudUserInvitation(
+                    id = "g1",
+                    deviceId = "23123csfewyk",
+                    displayName = "Ana",
+                    shareCode = "ABC12345",
+                    expiresAtMillis = 1_700_000_000_000L,
+                    permissions = setOf(DevicePermission.PREVIEW),
+                ),
+            )
+        },
+        private val onCreate: suspend (String, String, Set<DevicePermission>) -> CloudUserInvitation = { _, _, _ ->
+            error("create not expected")
+        },
+    ) : CloudUserAdministration {
+        var updated: String? = null
+        var revoked: String? = null
+
+        override suspend fun listUsers(deviceId: String): List<CloudUserInvitation> = onList()
+
+        override suspend fun createInvitation(
+            deviceId: String,
+            displayName: String,
+            permissions: Set<DevicePermission>,
+        ): CloudUserInvitation = onCreate(deviceId, displayName, permissions)
+
+        override suspend fun updateInvitation(
+            id: String,
+            displayName: String,
+            permissions: Set<DevicePermission>,
+        ) {
+            updated = id
+        }
+
+        override suspend fun revokeInvitation(id: String) {
+            revoked = id
+        }
+    }
 
     private fun fixtureMap(name: String): Map<String, String> =
         Json.parseToJsonElement(Fixtures.text(name)).jsonObject.mapValues { it.value.jsonPrimitive.content }

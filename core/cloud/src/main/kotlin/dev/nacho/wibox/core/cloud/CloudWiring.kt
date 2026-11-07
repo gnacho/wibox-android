@@ -33,3 +33,27 @@ fun interface CloudActionTransport {
  * expects.
  */
 typealias CloudAlarmPayloads = Flow<Map<String, String>>
+
+/**
+ * Management of the people a device is shared with.
+ *
+ * The stock provider has no accounts, roles or member lists of its own: its
+ * "Users" screen is the list of share groups of a device, each one with a name,
+ * the granted permissions and the code printed in the invitation QR. The channel
+ * that answers those operations is the userauth duplex one, outside this HTTP
+ * client, so its owner injects the calls here.
+ *
+ * A guest account cannot manage them: the gateway rejects the read with
+ * `100101129` and the update with `100101126`, surfaced as
+ * [CloudError.Authorization].
+ */
+interface CloudUserAdministration {
+    suspend fun listUsers(deviceId: String): List<CloudUserInvitation>
+    suspend fun createInvitation(
+        deviceId: String,
+        displayName: String,
+        permissions: Set<DevicePermission>,
+    ): CloudUserInvitation
+    suspend fun updateInvitation(id: String, displayName: String, permissions: Set<DevicePermission>)
+    suspend fun revokeInvitation(id: String)
+}
